@@ -1,0 +1,14 @@
+p, administrator, article_group, GET
+p, administrator, article_group, POST
+p, user, article_group, GET
+p, administrator, user_group, GET
+p, administrator, user_group, POST
+
+g, admin, administrator
+g, anhnguyen, user
+
+g2, /acticles/*, article_group
+g2, /users/*, user_group
+
+g2, /acticles/:id, article_group
+g2, /users/:id, user_group

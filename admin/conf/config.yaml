@@ -1,0 +1,22 @@
+app:
+  env: development
+  max_page_size: 1000
+  min_page_size: 10
+  
+casbin:
+  model_path: conf/rbac_with_pattern_policy_model.conf
+  file_path: conf/rbac_with_pattern_policy.csv
+
+database:
+  driver: postgresql
+  dns: host=localhost user=admin password=admin@0809 dbname=echo_ddd port=5432 sslmode=disable
+  batch_size: 1000
+
+jwt:
+  signing_key: 0966005780
+  expires_time: 86400
+  issuer: "rin-echo"
+
+server:
+  host: localhost
+  port: 0809

@@ -1,0 +1,16 @@
+app:
+  description: "The application with Echo framework"
+  other: "The application with Echo framework"
+
+token_malformed:
+  other: "Token is malformed"
+
+token_missing:
+  other: "Token is missing"
+
+username_password_not_match:
+  other: "Your username and password didn't match. Please try again"
+
+"400":
+  other: "The request was unacceptable, often due to missing a required parameter."
+  description: "Requests without authentication or with invalid query parameters are considered invalid and will yield this response.."
