@@ -1,2 +1,1 @@
-# rin-echo
-Application using Go Echo framework
+# Application using Go Echo framework
