@@ -28,7 +28,7 @@ func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.Query
 			"UserRoles": querybuilder.NewUserRoleQueryBuilder(),
 			"Role":      querybuilder.NewRoleQueryBuilder(),
 		}
-		users []domain.User
+		users []*domain.User
 	)
 
 	err := q.Bind(h.uow.DB(), &h.queryBuilder, preloadBuilders, &User{})
@@ -42,5 +42,5 @@ func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.Query
 		return nil, err
 	}
 
-	return models.NewQueryResult(users, 0, q.Paging().Limit, q.Paging().Offset), nil
+	return models.NewQueryResult(newUsers(users), 0, q.Paging().Limit, q.Paging().Offset), nil
 }

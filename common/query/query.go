@@ -146,12 +146,14 @@ func (q *Query) AddError(err error) error {
 }
 
 func (q Query) Bind(db *gorm.DB, queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
-	err := q.bindFilter(db, queryBuilder, preloadBuilders, modelRes)
-	if err != nil {
-		return err
+	if len(q.Filter().FieldNames) > 0 {
+		err := q.bindFilter(db, queryBuilder, preloadBuilders, modelRes)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = q.bindWithoutFilter(queryBuilder, preloadBuilders, modelRes)
+	err := q.bindWithoutFilter(queryBuilder, preloadBuilders, modelRes)
 	if err != nil {
 		return err
 	}
@@ -160,7 +162,7 @@ func (q Query) Bind(db *gorm.DB, queryBuilder QueryBuilder, preloadBuilders map[
 }
 
 func (q Query) bindWithoutFilter(queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
-	fields, err := utils.GetFieldsByJsonTag(modelRes)
+	fields, _, err := utils.GetFieldsByJsonTag(modelRes)
 	if err != nil {
 		return err
 	}

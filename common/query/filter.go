@@ -131,7 +131,7 @@ func (f Filter) Tokens() []Token {
 // Ex: table = user_roles.role => fieldName = UserRole.Role
 func (f Filter) GetFieldNamesByTable(model interface{}) (map[string]string, error) {
 	fieldOfTables := make(map[string]string)
-	fields, err := utils.GetFieldsByJsonTag(model)
+	fields, _, err := utils.GetFieldsByJsonTag(model)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (f Filter) GetFieldNamesByTable(model interface{}) (map[string]string, erro
 					return nil, fmt.Errorf("failed to found '%s' field", t)
 				}
 
-				prevFields, err = utils.GetFieldsByJsonTag(reflect.New(field.Type).Interface())
+				prevFields, _, err = utils.GetFieldsByJsonTag(reflect.New(field.Type).Interface())
 				if err != nil {
 					return nil, err
 				}

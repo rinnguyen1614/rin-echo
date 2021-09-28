@@ -34,7 +34,7 @@ type (
 
 		Schema(db *gorm.DB) (*schema.Schema, error)
 
-		Execute(db *gorm.DB) *gorm.DB
+		Query(db *gorm.DB) *gorm.DB
 
 		Find(db *gorm.DB, dest interface{}) error
 
@@ -50,7 +50,6 @@ type (
 		preloads   map[string]QueryBuilder
 		model      interface{}
 		tableName  string
-		db         *gorm.DB
 	}
 )
 
@@ -150,7 +149,7 @@ func (q *queryBuilder) Schema(db *gorm.DB) (*schema.Schema, error) {
 	return smt.Schema, nil
 }
 
-func (q *queryBuilder) Execute(db *gorm.DB) *gorm.DB {
+func (q *queryBuilder) Query(db *gorm.DB) *gorm.DB {
 	return fQueryBuilder(db.Model(q.model), q)
 }
 
@@ -197,7 +196,7 @@ func fQueryBuilder(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 }
 
 func (q *queryBuilder) Find(db *gorm.DB, dest interface{}) error {
-	query := q.Execute(db)
+	query := q.Query(db)
 	if err := query.Find(dest).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
@@ -210,6 +209,6 @@ func (q *queryBuilder) Find(db *gorm.DB, dest interface{}) error {
 }
 
 func (q *queryBuilder) Count(db *gorm.DB) (total int64) {
-	q.Execute(db).Count(&total)
+	q.Query(db).Count(&total)
 	return
 }

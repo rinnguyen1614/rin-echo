@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 func GetTypeName(i interface{}) string {
@@ -53,31 +54,46 @@ func GetTypeName(i interface{}) string {
 // dest = reflect.New(reflectValueType).Interface()
 
 // key is tag's name, value is field of tag
-func GetFieldsByTag(model interface{}, tag string) (map[string]reflect.StructField, error) {
+func GetFieldsByTag(model interface{}, tag string) (fieldsByKey map[string]reflect.StructField, keyOptions map[string][]string, err error) {
 	var (
-		fieldsByTag = make(map[string]reflect.StructField)
-		retype      = reflect.ValueOf(model).Type().Elem()
+		retype = reflect.ValueOf(model).Type().Elem()
 	)
+
+	fieldsByKey = make(map[string]reflect.StructField)
+	keyOptions = make(map[string][]string)
 
 	for retype.Kind() == reflect.Ptr || retype.Kind() == reflect.Array || retype.Kind() == reflect.Slice {
 		retype = retype.Elem()
 	}
 
 	if retype.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("%s must is underlying struct type", retype.Name())
+		return nil, nil, fmt.Errorf("%s must is underlying struct type", retype.Name())
 	}
 
 	for i := 0; i < retype.NumField(); i++ {
 		field := retype.Field(i)
-		if tag, ok := field.Tag.Lookup(tag); ok {
-			fieldsByTag[tag] = field
+		if value, ok := field.Tag.Lookup(tag); ok {
+			key, options := parseTag(value)
+			fieldsByKey[key] = field
+			keyOptions[key] = options
 		}
 	}
 
-	return fieldsByTag, nil
+	return fieldsByKey, keyOptions, nil
 }
 
 // key is json tag's name, value is field of tag
-func GetFieldsByJsonTag(model interface{}) (map[string]reflect.StructField, error) {
+func GetFieldsByJsonTag(model interface{}) (map[string]reflect.StructField, map[string][]string, error) {
 	return GetFieldsByTag(model, "json")
+}
+
+// tag is one of followings:
+// ""
+// "name"
+// "name,opt"
+// "name,opt,opt2"
+// ",opt"
+func parseTag(tag string) (key string, options []string) {
+	res := strings.Split(tag, ",")
+	return res[0], res[1:]
 }
