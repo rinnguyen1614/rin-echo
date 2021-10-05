@@ -145,15 +145,14 @@ func (q *Query) AddError(err error) error {
 	return q.Error
 }
 
-func (q Query) Bind(db *gorm.DB, queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
-	if len(q.Filter().FieldNames) > 0 {
-		err := q.bindFilter(db, queryBuilder, preloadBuilders, modelRes)
-		if err != nil {
-			return err
-		}
+func (q Query) Bind(queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
+
+	err := q.bindSelectAndOrder(queryBuilder, preloadBuilders, modelRes)
+	if err != nil {
+		return err
 	}
 
-	err := q.bindWithoutFilter(queryBuilder, preloadBuilders, modelRes)
+	err = q.bindCondition(queryBuilder, modelRes)
 	if err != nil {
 		return err
 	}
@@ -161,7 +160,7 @@ func (q Query) Bind(db *gorm.DB, queryBuilder QueryBuilder, preloadBuilders map[
 	return nil
 }
 
-func (q Query) bindWithoutFilter(queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
+func (q Query) bindSelectAndOrder(queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
 	fields, _, err := utils.GetFieldsByJsonTag(modelRes)
 	if err != nil {
 		return err
@@ -185,7 +184,7 @@ func (q Query) bindWithoutFilter(queryBuilder QueryBuilder, preloadBuilders map[
 
 		if preBuilder, ok := preloadBuilders[field.Name]; ok {
 			queryBuilder.SetPreload(field.Name, preBuilder)
-			if err := preQuery.bindWithoutFilter(preBuilder, preloadBuilders, reflect.New(field.Type).Interface()); err != nil {
+			if err := preQuery.bindSelectAndOrder(preBuilder, preloadBuilders, reflect.New(field.Type).Interface()); err != nil {
 				return err
 			}
 		}
@@ -194,108 +193,44 @@ func (q Query) bindWithoutFilter(queryBuilder QueryBuilder, preloadBuilders map[
 	return nil
 }
 
-func (q Query) bindFilter(db *gorm.DB, queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
+func (q Query) bindCondition(queryBuilder QueryBuilder, modelRes interface{}) error {
 	var (
-		fieldNamesByTable map[string]string
-		// it's a collection of fields without the dot "."
-		fieldFlattens = make([]string, 0)
-		// key is a field's Name to get relations table, value is a table in filter
-		tablesByFieldFlatten = make(map[string]string)
-		// key is a field's Name to get relations table, value is a table's name of DB
-		fieldsByTableDB = make(map[string]string)
-		// it's a table of DB by fieldflattens
-		tableDBFlattensByFieldFlatten = make(map[string]string)
-		tx                            = db
-		primarySchema                 *schema.Schema
+		tx     *gorm.DB
+		filter = q.Filter()
 	)
 
-	fieldNamesByTable, err := q.Filter().GetFieldNamesByTable(modelRes)
+	tx, hasCondition, fieldNames, err := filter.BuildQuery(queryBuilder, modelRes)
 	if err != nil {
 		return err
 	}
 
-	for table, fieldName := range fieldNamesByTable {
-		splitField := strings.Split(fieldName, ".")
-		splitTable := strings.Split(table, ".")
-		for i := 0; i < len(splitField); i++ {
-			table, field := splitTable[i], splitField[i]
-			if _, ok := tablesByFieldFlatten[field]; !ok {
-				tablesByFieldFlatten[field] = table
-				fieldFlattens = append(fieldFlattens, field)
+	if hasCondition {
+		var funcSetCondition func(*gorm.DB, QueryBuilder) error
+
+		funcSetCondition = func(tx *gorm.DB, qB QueryBuilder) error {
+			err := setCondition(tx, qB)
+			if err != nil {
+				return err
 			}
+
+			for preloadName, preloadBuilder := range qB.Preloads() {
+				if _, ok := fieldNames[preloadName]; ok {
+					err = funcSetCondition(tx, preloadBuilder)
+					if err != nil {
+						return err
+					}
+				}
+			}
+			return nil
 		}
+
+		err = funcSetCondition(tx, queryBuilder)
+		if err != nil {
+			return err
+		}
+
 	}
-
-	primarySchema, err = queryBuilder.Schema(tx)
-	if err != nil {
-		return err
-	}
-
-	tableDBFlattensByFieldFlatten = getTableDBsByFieldFlatten(db, preloadBuilders, fieldFlattens)
-	fieldsByTableDB = getFieldsByTableDBs(fieldNamesByTable, tableDBFlattensByFieldFlatten)
-	clauseFrom, err := getClauseFrom(primarySchema, primarySchema.Table, fieldsByTableDB)
-	if err != nil {
-		return err
-	}
-
-	var (
-		filter    = q.Filter()
-		filterSQL = strings.ReplaceAll(filter.SQL.String(), tableTemp, primarySchema.Table)
-	)
-
-	// replace all table of the filter to tableDB in SQL syntax.
-	for field, table := range tablesByFieldFlatten {
-		filterSQL = strings.ReplaceAll(filterSQL, getKeyTableDotTemp(table), tableDBFlattensByFieldFlatten[field])
-	}
-
-	tx = tx.Clauses(clauseFrom).Where(filterSQL, filter.Vars)
-
-	err = setCondition(tx, queryBuilder)
-	if err != nil {
-		return err
-	}
-
-	for _, field := range fieldFlattens {
-		setCondition(tx, preloadBuilders[field])
-	}
-
 	return nil
-}
-
-func getTableDBsByFieldFlatten(db *gorm.DB, preloadBuilders map[string]QueryBuilder, fieldFlattens []string) map[string]string {
-	var tables = make(map[string]string)
-
-	for _, field := range fieldFlattens {
-		sche, _ := preloadBuilders[field].Schema(db)
-		tables[field] = sche.Table
-	}
-
-	return tables
-}
-
-func getFieldsByTableDBs(fieldNamesByTable map[string]string, tableDBsByFieldFlatten map[string]string) map[string]string {
-	var tables = make(map[string]string)
-
-	for _, field := range fieldNamesByTable {
-		var (
-			split = strings.Split(field, ".")
-			table string
-		)
-
-		for i, f := range split {
-			table += tableDBsByFieldFlatten[f]
-			if i != len(split)-1 && len(split) != 1 {
-				table += "."
-			}
-		}
-		if lastDot := strings.LastIndexByte(field, byte('.')); lastDot != -1 {
-			tables[table] = field[lastDot+1:]
-		} else {
-			tables[table] = field
-		}
-	}
-
-	return tables
 }
 
 func setCondition(db *gorm.DB, queryBuilder QueryBuilder) error {
@@ -306,7 +241,7 @@ func setCondition(db *gorm.DB, queryBuilder QueryBuilder) error {
 		modelSchema *schema.Schema
 	)
 
-	modelSchema, _ = queryBuilder.Schema(db)
+	modelSchema = queryBuilder.Schema()
 
 	for _, field := range modelSchema.PrimaryFieldDBNames {
 		col := modelSchema.Table + "." + field

@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"rin-echo/admin/domain"
 	"rin-echo/common/query"
+
+	"gorm.io/gorm"
 )
 
 type UserRoleQueryBuilder struct {
 	query.QueryBuilder
 }
 
-func NewUserRoleQueryBuilder() UserRoleQueryBuilder {
-	qbuilder, err := query.NewQueryBuilder(&domain.UserRole{})
+func NewUserRoleQueryBuilder(db *gorm.DB) UserRoleQueryBuilder {
+	qbuilder, err := query.NewQueryBuilder(db, &domain.UserRole{})
 	if err != nil {
 		panic(err)
 	}

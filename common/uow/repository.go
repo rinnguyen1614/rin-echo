@@ -109,8 +109,5 @@ func (r Repository) Find(ctx common.Context, dest interface{}, conds map[string]
 }
 
 func (r Repository) First(ctx common.Context, dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
-	if err := r.Query(ctx, conds, preloads).First(dest).Error; err != nil {
-		return err
-	}
-	return nil
+	return r.Query(ctx, conds, preloads).First(dest).Error
 }

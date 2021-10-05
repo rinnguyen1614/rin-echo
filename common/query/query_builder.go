@@ -3,6 +3,7 @@ package query
 import (
 	"errors"
 	"reflect"
+	"rin-echo/common"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -32,13 +33,19 @@ type (
 
 		SetPreload(tableName string, query QueryBuilder)
 
-		Schema(db *gorm.DB) (*schema.Schema, error)
+		DB() *gorm.DB
 
-		Query(db *gorm.DB) *gorm.DB
+		WithContext(ctx common.Context) QueryBuilder
 
-		Find(db *gorm.DB, dest interface{}) error
+		Schema() *schema.Schema
 
-		Count(db *gorm.DB) int64
+		Query() *gorm.DB
+
+		Find(dest interface{}) error
+
+		First(dest interface{}) error
+
+		Count() int64
 	}
 
 	queryBuilder struct {
@@ -50,16 +57,24 @@ type (
 		preloads   map[string]QueryBuilder
 		model      interface{}
 		tableName  string
+		db         *gorm.DB
+		schema     *schema.Schema
 	}
 )
 
-func NewQueryBuilder(model interface{}) (QueryBuilder, error) {
+func NewQueryBuilder(db *gorm.DB, model interface{}) (QueryBuilder, error) {
+	if db == nil {
+		panic("NewQueryBuilder requires db")
+	}
+
 	if model == nil {
 		panic("NewQueryBuilder requires model")
 	}
 
 	var (
-		q = &queryBuilder{
+		tx  = db
+		smt = tx.Statement
+		q   = &queryBuilder{
 			sel:        make([]string, 0),
 			conditions: make(map[string][]interface{}),
 			orders:     make([]string, 0),
@@ -67,12 +82,18 @@ func NewQueryBuilder(model interface{}) (QueryBuilder, error) {
 		}
 	)
 
+	err := smt.Parse(model)
+	if err != nil {
+		return nil, err
+	}
+
 	reflectType := reflect.ValueOf(model).Type().Elem()
 	if reflectType.Kind() == reflect.Ptr {
 		reflectType = reflectType.Elem()
 	}
 	q.model = reflect.New(reflectType).Interface()
-
+	q.db = db
+	q.schema = smt.Schema
 	return q, nil
 }
 
@@ -135,25 +156,24 @@ func (q *queryBuilder) SetPreload(tableName string, query QueryBuilder) {
 	q.preloads[tableName] = query
 }
 
-func (q *queryBuilder) Schema(db *gorm.DB) (*schema.Schema, error) {
-	var (
-		tx  = db
-		smt = tx.Statement
-	)
-
-	err := smt.Parse(q.Model())
-	if err != nil {
-		return nil, err
-	}
-
-	return smt.Schema, nil
+func (q *queryBuilder) DB() *gorm.DB {
+	return q.db
 }
 
-func (q *queryBuilder) Query(db *gorm.DB) *gorm.DB {
-	return fQueryBuilder(db.Model(q.model), q)
+func (q *queryBuilder) Schema() *schema.Schema {
+	return q.schema
 }
 
-func fQueryBuilder(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
+func (q queryBuilder) WithContext(ctx common.Context) QueryBuilder {
+	q.db.WithContext(ctx)
+	return &q
+}
+
+func (q *queryBuilder) Query() *gorm.DB {
+	return buildQuery(q.db.Model(q.model), q)
+}
+
+func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 	var (
 		tx = db
 	)
@@ -188,15 +208,15 @@ func fQueryBuilder(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 				}
 			}
 
-			return fQueryBuilder(db, pBuilder)
+			return buildQuery(db, pBuilder)
 		})
 	}
 
 	return tx
 }
 
-func (q *queryBuilder) Find(db *gorm.DB, dest interface{}) error {
-	query := q.Query(db)
+func (q *queryBuilder) Find(dest interface{}) error {
+	query := q.Query()
 	if err := query.Find(dest).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
@@ -208,7 +228,11 @@ func (q *queryBuilder) Find(db *gorm.DB, dest interface{}) error {
 	return nil
 }
 
-func (q *queryBuilder) Count(db *gorm.DB) (total int64) {
-	q.Query(db).Count(&total)
+func (q *queryBuilder) First(dest interface{}) error {
+	return q.Query().First(dest).Error
+}
+
+func (q *queryBuilder) Count() (total int64) {
+	q.Query().Count(&total)
 	return
 }

@@ -10,8 +10,7 @@ import (
 )
 
 type FindUsersHandler struct {
-	uow          iuow.UnitOfWork
-	queryBuilder querybuilder.UserQueryBuilder
+	uow iuow.UnitOfWork
 }
 
 func NewFindUsersHandler(uow iuow.UnitOfWork) FindUsersHandler {
@@ -19,25 +18,29 @@ func NewFindUsersHandler(uow iuow.UnitOfWork) FindUsersHandler {
 		panic("NewTokenUserHandler requires uow")
 	}
 
-	return FindUsersHandler{uow, querybuilder.NewUserQueryBuilder()}
+	return FindUsersHandler{uow}
 }
 
 func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.QueryResult, error) {
 	var (
-		preloadBuilders = map[string]query.QueryBuilder{
-			"UserRoles": querybuilder.NewUserRoleQueryBuilder(),
-			"Role":      querybuilder.NewRoleQueryBuilder(),
-		}
 		users []*domain.User
 	)
 
-	err := q.Bind(h.uow.DB(), &h.queryBuilder, preloadBuilders, &User{})
+	var (
+		queryBuilder    = querybuilder.NewUserQueryBuilder(h.uow.DB())
+		preloadBuilders = map[string]query.QueryBuilder{
+			"UserRoles": querybuilder.NewUserRoleQueryBuilder(h.uow.DB()),
+			"Role":      querybuilder.NewRoleQueryBuilder(h.uow.DB()),
+		}
+	)
+
+	err := q.Bind(queryBuilder, preloadBuilders, &User{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = h.queryBuilder.Find(h.uow.WithContext(c.RequestContext()), &users)
+	err = queryBuilder.WithContext(c.RequestContext()).Find(&users)
 	if err != nil {
 		return nil, err
 	}

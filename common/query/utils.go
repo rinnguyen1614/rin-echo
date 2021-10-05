@@ -56,7 +56,7 @@ func getClauseFrom(primarySchema *schema.Schema, table string, fieldsByTableJoin
 							},
 						})
 					} else {
-						return clause.From{}, fmt.Errorf("failed to found schema for '%s'", tb)
+						return clause.From{}, fmt.Errorf("clause: failed to found schema for '%s'", tb)
 					}
 				}
 
@@ -73,7 +73,7 @@ func getClauseFrom(primarySchema *schema.Schema, table string, fieldsByTableJoin
 				},
 			})
 		} else {
-			return clause.From{}, fmt.Errorf("failed to found schema for '%s'", tableJoin)
+			return clause.From{}, fmt.Errorf("clause: failed to found schema for '%s'", tableJoin)
 		}
 	}
 
@@ -119,7 +119,7 @@ func getJoins(db *gorm.DB, tableJoins []string, queryBuilder QueryBuilder, prelo
 			for _, tb := range tbSplit {
 				curBuilder, ok := preloadBuilders[tb]
 				if !ok {
-					return nil, fmt.Errorf("failed to found the preloadBuilder for '%s'", tableJoin)
+					return nil, fmt.Errorf("clause: failed to found the preloadBuilder for '%s'", tableJoin)
 				}
 
 				if joined := tableJoineds[tb]; !joined {
@@ -141,7 +141,7 @@ func getJoins(db *gorm.DB, tableJoins []string, queryBuilder QueryBuilder, prelo
 				tableJoineds[tableJoin] = true
 			}
 		} else {
-			return nil, fmt.Errorf("failed to found the preloadBuilder for '%s'", tableJoin)
+			return nil, fmt.Errorf("clause: failed to found the preloadBuilder for '%s'", tableJoin)
 		}
 	}
 
