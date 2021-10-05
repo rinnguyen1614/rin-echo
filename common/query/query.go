@@ -272,8 +272,12 @@ func setCondition(db *gorm.DB, queryBuilder QueryBuilder) error {
 		}
 	}
 
-	for k, v := range valueMaps {
-		queryBuilder.SetCondition(k, v)
+	if len(valueMaps) != 0 {
+		for k, v := range valueMaps {
+			queryBuilder.SetCondition(k, v)
+		}
+	} else {
+		queryBuilder.SetCondition("1 = 0")
 	}
 
 	return nil

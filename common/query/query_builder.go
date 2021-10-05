@@ -178,6 +178,26 @@ func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 		tx = db
 	)
 
+	for pQ, pBuilder := range queryBuilder.Preloads() {
+		if sels := pBuilder.Select(); len(sels) != 0 {
+			refs := queryBuilder.Schema().Relationships.Relations[pQ].References
+			for _, ref := range refs {
+				if ref.OwnPrimaryKey {
+					pBuilder.SetSelect(ref.ForeignKey.DBName)
+					queryBuilder.SetSelect(ref.PrimaryKey.DBName)
+				} else {
+					pBuilder.SetSelect(ref.PrimaryKey.DBName)
+					queryBuilder.SetSelect(ref.ForeignKey.DBName)
+				}
+			}
+		}
+
+		tx = tx.Preload(pQ, func(db *gorm.DB) *gorm.DB {
+			//if the select of preload doesn't exist foreign key, we should add the field that is foreign key in this case.
+			return buildQuery(db, pBuilder)
+		})
+	}
+
 	for cQ, cArgs := range queryBuilder.Conditions() {
 		tx = tx.Where(cQ, cArgs...)
 	}
@@ -192,24 +212,6 @@ func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 
 	if limit, offset := queryBuilder.Pagination(); offset != 0 && limit != 0 {
 		tx = tx.Offset(offset).Limit(limit)
-	}
-
-	for pQ, pBuilder := range queryBuilder.Preloads() {
-		tx = tx.Preload(pQ, func(db *gorm.DB) *gorm.DB {
-			//if the select of preload doesn't exist foreign key, we should add the field that is foreign key in this case.
-			if sels := pBuilder.Select(); len(sels) != 0 {
-				refs := tx.Statement.Schema.Relationships.Relations[pQ].References
-				for _, ref := range refs {
-					if ref.OwnPrimaryKey {
-						pBuilder.SetSelect(ref.ForeignKey.DBName)
-					} else {
-						pBuilder.SetSelect(ref.PrimaryKey.DBName)
-					}
-				}
-			}
-
-			return buildQuery(db, pBuilder)
-		})
 	}
 
 	return tx
