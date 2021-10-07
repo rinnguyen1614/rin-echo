@@ -37,6 +37,7 @@ func (f Filter) Tokens() []Token {
 }
 
 func (f Filter) BuildQuery(queryBuilder QueryBuilder, modelRes interface{}) (*gorm.DB, bool, map[string]string, error) {
+
 	var (
 		tx            = queryBuilder.DB()
 		primarySchema = queryBuilder.Schema()
@@ -58,6 +59,10 @@ func (f Filter) BuildQuery(queryBuilder QueryBuilder, modelRes interface{}) (*go
 		iter                int
 	)
 
+	if nToken == 0 {
+		return tx, false, nil, nil
+	}
+
 	primaryFields, _, err := utils.GetFieldsByJsonTag(modelRes)
 	if err != nil {
 		return nil, false, nil, err
@@ -78,7 +83,7 @@ func (f Filter) BuildQuery(queryBuilder QueryBuilder, modelRes interface{}) (*go
 			if token.Kind == LOGICAL_OPERATOR {
 				dbOp, err = Operator(token.Value.(string)).DbOperator()
 				if err != nil {
-
+					return nil, false, nil, err
 				}
 
 				if Operator(token.Value.(string)) == NotOperator {
@@ -169,8 +174,8 @@ func (f Filter) BuildQuery(queryBuilder QueryBuilder, modelRes interface{}) (*go
 	if err != nil {
 		return nil, false, nil, err
 	}
-
-	return tx.Clauses(clauseFrom).Where(sqlBuilder.String(), valueArgs), true, fieldNameByNames, nil
+	sql := sqlBuilder.String()
+	return tx.Clauses(clauseFrom).Where(sql, valueArgs), true, fieldNameByNames, nil
 }
 
 type Expression struct {

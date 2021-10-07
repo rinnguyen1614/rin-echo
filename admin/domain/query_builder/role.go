@@ -27,10 +27,10 @@ func (q *RoleQueryBuilder) WhereID(id uint) {
 	q.SetCondition("id", id)
 }
 
-func (q *RoleQueryBuilder) WhereIDIn(id uint) {
-	q.SetCondition(fmt.Sprintf("%v %v ?", "id", "IN"), id)
+func (q *RoleQueryBuilder) WhereIDsIn(ids []uint) {
+	q.SetCondition(fmt.Sprintf("%v %v ?", "id", "IN"), ids)
 }
 
-func (q *RoleQueryBuilder) WhereIDNotIn(id uint) {
-	q.SetCondition(fmt.Sprintf("%v %v ?", "id", "NOT IN"), id)
+func (q *RoleQueryBuilder) WhereIDsNotIn(ids []uint) {
+	q.SetCondition(fmt.Sprintf("%v %v ?", "id", "NOT IN"), ids)
 }

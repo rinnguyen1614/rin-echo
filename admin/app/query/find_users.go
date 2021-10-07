@@ -7,6 +7,9 @@ import (
 	"rin-echo/common/echo/models"
 	query "rin-echo/common/query"
 	iuow "rin-echo/common/uow/interfaces"
+	"rin-echo/common/utils"
+
+	"github.com/jinzhu/copier"
 )
 
 type FindUsersHandler struct {
@@ -27,10 +30,11 @@ func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.Query
 	)
 
 	var (
-		queryBuilder    = querybuilder.NewUserQueryBuilder(h.uow.DB())
+		dbContext       = h.uow.DB().WithContext(c.RequestContext())
+		queryBuilder    = querybuilder.NewUserQueryBuilder(dbContext)
 		preloadBuilders = map[string]query.QueryBuilder{
-			"UserRoles": querybuilder.NewUserRoleQueryBuilder(h.uow.DB()),
-			"Role":      querybuilder.NewRoleQueryBuilder(h.uow.DB()),
+			"UserRoles": querybuilder.NewUserRoleQueryBuilder(dbContext),
+			"Role":      querybuilder.NewRoleQueryBuilder(dbContext),
 		}
 	)
 
@@ -40,10 +44,20 @@ func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.Query
 		return nil, err
 	}
 
-	err = queryBuilder.WithContext(c.RequestContext()).Find(&users)
+	err = queryBuilder.Find(&users)
 	if err != nil {
 		return nil, err
 	}
 
-	return models.NewQueryResult(newUsers(users), 0, q.Paging().Limit, q.Paging().Offset), nil
+	prune, err := utils.NewSliceOfStructsByTag(User{}, q.FlatSelect(), "json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = copier.CopyWithOption(prune, users, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		return nil, err
+	}
+
+	return models.NewQueryResult(prune, queryBuilder.Count(), q.Paging().Limit, q.Paging().Offset), nil
 }

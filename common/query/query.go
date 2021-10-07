@@ -30,8 +30,15 @@ type Interface interface {
 }
 
 type Query struct {
-	paging   Paging
-	sort     Sort
+	// all select fields
+	allSelect Select
+	// all sort fields
+	allSort Sort
+
+	paging Paging
+	// sort fields by query
+	sort Sort
+	// select fields by query
 	sel      Select
 	filter   Filter
 	preloads map[string]Query
@@ -40,10 +47,12 @@ type Query struct {
 
 func newQuery() Query {
 	return Query{
-		sel:      newSelect(),
-		sort:     newSort(),
-		filter:   newFilter(),
-		preloads: make(map[string]Query),
+		allSelect: newSelect(),
+		allSort:   newSort(),
+		sel:       newSelect(),
+		sort:      newSort(),
+		filter:    newFilter(),
+		preloads:  make(map[string]Query),
 	}
 }
 
@@ -63,6 +72,14 @@ func (q *Query) Filter() Filter {
 	return q.filter
 }
 
+func (q *Query) FlatSelect() []string {
+	return q.allSelect.Fields
+}
+
+func (q *Query) FlatSort() []SortField {
+	return q.allSort.Fields
+}
+
 func Parse(sorts, selects, filters string, page, pageSize int, config Config) (*Query, error) {
 	q := newQuery()
 
@@ -73,7 +90,9 @@ func Parse(sorts, selects, filters string, page, pageSize int, config Config) (*
 		return nil, err
 	}
 
-	for _, sField := range sel.Fields {
+	q.allSelect = sel
+
+	for _, sField := range q.allSelect.Fields {
 		iterFunc(&q, sField, sField, func(q *Query, fieldLastDot string) {
 			q.sel.Fields = append(q.sel.Fields, fieldLastDot)
 		})
@@ -84,7 +103,9 @@ func Parse(sorts, selects, filters string, page, pageSize int, config Config) (*
 		return nil, err
 	}
 
-	for sName, sField := range sort.FieldsByName {
+	q.allSort = sort
+
+	for sName, sField := range q.allSort.FieldsByName {
 		iterFunc(&q, sName, sField, func(q *Query, fieldLastDot string) {
 			sortField := SortField{
 				Field: fieldLastDot,

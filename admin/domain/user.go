@@ -9,6 +9,8 @@ import (
 
 type User struct {
 	domain.FullAuditedEntity
+
+	UUID     domain.UUID
 	Username string `gorm:"unique;<-:create"`
 	Password string
 	FullName string

@@ -6,22 +6,20 @@ import (
 )
 
 type Model struct {
-	ID   uint        `json:"id,omitempty"`
-	UUID domain.UUID `json:"uuid,omitempty"`
+	ID uint `json:"id,omitempty"`
 }
 
 func NewModelWithEntity(e *domain.Entity) Model {
 	return Model{
-		ID:   e.ID,
-		UUID: e.UUID,
+		ID: e.ID,
 	}
 }
 
 type CreationModel struct {
 	Model
 
-	CreatedAt     time.Time `json:"create_at,omitempty"`
-	CreatorUserID *uint     `json:"creator_user_id,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+	CreatorUserID *uint     `json:"creator_user_id"`
 }
 
 func NewCreationModelWithEntity(e *domain.CreationEntity) CreationModel {
@@ -35,8 +33,8 @@ func NewCreationModelWithEntity(e *domain.CreationEntity) CreationModel {
 type CreationAuditedModel struct {
 	CreationModel
 
-	ModifiedAt     time.Time `json:"modified_at,omitempty"`
-	ModifierUserID *uint     `json:"modifier_user_id,omitempty"`
+	ModifiedAt     time.Time `json:"modified_at"`
+	ModifierUserID *uint     `json:"modifier_user_id"`
 }
 
 func NewCreationAuditedModelWithEntity(e *domain.CreationAuditedEntity) CreationAuditedModel {
@@ -50,8 +48,8 @@ func NewCreationAuditedModelWithEntity(e *domain.CreationAuditedEntity) Creation
 type FullAuditedEntityModel struct {
 	CreationAuditedModel
 
-	DeletedAt     *time.Time `json:"delete_at,omitempty"`
-	DeleterUserID *uint      `json:"deleter_user_id,omitempty"`
+	DeletedAt     *time.Time `json:"deleted_at"`
+	DeleterUserID *uint      `json:"deleter_user_id"`
 }
 
 func NewFullAuditedModelWithEntity(e *domain.FullAuditedEntity) FullAuditedEntityModel {
