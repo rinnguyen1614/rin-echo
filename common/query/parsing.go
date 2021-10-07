@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -204,7 +205,9 @@ func readUntil(reader *strings.Reader, includeWhitespace, breakWhitespace bool, 
 		condition bool = false
 	)
 
-	reader.UnreadRune()
+	// Unread rune with Seek instead
+	// Because the reader.UnreadRune is useful the previous step which is the reader.ReadRune
+	reader.Seek(-1, io.SeekCurrent)
 
 	for reader.Len() > 0 {
 		character, _, _ = reader.ReadRune()
