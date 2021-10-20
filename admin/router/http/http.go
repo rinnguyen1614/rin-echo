@@ -26,6 +26,8 @@ func (h *HttpServer) RegisterRouter(g *echo.Group) {
 	test(g)
 
 	h.RegisterAuthRouter(g)
+	h.RegisterResourceRouter(g)
+	h.RegisterMenuRouter(g)
 	h.RegisterUserRouter(g)
 }
 

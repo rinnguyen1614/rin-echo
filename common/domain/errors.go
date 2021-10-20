@@ -5,6 +5,8 @@ import (
 	"rin-echo/common/log"
 )
 
+var DefaultLogLevel = log.WarnLevel
+
 type EntityNotFoundError struct {
 	EntityError
 }
@@ -14,8 +16,6 @@ type EntityError struct {
 
 	*common.RinError
 }
-
-var DefaultLogLevel = log.WarnLevel
 
 func NewEntityError(id, message string) *EntityError {
 	return &EntityError{

@@ -11,7 +11,18 @@ type Application struct {
 }
 
 type Commands struct {
-	Login command.LoginHandler
+	Login    command.LoginHandler
+	Register command.RegisterHandler
+
+	// resource
+	CreateResource command.CreateResourceHandler
+
+	// menu
+	CreateMenu command.CreateMenuHandler
+
+	// role
+	CreateRole command.CreateRoleHandler
+
 	// user
 	CreateUser command.CreateUserHandler
 }

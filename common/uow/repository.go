@@ -1,10 +1,10 @@
 package uow
 
 import (
-	"errors"
 	"reflect"
-	"rin-echo/common"
 	iuow "rin-echo/common/uow/interfaces"
+
+	gormx "rin-echo/common/gorm"
 
 	"gorm.io/gorm"
 )
@@ -35,20 +35,16 @@ func NewRepository(store *gorm.DB, model interface{}) iuow.Repository {
 	return &re
 }
 
-func (r *Repository) WithContext(ctx common.Context) *gorm.DB {
-	return r.store.WithContext(ctx)
+func (r *Repository) Model() *gorm.DB {
+	return r.store.Model(r.model)
 }
 
-func (r *Repository) Model(ctx common.Context) *gorm.DB {
-	return r.WithContext(ctx).Model(r.model)
+func (r *Repository) Transaction(fc func(tx *gorm.DB) error) error {
+	return transaction(r.store, fc)
 }
 
-func (r *Repository) Transaction(ctx common.Context, fc func(tx *gorm.DB) error) error {
-	return transaction(r.WithContext(ctx), fc)
-}
-
-func (r Repository) Query(ctx common.Context, conds map[string][]interface{}, preloads map[string][]interface{}) *gorm.DB {
-	tx := r.Model(ctx)
+func (r Repository) Query(conds map[string][]interface{}, preloads map[string][]interface{}) *gorm.DB {
+	tx := r.Model()
 
 	for cQ, cArgs := range conds {
 		tx = tx.Where(cQ, cArgs...)
@@ -61,53 +57,61 @@ func (r Repository) Query(ctx common.Context, conds map[string][]interface{}, pr
 	return tx
 }
 
-func (r Repository) Create(ctx common.Context, v interface{}) error {
+func (r Repository) Create(v interface{}) error {
 	return r.store.Create(v).Error
 }
 
 // CreateInBatches insert the value in batches into database
-func (r Repository) CreateInBatches(ctx common.Context, v interface{}, batchSize int) error {
-	return r.WithContext(ctx).CreateInBatches(v, batchSize).Error
+func (r Repository) CreateInBatches(v interface{}, batchSize int) error {
+	return r.store.CreateInBatches(v, batchSize).Error
 }
 
-func (r Repository) Update(ctx common.Context, conds map[string][]interface{}, values map[string]interface{}) error {
-	return r.update(ctx, conds, values)
-}
-
-// If you want to skip Hooks methods and don’t track the update time when updating
-func (r Repository) UpdateWithoutHooks(ctx common.Context, conds map[string][]interface{}, values map[string]interface{}) error {
-	return r.updateWithoutHooks(ctx, conds, values)
-}
-
-func (r Repository) UpdateWithPrimaryKey(ctx common.Context, id uint, values map[string]interface{}) error {
-	return r.Update(ctx, map[string][]interface{}{"id = ?": {id}}, values)
-}
-
-func (r Repository) UpdateWithoutHooksWithPrimaryKey(ctx common.Context, id uint, values map[string]interface{}) error {
-	return r.UpdateWithoutHooks(ctx, map[string][]interface{}{"id = ?": {id}}, values)
-}
-
-func (r Repository) update(ctx common.Context, conds map[string][]interface{}, values map[string]interface{}) error {
-	return r.Model(ctx).Where(conds).Updates(values).Error
+func (r Repository) Update(conds map[string][]interface{}, values map[string]interface{}) error {
+	return r.update(conds, values)
 }
 
 // If you want to skip Hooks methods and don’t track the update time when updating
-func (r Repository) updateWithoutHooks(ctx common.Context, conds map[string][]interface{}, values map[string]interface{}) error {
-	return r.Model(ctx).Where(conds).UpdateColumns(values).Error
+func (r Repository) UpdateWithoutHooks(conds map[string][]interface{}, values map[string]interface{}) error {
+	return r.updateWithoutHooks(conds, values)
 }
 
-func (r Repository) Find(ctx common.Context, dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
-	if err := r.Query(ctx, conds, preloads).Find(dest).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
-
-		dest = reflect.Zero(reflect.TypeOf(dest))
-	}
-
-	return nil
+func (r Repository) UpdateWithPrimaryKey(id uint, values map[string]interface{}) error {
+	return r.Update(map[string][]interface{}{"id = ?": {id}}, values)
 }
 
-func (r Repository) First(ctx common.Context, dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
-	return r.Query(ctx, conds, preloads).First(dest).Error
+func (r Repository) UpdateWithoutHooksWithPrimaryKey(id uint, values map[string]interface{}) error {
+	return r.UpdateWithoutHooks(map[string][]interface{}{"id = ?": {id}}, values)
+}
+
+func (r Repository) update(conds map[string][]interface{}, values map[string]interface{}) error {
+	return r.Model().Where(conds).Updates(values).Error
+}
+
+// If you want to skip Hooks methods and don’t track the update time when updating
+func (r Repository) updateWithoutHooks(conds map[string][]interface{}, values map[string]interface{}) error {
+	return r.Model().Where(conds).UpdateColumns(values).Error
+}
+
+func (r Repository) Find(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
+	return gormx.FindWrapError(r.Query(conds, preloads), dest)
+}
+
+func (r Repository) Get(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
+	tx := r.Query(conds, preloads)
+	return tx.Find(&dest).Error
+}
+
+func (r Repository) First(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
+	return r.Query(conds, preloads).First(dest).Error
+}
+
+func (r Repository) Count(conds map[string][]interface{}) int64 {
+	var count int64
+	r.Query(conds, nil).Count(&count)
+	return count
+}
+
+func (r Repository) Contains(conds map[string][]interface{}) bool {
+	count := r.Count(conds)
+	return count > 0
 }

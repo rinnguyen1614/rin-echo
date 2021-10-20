@@ -1,6 +1,8 @@
 package gorm
 
 import (
+	"errors"
+	"reflect"
 	"rin-echo/common"
 
 	"gorm.io/gorm"
@@ -18,4 +20,16 @@ func AuthSession(db *gorm.DB) (common.Session, error) {
 	}
 
 	return ctx.Session, nil
+}
+
+func FindWrapError(db *gorm.DB, dest interface{}) error {
+	if err := db.Find(dest).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		dest = reflect.Zero(reflect.TypeOf(dest))
+	}
+
+	return nil
 }

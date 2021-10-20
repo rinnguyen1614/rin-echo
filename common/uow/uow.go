@@ -4,31 +4,35 @@ import (
 	"fmt"
 	"rin-echo/common"
 	iuow "rin-echo/common/uow/interfaces"
-	"sync"
 
 	"gorm.io/gorm"
 )
 
 type (
-	UnitOfWork struct {
-		store        *gorm.DB
-		repositories map[string]iuow.Repository
-		lock         sync.RWMutex
+	FuncNewInstance func(*gorm.DB) iuow.UnitOfWork
+	UnitOfWork      struct {
+		store           *gorm.DB
+		funcNewInstance FuncNewInstance
 	}
 )
 
 func NewUnitOfWork(store *gorm.DB) iuow.UnitOfWork {
 	return &UnitOfWork{
-		store: store,
+		store:           store,
+		funcNewInstance: NewUnitOfWork,
 	}
+}
+
+func NewUnitOfWorkByFunc(store *gorm.DB, funcNewInstance FuncNewInstance) iuow.UnitOfWork {
+	return funcNewInstance(store)
 }
 
 func (uow *UnitOfWork) DB() *gorm.DB {
 	return uow.store
 }
 
-func (uow *UnitOfWork) WithContext(ctx common.Context) *gorm.DB {
-	return uow.DB().WithContext(ctx)
+func (uow UnitOfWork) WithContext(ctx common.Context) iuow.UnitOfWork {
+	return uow.funcNewInstance(uow.store.WithContext(ctx))
 }
 
 func (uow *UnitOfWork) Transaction(fc func(*gorm.DB) error) (err error) {
@@ -43,7 +47,8 @@ func (uow *UnitOfWork) TransactionUnitOfWork(fc func(iuow.UnitOfWork) error) (er
 		}
 		err = finishTransaction(err, tx)
 	}()
-	err = fc(NewUnitOfWork(tx))
+
+	err = fc(uow.funcNewInstance(tx))
 	return
 }
 
@@ -53,22 +58,6 @@ func (uow *UnitOfWork) Rollback(tx *gorm.DB) (err error) {
 
 func (uow *UnitOfWork) RollbackUnitOfWork(ux iuow.UnitOfWork) (err error) {
 	return ux.DB().Rollback().Error
-}
-
-func (uow *UnitOfWork) GetRepository(key string) iuow.Repository {
-	uow.lock.RLock()
-	defer uow.lock.RUnlock()
-	return uow.repositories[key]
-}
-
-func (uow *UnitOfWork) SetRepository(key string, val iuow.Repository) {
-	uow.lock.Lock()
-	defer uow.lock.Unlock()
-
-	if uow.repositories == nil {
-		uow.repositories = make(map[string]iuow.Repository)
-	}
-	uow.repositories[key] = val
 }
 
 func transaction(db *gorm.DB, fc func(*gorm.DB) error) (err error) {

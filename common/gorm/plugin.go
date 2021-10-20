@@ -42,15 +42,16 @@ func beforeCreate(db *gorm.DB) {
 				setFieldValue(field, db.Statement.ReflectValue, ss.UserID())
 			}
 		}
-		if field, ok := db.Statement.Schema.FieldsByName["UUID"]; ok {
+		if field, ok := db.Statement.Schema.FieldsByName["Version"]; ok {
 			setFieldValue(field, db.Statement.ReflectValue, utils.MustUUID())
 		}
-		nowTime := time.Now()
+
+		now := time.Now()
 		if field, ok := db.Statement.Schema.FieldsByName["CreatedAt"]; ok {
-			setFieldValue(field, db.Statement.ReflectValue, nowTime)
+			setFieldValue(field, db.Statement.ReflectValue, now)
 		}
 		if field, ok := db.Statement.Schema.FieldsByName["ModifiedAt"]; ok {
-			setFieldValue(field, db.Statement.ReflectValue, nowTime)
+			setFieldValue(field, db.Statement.ReflectValue, now)
 		}
 	}
 
@@ -65,8 +66,10 @@ func beforeUpdate(db *gorm.DB) {
 				db.Statement.SetColumn(field.Name, ss.UserID())
 			}
 		}
+
+		now := time.Now()
 		if field, ok := db.Statement.Schema.FieldsByName["ModifiedAt"]; ok {
-			db.Statement.SetColumn(field.Name, time.Now())
+			db.Statement.SetColumn(field.Name, now)
 		}
 	}
 

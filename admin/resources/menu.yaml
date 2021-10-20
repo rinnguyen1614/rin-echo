@@ -1,0 +1,124 @@
+- name: Administrator Management
+  slug: administrator
+  path: /administrator
+  title: Administrator Management
+  type: H
+  icon: ""
+  children:
+    - name: Menu Management
+      slug: menu
+      title: Menu Management
+      path: /administrator/menus
+      type: H
+      children:
+        - slug: menu:add
+          name: Add Role
+          type: A
+          resources:
+            - menu:add
+            - resource:get_tree
+        - slug: edit
+          name: Edit Role
+          type: A
+          resources:
+            - menu:update
+            - menu:get
+            - resource:get_tree
+        - slug: delete
+          name: Delete Role
+          type: A
+          resources:
+            - menu:delete
+        - slug: list
+          name: List Role
+          type: A
+          resources:
+            - menu:get_list
+        - slug: menu:disable
+          name: Disable Role
+          type: A
+          resources:
+            - menu:disable
+        - slug: menu:enable
+          name: Enable Role
+          type: A
+          resources:
+            - menu:enable
+    - name: Role Management
+      slug: role
+      type: H
+      title: Role Management
+      path: /administrator/roles
+      children:
+        - slug: role:add
+          name: Add Role
+          type: A
+          resources:
+            - role:add
+            - menu:get_tree
+        - slug: edit
+          name: Edit Role
+          type: A
+          resources:
+            - role:update
+            - role:get
+            - menu:get_tree
+        - slug: delete
+          name: Delete Role
+          type: A
+          resources:
+            - role:delete
+        - slug: list
+          name: List Role
+          type: A
+          resources:
+            - role:get_list
+        - slug: role:disable
+          name: Disable Role
+          type: A
+          resources:
+            - role:disable
+        - slug: role:enable
+          name: Enable Role
+          type: A
+          resources:
+            - role:enable
+    - name: User Management
+      slug: user
+      type: H
+      title: User Management
+      path: /administrator/users
+      children:
+        - slug: user:add
+          name: Add User
+          type: A
+          resources:
+            - user:add
+            - role:select
+        - slug: edit
+          name: Edit User
+          type: A
+          resources:
+            - user:get
+            - user:update
+            - role:select
+        - slug: delete
+          name: Delete User
+          type: A
+          resources:
+            - user:delete
+        - slug: list
+          name: List User
+          type: A
+          resources:
+            - user:get_list
+        - slug: disable
+          name: Disable User
+          type: A
+          resources:
+            - user:disable
+        - slug: enable
+          name: Enable User
+          type: A
+          resources:
+            - user:enable

@@ -1,9 +1,10 @@
 package query
 
 import (
-	"errors"
 	"reflect"
 	"rin-echo/common"
+
+	gormx "rin-echo/common/gorm"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -218,16 +219,7 @@ func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 }
 
 func (q *queryBuilder) Find(dest interface{}) error {
-	query := q.Query()
-	if err := query.Find(dest).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
-
-		dest = reflect.Zero(reflect.TypeOf(dest))
-	}
-
-	return nil
+	return gormx.FindWrapError(q.Query(), dest)
 }
 
 func (q *queryBuilder) First(dest interface{}) error {

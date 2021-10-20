@@ -1,7 +1,7 @@
 package query
 
 import (
-	"rin-echo/admin/adapters"
+	"rin-echo/admin/adapters/repository"
 	"rin-echo/admin/inject"
 	iuow "rin-echo/common/uow/interfaces"
 
@@ -9,8 +9,7 @@ import (
 )
 
 type TokenUserHandler struct {
-	uow  iuow.UnitOfWork
-	repo *adapters.UserRepository
+	uow iuow.UnitOfWork
 }
 
 func NewTokenUserHandler(uow iuow.UnitOfWork) TokenUserHandler {
@@ -18,11 +17,16 @@ func NewTokenUserHandler(uow iuow.UnitOfWork) TokenUserHandler {
 		panic("NewTokenUserHandler requires uow")
 	}
 
-	return TokenUserHandler{uow, uow.GetRepository("UserRepository").(*adapters.UserRepository)}
+	return TokenUserHandler{uow}
 }
 
 func (h TokenUserHandler) Handle(ctx echox.Context, username string) (interface{}, error) {
-	u, err := h.repo.FindByUsernameOrEmail(ctx.RequestContext(), username, nil)
+	var (
+		uow      = h.uow.WithContext(ctx.RequestContext())
+		repoUser = repository.NewUserRepository(uow.DB())
+	)
+
+	u, err := repoUser.FindByUsernameOrEmail(username, nil)
 	if err != nil {
 		return nil, err
 	}

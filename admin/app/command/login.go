@@ -1,7 +1,7 @@
 package command
 
 import (
-	"rin-echo/admin/adapters"
+	"rin-echo/admin/adapters/repository"
 	"rin-echo/admin/errors"
 	"rin-echo/admin/inject"
 	"rin-echo/common/cqrs"
@@ -17,8 +17,7 @@ type (
 	}
 
 	LoginHandler struct {
-		uow  iuow.UnitOfWork
-		repo *adapters.UserRepository
+		uow iuow.UnitOfWork
 	}
 )
 
@@ -27,7 +26,7 @@ func NewLoginHandler(uow iuow.UnitOfWork) LoginHandler {
 		panic("newloginhandler requires uow")
 	}
 
-	return LoginHandler{uow, uow.GetRepository("UserRepository").(*adapters.UserRepository)}
+	return LoginHandler{uow}
 }
 
 func (h LoginHandler) Handle(ctx echox.Context, cmd Login) (err error) {
@@ -35,7 +34,12 @@ func (h LoginHandler) Handle(ctx echox.Context, cmd Login) (err error) {
 		cqrs.LogCommandExecution(inject.GetLogger(), utils.GetTypeName(h), cmd, err)
 	}()
 
-	u, err := h.repo.FindByUsernameOrEmail(ctx.RequestContext(), cmd.Username, nil)
+	var (
+		uow      = h.uow.WithContext(ctx.RequestContext())
+		repoUser = repository.NewUserRepository(uow.DB())
+	)
+
+	u, err := repoUser.FindByUsernameOrEmail(cmd.Username, nil)
 	if err != nil {
 		return err
 	}

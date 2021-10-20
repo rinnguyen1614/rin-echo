@@ -33,13 +33,16 @@ type (
 
 		MaxPageSize int `json:"max_page_size,omitempty" yaml:"max_page_size,omitempty" ini:"max_page_size,omitempty"`
 		MinPageSize int `json:"min_page_size,omitempty" yaml:"min_page_size,omitempty" ini:"min_page_size,omitempty"`
+
+		Resources map[string]string `json:"resources,omitempty" yaml:"resources,omitempty" ini:"resources,omitempty"`
 	}
 
 	Casbin struct {
-		Enable    bool   `json:"enable,omitempty" yaml:"enable,omitempty" ini:"enable,omitempty" `
-		ModelPath string `json:"model_path,omitempty" yaml:"model_path,omitempty" ini:"model_path,omitempty" `
-		FilePath  string `json:"file_path,omitempty" yaml:"file_path,omitempty" ini:"file_path,omitempty" `
-		AutoLoad  bool   `json:"auto_load,omitempty" yaml:"auto_load,omitempty" ini:"auto_load,omitempty" `
+		Enable           bool   `json:"enable,omitempty" yaml:"enable,omitempty" ini:"enable,omitempty" `
+		ModelPath        string `json:"model_path,omitempty" yaml:"model_path,omitempty" ini:"model_path,omitempty" `
+		FilePath         string `json:"file_path,omitempty" yaml:"file_path,omitempty" ini:"file_path,omitempty" `
+		AutoLoad         bool   `json:"auto_load,omitempty" yaml:"auto_load,omitempty" ini:"auto_load,omitempty" `
+		AutoLoadInternal uint   `json:"auto_load_internal,omitempty" yaml:"auto_load_internal,omitempty" ini:"auto_load_internal,omitempty" `
 	}
 
 	Database struct {

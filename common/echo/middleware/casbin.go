@@ -15,7 +15,7 @@ type (
 	CasbinConfig struct {
 		Skipper             middleware.Skipper
 		SubObjectActionFunc SubObjectActionFunc
-		Enforcer            *casbin.Enforcer
+		Enforcer            *casbin.SyncedEnforcer
 	}
 
 	SubObjectActionFunc func(c echo.Context) (sub, obj, act interface{}, err error)
@@ -28,7 +28,7 @@ var (
 	}
 )
 
-func Casbin(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
+func Casbin(enforcer *casbin.SyncedEnforcer) echo.MiddlewareFunc {
 	c := DefaultCasbinConfig
 	c.Enforcer = enforcer
 	return CasbinWithConfig(c)
@@ -67,7 +67,7 @@ func casbinDefaultSubObjectActionFunc(c echo.Context) (sub, obj, act interface{}
 	cc := echox.MustContext(c)
 	session, err := cc.Session()
 	if err != nil {
-		return nil, nil, nil, auth.NewAuthenticationErrorWithInner(err, "not_found_current_session", "Can get current session to enforce")
+		return nil, nil, nil, auth.NewAuthenticationErrorWithInner(err, "current_session_not_found", "Can get current session to enforce")
 	}
 
 	sub = utils.ToString(session.UserID())

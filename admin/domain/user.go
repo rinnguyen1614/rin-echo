@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"errors"
+	"rin-echo/admin/errors"
 	"rin-echo/common/domain"
 
 	"golang.org/x/crypto/bcrypt"
@@ -55,7 +55,7 @@ func (u *User) CheckPassword(pwd string) bool {
 
 func HashPassword(pwd string) (string, error) {
 	if len(pwd) == 0 {
-		return "", errors.New("password_not_empty")
+		return "", errors.ERR_PASSWORD_REQUIRED
 	}
 
 	h, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)

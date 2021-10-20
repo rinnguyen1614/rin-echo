@@ -8,8 +8,6 @@ import (
 type UUID = utils.UUID
 
 type (
-	IEntity interface {
-	}
 	Entity struct {
 		ID uint
 		// UUID utils.UUID `gorm:"unique,type:uuid;default:uuid_generate_v4();autoincrement"`

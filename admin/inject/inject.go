@@ -26,7 +26,7 @@ type Service struct {
 	logger   *zap.Logger
 	auther   *jwt.JWT
 	echo     *echo.Echo
-	enforcer *casbin.Enforcer
+	enforcer *casbin.SyncedEnforcer
 	i18n     *i18n.Bundle
 	query    rest_query.RestQuery
 }
