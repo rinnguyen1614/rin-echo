@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
 	"strings"
 
@@ -166,14 +167,14 @@ func (q *Query) AddError(err error) error {
 	return q.Error
 }
 
-func (q Query) Bind(queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
+func (q Query) Bind(db *gorm.DB, queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, modelRes interface{}) error {
 
 	err := q.bindSelectAndOrder(queryBuilder, preloadBuilders, modelRes)
 	if err != nil {
 		return err
 	}
 
-	err = q.bindCondition(queryBuilder, modelRes)
+	err = q.bindCondition(db, queryBuilder, modelRes)
 	if err != nil {
 		return err
 	}
@@ -181,7 +182,7 @@ func (q Query) Bind(queryBuilder QueryBuilder, preloadBuilders map[string]QueryB
 	return nil
 }
 
-func (q Query) bindSelectAndOrder(queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder, modelRes interface{}) error {
+func (q Query) bindSelectAndOrder(queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, modelRes interface{}) error {
 	fields, _, err := utils.GetFieldsByJsonTag(modelRes)
 	if err != nil {
 		return err
@@ -214,21 +215,29 @@ func (q Query) bindSelectAndOrder(queryBuilder QueryBuilder, preloadBuilders map
 	return nil
 }
 
-func (q Query) bindCondition(queryBuilder QueryBuilder, modelRes interface{}) error {
+func (q Query) bindCondition(db *gorm.DB, queryBuilder iuow.QueryBuilder, modelRes interface{}) error {
 	var (
-		tx     *gorm.DB
-		filter = q.Filter()
+		tx            = db
+		stmt          = gorm.Statement{DB: db}
+		filter        = q.Filter()
+		primarySchema *schema.Schema
 	)
 
-	tx, hasCondition, fieldNames, err := filter.BuildQuery(queryBuilder, modelRes)
+	err := stmt.Parse(queryBuilder.Model())
+	if err != nil {
+		panic(err)
+	}
+	primarySchema = stmt.Schema
+
+	tx, hasCondition, fieldNames, err := filter.BuildQuery(db, primarySchema, modelRes)
 	if err != nil {
 		return err
 	}
 
 	if hasCondition {
-		var funcSetCondition func(*gorm.DB, QueryBuilder) error
+		var funcSetCondition func(*gorm.DB, iuow.QueryBuilder) error
 
-		funcSetCondition = func(tx *gorm.DB, qB QueryBuilder) error {
+		funcSetCondition = func(tx *gorm.DB, qB iuow.QueryBuilder) error {
 			err := setCondition(tx, qB)
 			if err != nil {
 				return err
@@ -254,15 +263,20 @@ func (q Query) bindCondition(queryBuilder QueryBuilder, modelRes interface{}) er
 	return nil
 }
 
-func setCondition(db *gorm.DB, queryBuilder QueryBuilder) error {
+func setCondition(db *gorm.DB, queryBuilder iuow.QueryBuilder) error {
 	var (
 		tx          = db
+		stmt        = gorm.Statement{DB: db}
 		columns     []string
 		columnTypes []reflect.Type
 		modelSchema *schema.Schema
 	)
 
-	modelSchema = queryBuilder.Schema()
+	err := stmt.Parse(queryBuilder.Model())
+	if err != nil {
+		panic(err)
+	}
+	modelSchema = stmt.Schema
 
 	for _, field := range modelSchema.PrimaryFieldDBNames {
 		col := modelSchema.Table + "." + field
@@ -276,7 +290,7 @@ func setCondition(db *gorm.DB, queryBuilder QueryBuilder) error {
 		rows      *sql.Rows
 	)
 
-	rows, err := tx.Distinct(columns).Rows()
+	rows, err = tx.Distinct(columns).Rows()
 	if err != nil {
 		return err
 	}

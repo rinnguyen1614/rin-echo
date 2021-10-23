@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 type Filter struct {
@@ -36,14 +37,13 @@ func (f Filter) Tokens() []Token {
 	return f.tokens
 }
 
-func (f Filter) BuildQuery(queryBuilder QueryBuilder, modelRes interface{}) (*gorm.DB, bool, map[string]string, error) {
+func (f Filter) BuildQuery(db *gorm.DB, primarySchema *schema.Schema, modelRes interface{}) (*gorm.DB, bool, map[string]string, error) {
 
 	var (
-		tx            = queryBuilder.DB()
-		primarySchema = queryBuilder.Schema()
-		primaryTable  = primarySchema.Table
-		argsCount     = make(map[string]int, 0)
-		nToken        = len(f.tokens)
+		tx           = db
+		primaryTable = primarySchema.Table
+		argsCount    = make(map[string]int, 0)
+		nToken       = len(f.tokens)
 		// key is a full association, value is a dotted string table.
 		// Ex: key = UserRoles.Role & value= user_roles.roles
 		tableJoinedByFullAssociation = make(map[string]string)

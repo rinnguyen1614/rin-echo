@@ -1,6 +1,7 @@
 package query
 
 import (
+	"rin-echo/admin/adapters/repository"
 	"rin-echo/admin/domain"
 	querybuilder "rin-echo/admin/domain/query_builder"
 	echox "rin-echo/common/echo"
@@ -24,27 +25,28 @@ func NewFindUsersHandler(uow iuow.UnitOfWork) FindUsersHandler {
 	return FindUsersHandler{uow}
 }
 
-func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.QueryResult, error) {
-	var (
-		users []*domain.User
-	)
+func (h FindUsersHandler) Handle(ctx echox.Context, q *query.Query) (*models.QueryResult, error) {
 
 	var (
-		dbContext       = h.uow.DB().WithContext(c.RequestContext())
-		queryBuilder    = querybuilder.NewUserQueryBuilder(dbContext)
-		preloadBuilders = map[string]query.QueryBuilder{
-			"UserRoles": querybuilder.NewUserRoleQueryBuilder(dbContext),
-			"Role":      querybuilder.NewRoleQueryBuilder(dbContext),
+		uow   = h.uow.WithContext(ctx.RequestContext())
+		repo  = repository.NewUserRepository(uow.DB())
+		users []*domain.User
+	)
+	var (
+		queryBuilder    = querybuilder.NewUserQueryBuilder()
+		preloadBuilders = map[string]iuow.QueryBuilder{
+			"UserRoles": querybuilder.NewUserRoleQueryBuilder(),
+			"Role":      querybuilder.NewRoleQueryBuilder(),
 		}
 	)
 
-	err := q.Bind(queryBuilder, preloadBuilders, &User{})
+	err := q.Bind(uow.DB(), queryBuilder, preloadBuilders, &User{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = queryBuilder.Find(&users)
+	err = repo.QueryBuilderFind(&users, queryBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -59,5 +61,5 @@ func (h FindUsersHandler) Handle(c echox.Context, q *query.Query) (*models.Query
 		return nil, err
 	}
 
-	return models.NewQueryResult(prune, queryBuilder.Count(), q.Paging().Limit, q.Paging().Offset), nil
+	return models.NewQueryResult(prune, repo.QueryBuilderCount(queryBuilder), q.Paging().Limit, q.Paging().Offset), nil
 }

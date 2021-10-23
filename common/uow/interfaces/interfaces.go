@@ -36,6 +36,8 @@ type (
 		*/
 		Query(conds map[string][]interface{}, preloads map[string][]interface{}) *gorm.DB
 
+		QueryBuilder(QueryBuilder) *gorm.DB
+
 		Create(v interface{}) error
 
 		CreateInBatches(v interface{}, batchSize int) error
@@ -57,6 +59,16 @@ type (
 		Count(conds map[string][]interface{}) int64
 
 		Contains(conds map[string][]interface{}) bool
+
+		QueryBuilderFind(dest interface{}, queryBuilder QueryBuilder) error
+
+		QueryBuilderGet(dest interface{}, queryBuilder QueryBuilder) error
+
+		QueryBuilderFirst(dest interface{}, queryBuilder QueryBuilder) error
+
+		QueryBuilderCount(queryBuilder QueryBuilder) int64
+
+		QueryBuilderContains(queryBuilder QueryBuilder) bool
 	}
 
 	RepositoryOfEntity interface {
@@ -68,5 +80,29 @@ type (
 		GetID(dest interface{}, ids []uint, preloads map[string][]interface{}) error
 
 		FirstID(dest interface{}, id uint, preloads map[string][]interface{}) error
+	}
+
+	QueryBuilder interface {
+		Model() interface{}
+
+		Select() []string
+
+		SetSelect(columns ...string)
+
+		Conditions() map[string][]interface{}
+
+		SetCondition(query string, args ...interface{})
+
+		Pagination() (limit, offset int)
+
+		SetPagination(limit, offset int)
+
+		Orders() []string
+
+		SetOrder(field, order string)
+
+		Preloads() map[string]QueryBuilder
+
+		SetPreload(tableName string, query QueryBuilder)
 	}
 )

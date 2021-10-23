@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	iuow "rin-echo/common/uow/interfaces"
 	"sort"
 	"strings"
 
@@ -102,7 +103,7 @@ func getEqExps(relation *schema.Relationship, table, tableJoin string) []clause.
 	return exprs
 }
 
-func getJoins(db *gorm.DB, tableJoins []string, queryBuilder QueryBuilder, preloadBuilders map[string]QueryBuilder) (*gorm.DB, error) {
+func getJoins(db *gorm.DB, tableJoins []string, queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder) (*gorm.DB, error) {
 	var (
 		tableJoineds = make(map[string]bool)
 		tx           = db

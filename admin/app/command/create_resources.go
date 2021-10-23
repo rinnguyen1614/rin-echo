@@ -81,7 +81,7 @@ func (h CreateResourcesHandler) Handle(ctx echox.Context, cmds CreateResources) 
 
 	if err = uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
 		for _, cmd := range cmds {
-			if err = CreateResources([]*CreateResource{cmd}).CreateRecursive(ux, parentsMap[cmd.ParentID]); err != nil {
+			if err = cmd.CreateRecursive(ux, parentsMap[cmd.ParentID]); err != nil {
 				return err
 			}
 		}

@@ -4,15 +4,15 @@ import (
 	"reflect"
 	iuow "rin-echo/common/uow/interfaces"
 
-	gormx "rin-echo/common/gorm"
-
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 type (
 	Repository struct {
-		model interface{}
-		store *gorm.DB
+		model  interface{}
+		store  *gorm.DB
+		schema *schema.Schema
 	}
 )
 
@@ -25,13 +25,22 @@ func NewRepository(store *gorm.DB, model interface{}) iuow.Repository {
 		panic("NewRepository requires model")
 	}
 
-	re := Repository{store: store}
+	var (
+		re  = Repository{store: store}
+		smt = gorm.Statement{DB: store}
+	)
+
+	err := smt.Parse(model)
+	if err != nil {
+		panic(err)
+	}
 
 	reflectValueType := reflect.ValueOf(model).Type().Elem()
 	if reflectValueType.Kind() == reflect.Ptr {
 		reflectValueType = reflectValueType.Elem()
 	}
 	re.model = reflect.New(reflectValueType).Interface()
+	re.schema = smt.Schema
 	return &re
 }
 
@@ -93,25 +102,45 @@ func (r Repository) updateWithoutHooks(conds map[string][]interface{}, values ma
 }
 
 func (r Repository) Find(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
-	return gormx.FindWrapError(r.Query(conds, preloads), dest)
+	return Find(r.Query(conds, preloads), dest)
 }
 
 func (r Repository) Get(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
-	tx := r.Query(conds, preloads)
-	return tx.Find(&dest).Error
+	return Get(r.Query(conds, preloads), dest)
 }
 
 func (r Repository) First(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error {
-	return r.Query(conds, preloads).First(dest).Error
+	return First(r.Query(conds, preloads), dest)
 }
 
 func (r Repository) Count(conds map[string][]interface{}) int64 {
-	var count int64
-	r.Query(conds, nil).Count(&count)
-	return count
+	return Count(r.Query(conds, nil))
 }
 
 func (r Repository) Contains(conds map[string][]interface{}) bool {
-	count := r.Count(conds)
-	return count > 0
+	return Contains(r.Query(conds, nil))
+}
+
+func (r Repository) QueryBuilder(queryBuilder iuow.QueryBuilder) *gorm.DB {
+	return BuildQuery(r.Model(), queryBuilder)
+}
+
+func (r Repository) QueryBuilderFind(dest interface{}, queryBuilder iuow.QueryBuilder) error {
+	return Find(r.QueryBuilder(queryBuilder), dest)
+}
+
+func (r Repository) QueryBuilderGet(dest interface{}, queryBuilder iuow.QueryBuilder) error {
+	return Get(r.QueryBuilder(queryBuilder), dest)
+}
+
+func (r Repository) QueryBuilderFirst(dest interface{}, queryBuilder iuow.QueryBuilder) error {
+	return First(r.QueryBuilder(queryBuilder), dest)
+}
+
+func (r Repository) QueryBuilderCount(queryBuilder iuow.QueryBuilder) int64 {
+	return Count(r.QueryBuilder(queryBuilder))
+}
+
+func (r Repository) QueryBuilderContains(queryBuilder iuow.QueryBuilder) bool {
+	return Contains(r.QueryBuilder(queryBuilder))
 }

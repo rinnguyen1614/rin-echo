@@ -9,41 +9,41 @@ import (
 	iuow "rin-echo/common/uow/interfaces"
 )
 
-type RoleQueryBuilder struct {
+type MenuQueryBuilder struct {
 	iuow.QueryBuilder
 }
 
-func NewRoleQueryBuilder() RoleQueryBuilder {
-	qbuilder, err := uow.NewQueryBuilder(&domain.Role{})
+func NewMenuQueryBuilder() MenuQueryBuilder {
+	qbuilder, err := uow.NewQueryBuilder(&domain.Menu{})
 	if err != nil {
 		panic(err)
 	}
 
-	return RoleQueryBuilder{
+	return MenuQueryBuilder{
 		QueryBuilder: qbuilder,
 	}
 }
 
-func (q *RoleQueryBuilder) WhereID(id uint) {
+func (q *MenuQueryBuilder) WhereID(id uint) {
 	q.SetCondition("id", id)
 }
 
-func (q *RoleQueryBuilder) WhereIDsIn(ids []uint) {
+func (q *MenuQueryBuilder) WhereIDsIn(ids []uint) {
 	q.SetCondition(fmt.Sprintf("%v %v ?", "id", "IN"), ids)
 }
 
-func (q *RoleQueryBuilder) WhereIDsNotIn(ids []uint) {
+func (q *MenuQueryBuilder) WhereIDsNotIn(ids []uint) {
 	q.SetCondition(fmt.Sprintf("%v %v ?", "id", "NOT IN"), ids)
 }
 
-func (q *RoleQueryBuilder) WhereSlug(slug string) {
+func (q *MenuQueryBuilder) WhereSlug(slug string) {
 	q.SetCondition("slug", slug)
 }
 
-func (q *RoleQueryBuilder) WhereSlugsIn(slugs []string) {
+func (q *MenuQueryBuilder) WhereSlugsIn(slugs []string) {
 	q.SetCondition(fmt.Sprintf("%v %v ?", "slug", "IN"), slugs)
 }
 
-func (q *RoleQueryBuilder) WhereSlugsNotIn(slugs []string) {
+func (q *MenuQueryBuilder) WhereSlugsNotIn(slugs []string) {
 	q.SetCondition(fmt.Sprintf("%v %v ?", "slug", "NOT IN"), slugs)
 }

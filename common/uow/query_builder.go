@@ -1,100 +1,46 @@
-package query
+package uow
 
 import (
 	"reflect"
-	"rin-echo/common"
-
-	gormx "rin-echo/common/gorm"
+	iuow "rin-echo/common/uow/interfaces"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
 
 type (
-	QueryBuilder interface {
-		Model() interface{}
-
-		Select() []string
-
-		SetSelect(columns ...string)
-
-		Conditions() map[string][]interface{}
-
-		SetCondition(query string, args ...interface{})
-
-		Pagination() (limit, offset int)
-
-		SetPagination(limit, offset int)
-
-		Orders() []string
-
-		SetOrder(field, order string)
-
-		Preloads() map[string]QueryBuilder
-
-		SetPreload(tableName string, query QueryBuilder)
-
-		DB() *gorm.DB
-
-		WithContext(ctx common.Context) QueryBuilder
-
-		Schema() *schema.Schema
-
-		Query() *gorm.DB
-
-		Find(dest interface{}) error
-
-		First(dest interface{}) error
-
-		Count() int64
-	}
-
 	queryBuilder struct {
-		sel        []string
+		selects    []string
 		conditions map[string][]interface{}
 		orders     []string
 		limit      int
 		offset     int
-		preloads   map[string]QueryBuilder
+		preloads   map[string]iuow.QueryBuilder
 		model      interface{}
 		tableName  string
-		db         *gorm.DB
-		schema     *schema.Schema
 	}
 )
 
-func NewQueryBuilder(db *gorm.DB, model interface{}) (QueryBuilder, error) {
-	if db == nil {
-		panic("NewQueryBuilder requires db")
-	}
+func NewQueryBuilder(model interface{}) (iuow.QueryBuilder, error) {
 
 	if model == nil {
 		panic("NewQueryBuilder requires model")
 	}
 
 	var (
-		tx  = db
-		smt = tx.Statement
-		q   = &queryBuilder{
-			sel:        make([]string, 0),
+		q = &queryBuilder{
+			selects:    make([]string, 0),
 			conditions: make(map[string][]interface{}),
 			orders:     make([]string, 0),
-			preloads:   make(map[string]QueryBuilder),
+			preloads:   make(map[string]iuow.QueryBuilder),
 		}
 	)
-
-	err := smt.Parse(model)
-	if err != nil {
-		return nil, err
-	}
 
 	reflectType := reflect.ValueOf(model).Type().Elem()
 	if reflectType.Kind() == reflect.Ptr {
 		reflectType = reflectType.Elem()
 	}
 	q.model = reflect.New(reflectType).Interface()
-	q.db = db
-	q.schema = smt.Schema
 	return q, nil
 }
 
@@ -103,15 +49,15 @@ func (q *queryBuilder) Model() interface{} {
 }
 
 func (q *queryBuilder) Select() []string {
-	return q.sel
+	return q.selects
 }
 
 func (q *queryBuilder) SetSelect(columns ...string) {
-	if len(q.sel) == 0 {
-		q.sel = make([]string, 0)
+	if len(q.selects) == 0 {
+		q.selects = make([]string, 0)
 	}
 
-	q.sel = append(q.sel, columns...)
+	q.selects = append(q.selects, columns...)
 }
 
 func (q *queryBuilder) Conditions() map[string][]interface{} {
@@ -146,42 +92,33 @@ func (q *queryBuilder) SetOrder(field, order string) {
 	q.orders = append(q.orders, field+" "+order)
 }
 
-func (q *queryBuilder) Preloads() map[string]QueryBuilder {
+func (q *queryBuilder) Preloads() map[string]iuow.QueryBuilder {
 	if q.preloads == nil {
-		q.preloads = make(map[string]QueryBuilder)
+		q.preloads = make(map[string]iuow.QueryBuilder)
 	}
 	return q.preloads
 }
 
-func (q *queryBuilder) SetPreload(tableName string, query QueryBuilder) {
+func (q *queryBuilder) SetPreload(tableName string, query iuow.QueryBuilder) {
 	q.preloads[tableName] = query
 }
 
-func (q *queryBuilder) DB() *gorm.DB {
-	return q.db
-}
-
-func (q *queryBuilder) Schema() *schema.Schema {
-	return q.schema
-}
-
-func (q queryBuilder) WithContext(ctx common.Context) QueryBuilder {
-	q.db.WithContext(ctx)
-	return &q
-}
-
-func (q *queryBuilder) Query() *gorm.DB {
-	return buildQuery(q.db.Model(q.model), q)
-}
-
-func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
+func BuildQuery(db *gorm.DB, queryBuilder iuow.QueryBuilder) *gorm.DB {
 	var (
-		tx = db
+		tx     = db
+		stmt   = gorm.Statement{DB: db}
+		schema *schema.Schema
 	)
+
+	if err := stmt.Parse(queryBuilder.Model()); err != nil {
+		panic(err)
+	}
+
+	schema = stmt.Schema
 
 	for pQ, pBuilder := range queryBuilder.Preloads() {
 		if sels := pBuilder.Select(); len(sels) != 0 {
-			refs := queryBuilder.Schema().Relationships.Relations[pQ].References
+			refs := schema.Relationships.Relations[pQ].References
 			for _, ref := range refs {
 				if ref.OwnPrimaryKey {
 					pBuilder.SetSelect(ref.ForeignKey.DBName)
@@ -194,8 +131,7 @@ func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 		}
 
 		tx = tx.Preload(pQ, func(db *gorm.DB) *gorm.DB {
-			//if the select of preload doesn't exist foreign key, we should add the field that is foreign key in this case.
-			return buildQuery(db, pBuilder)
+			return BuildQuery(db, pBuilder)
 		})
 	}
 
@@ -216,17 +152,4 @@ func buildQuery(db *gorm.DB, queryBuilder QueryBuilder) *gorm.DB {
 	}
 
 	return tx
-}
-
-func (q *queryBuilder) Find(dest interface{}) error {
-	return gormx.FindWrapError(q.Query(), dest)
-}
-
-func (q *queryBuilder) First(dest interface{}) error {
-	return q.Query().First(dest).Error
-}
-
-func (q *queryBuilder) Count() (total int64) {
-	q.Query().Count(&total)
-	return
 }
