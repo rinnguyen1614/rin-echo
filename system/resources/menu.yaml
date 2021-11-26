@@ -1,0 +1,124 @@
+- name: systemistrator Management
+  slug: systemistrator
+  path: /systemistrator
+  title: systemistrator Management
+  type: M
+  icon: ""
+  children:
+    - name: Menu Management
+      slug: menu
+      title: Menu Management
+      path: /systemistrator/menus
+      type: M
+      children:
+        - slug: menu:create
+          name: Add Menu
+          type: A
+          resources:
+            - menu:create
+            - resource:get_tree
+        - slug: menu:edit
+          name: Edit Menu
+          type: A
+          resources:
+            - menu:update
+            - menu:get
+            - resource:get_tree
+        - slug: menu:delete
+          name: Delete Menu
+          type: A
+          resources:
+            - menu:delete
+        - slug: menu:list
+          name: List Menu
+          type: A
+          resources:
+            - menu:get_list
+        - slug: menu:disable
+          name: Disable Menu
+          type: A
+          resources:
+            - menu:disable
+        - slug: menu:enable
+          name: Enable Menu
+          type: A
+          resources:
+            - menu:enable
+    - name: Role Management
+      slug: role
+      type: M
+      title: Role Management
+      path: /systemistrator/roles
+      children:
+        - slug: role:create
+          name: Add Role
+          type: A
+          resources:
+            - role:create
+            - menu:get_tree
+        - slug: role:edit
+          name: Edit Role
+          type: A
+          resources:
+            - role:update
+            - role:get
+            - menu:get_tree
+        - slug: role:delete
+          name: Delete Role
+          type: A
+          resources:
+            - role:delete
+        - slug: role:list
+          name: List Role
+          type: A
+          resources:
+            - role:get_list
+        - slug: role:disable
+          name: Disable Role
+          type: A
+          resources:
+            - role:disable
+        - slug: role:enable
+          name: Enable Role
+          type: A
+          resources:
+            - role:enable
+    - name: User Management
+      slug: user
+      type: M
+      title: User Management
+      path: /systemistrator/users
+      children:
+        - slug: user:create
+          name: Add User
+          type: A
+          resources:
+            - user:create
+            - role:select
+        - slug: user:edit
+          name: Edit User
+          type: A
+          resources:
+            - user:get
+            - user:update
+            - role:select
+        - slug: user:delete
+          name: Delete User
+          type: A
+          resources:
+            - user:delete
+        - slug: user:list
+          name: List User
+          type: A
+          resources:
+            - user:get_list
+        - slug: user:disable
+          name: Disable User
+          type: A
+          resources:
+            - user:disable
+        - slug: user:enable
+          name: Enable User
+          type: A
+          resources:
+            - user:enable

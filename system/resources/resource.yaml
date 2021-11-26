@@ -1,0 +1,115 @@
+- name: systemistrator
+  slug: systemistrator
+  children:
+    - name: Resource
+      slug: resource
+      children:
+        - name: Get List Resources
+          slug: resource:get_list
+          path: /api/v1/resources
+          method: GET
+        - name: Get Resource
+          slug: resource:get
+          path: /api/v1/resources/:id
+          method: GET
+        - name: Get Resource Trees
+          slug: resource:get_tree
+          path: /api/v1/resources/tree
+          method: GET
+        - name: Create Resource
+          slug: resource:create
+          path: /api/v1/resources
+          method: POST
+        - name: Update Resource
+          slug: resource:update
+          path: /api/v1/resources/:id
+          method: PUT
+        - name: Delete Resource
+          slug: resource:delete
+          path: /api/v1/resources/:id
+          method: DELETE
+    - name: Menu
+      slug: menu
+      children:
+        - name: Get List Menus
+          slug: menu:get_list
+          path: /api/v1/menus
+          method: GET
+        - name: Get Menu
+          slug: menu:get
+          path: /api/v1/menus/:id
+          method: GET
+        - name: Get Menu Trees
+          slug: menu:get_tree
+          path: /api/v1/menus/tree
+          method: GET
+        - name: Create Menu
+          slug: menu:create
+          path: /api/v1/menus
+          method: POST
+        - name: Update Menu
+          slug: menu:update
+          path: /api/v1/menus/:id
+          method: PUT
+        - name: Delete Menu
+          slug: menu:delete
+          path: /api/v1/menus/:id
+          method: DELETE
+    - name: User
+      slug: user
+      children:
+        - name: Get List Users
+          slug: user:get_list
+          path: /api/v1/users
+          method: GET
+        - name: Get User
+          slug: user:get
+          path: /api/v1/users/:id
+          method: GET
+        - name: Create User
+          slug: user:create
+          path: /api/v1/users
+          method: POST
+        - name: Update User
+          slug: user:update
+          path: /api/v1/users/:id
+          method: PUT
+        - name: Delete User
+          slug: user:delete
+          path: /api/v1/users/:id
+          method: DELETE
+        - name: Disable User
+          slug: user:disable
+          path: /api/v1/users/:id/disable
+          method: PATH
+        - name: Enable User
+          slug: user:enable
+          path: "/api/v1/users/:id/enable"
+          method: PATH
+    - name: Role
+      slug: role
+      children:
+        - name: Get List Roles
+          slug: role:get_list
+          path: /api/v1/roles
+          method: GET
+        - name: Get Role
+          slug: role:get
+          path: /api/v1/roles/:id
+          method: GET
+        - name: Create Role
+          slug: role:create
+          path: /api/v1/roles
+          method: POST
+        - name: Update Role
+          slug: role:update
+          path: /api/v1/roles/:id
+          method: PUT
+        - name: Delete Role
+          slug: role:delete
+          path: /api/v1/roles/:id
+          method: DELETE
+        - name: Select Role
+          slug: role:select
+          path: /api/v1/roles/select
+          method: GET
