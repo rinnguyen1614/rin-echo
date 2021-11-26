@@ -19,10 +19,6 @@ func Find(db *gorm.DB, dest interface{}) error {
 	return nil
 }
 
-func Get(db *gorm.DB, dest interface{}) error {
-	return db.Find(&dest).Error
-}
-
 func First(db *gorm.DB, dest interface{}) error {
 	return db.First(dest).Error
 }

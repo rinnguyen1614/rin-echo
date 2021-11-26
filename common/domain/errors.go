@@ -12,20 +12,23 @@ type EntityNotFoundError struct {
 }
 
 type EntityError struct {
-	level log.Level
+	field string
 
+	level log.Level
 	*common.RinError
 }
 
-func NewEntityError(id, message string) *EntityError {
+func NewEntityError(id, field, message string) *EntityError {
 	return &EntityError{
+		field,
 		DefaultLogLevel,
 		common.NewRinError(id, message),
 	}
 }
 
-func NewEntityErrorWithInner(inner error, id, message string) *EntityError {
+func NewEntityErrorWithInner(inner error, id, field, message string) *EntityError {
 	return &EntityError{
+		field,
 		DefaultLogLevel,
 		common.NewRinErrorWithInner(inner, id, message),
 	}
@@ -37,4 +40,8 @@ func (a *EntityError) Level() log.Level {
 
 func (a *EntityError) SetLevel(l log.Level) {
 	a.level = l
+}
+
+func (a *EntityError) Field() string {
+	return a.field
 }

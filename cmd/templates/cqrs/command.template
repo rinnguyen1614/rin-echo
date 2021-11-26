@@ -1,8 +1,8 @@
 package {{.Package}}
 
 import (
-	"rin-echo/admin/adapters"
-	"rin-echo/admin/inject"
+	"rin-echo/system/adapters"
+	"rin-echo/system/inject"
 	"rin-echo/common/cqrs"
 	echox "rin-echo/common/echo"
 	iuow "rin-echo/common/uow/interfaces"

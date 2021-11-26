@@ -14,7 +14,6 @@ const (
 	callBackBeforeCreateName = "rin_echo:before_create"
 	callBackBeforeUpdateName = "rin_echo:before_update"
 	callBackAfterName        = "rin_echo:after"
-	appSession               = "_app_session"
 )
 
 type RinPlugin struct{}

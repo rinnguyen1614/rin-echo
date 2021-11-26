@@ -40,16 +40,19 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			logger := c.Logger()
-			res := c.Response()
+			var (
+				logger = c.Logger()
+				res    = c.Response()
+				start  = time.Now()
+				fields = map[string]interface{}{}
+			)
 
-			fields := map[string]interface{}{}
 			if err = next(c); err != nil {
 				fields["error"] = err
 				c.Error(err)
 			}
 
-			generalFields(c, fields)
+			generalFields(c, start, fields)
 
 			if err != nil {
 				if ll, ok := err.(logx.HasLogLevel); ok {
@@ -74,30 +77,31 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 	}
 }
 
-func generalFields(c echo.Context, fields map[string]interface{}) {
-	req := c.Request()
-	res := c.Response()
-	start := time.Now()
-	stop := time.Now()
+func generalFields(c echo.Context, start time.Time, fields map[string]interface{}) {
+	var (
+		req             = c.Request()
+		res             = c.Response()
+		latency         = time.Now().Sub(start)
+		requestID       = res.Header().Get(echox.HeaderRequestID)
+		clientRequestID = req.Header.Get(echox.HeaderClientRequestID)
+	)
 
 	fields["remote_ip"] = c.RealIP()
-	fields["time"] = time.Since(start).String()
+	fields["start_time"] = start
 	fields["user_agent"] = req.UserAgent()
 	fields["host"] = req.Host
 	fields["request"] = fmt.Sprintf("%s %s", req.Method, req.RequestURI)
 	fields["status"] = res.Status
 	fields["size"] = res.Size
-	fields["latency"] = stop.Sub(start)
-	fields["latency_human"] = stop.Sub(start).String()
+	fields["latency"] = latency
+	fields["latency_human"] = latency.String()
 	// request id from server
-	fields["request_id"] = res.Header().Get(echox.HeaderRequestID)
+	fields["request_id"] = requestID
 	// request id from client
-	crid := req.Header.Get(echox.HeaderClientRequestID)
-	if crid == "" {
-		crid = res.Header().Get(echox.HeaderClientRequestID)
+	if clientRequestID == "" {
+		clientRequestID = res.Header().Get(echox.HeaderClientRequestID)
 	}
-	fields["client_request_id"] = crid
-
+	fields["client_request_id"] = clientRequestID
 	if cc, _ := echox.Contextx(c); cc != nil {
 		if session, _ := cc.Session(); session != nil {
 			fields["user_id"] = session.UserID()

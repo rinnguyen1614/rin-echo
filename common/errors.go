@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"errors"
 )
 
@@ -55,18 +56,27 @@ type RinErrors struct {
 	*RinError
 }
 
-// func (r *RinErrors) Error() string {
-// 	var buf bytes.Buffer
-// 	for _, err := range r.errors {
-// 		buf.WriteString(err.Error())
-// 	}
-
-// 	return buf.String()
-// }
+func (r RinErrors) Errors() map[int][]error {
+	return r.errors
+}
 
 func NewRinErrors(errors map[int][]error, id, message string) *RinErrors {
 	return &RinErrors{
 		errors:   errors,
 		RinError: NewRinError(id, message),
 	}
+}
+
+type MapErrors map[int][]error
+
+func (m MapErrors) Error() string {
+	var buf bytes.Buffer
+	for _, errs := range m {
+		for _, err := range errs {
+			buf.WriteString(err.Error())
+			buf.WriteRune('\n')
+		}
+	}
+
+	return buf.String()
 }

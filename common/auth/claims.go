@@ -13,11 +13,11 @@ type (
 	}
 )
 
-func (c *ClaimsSession) UserID() uint {
+func (c ClaimsSession) UserID() uint {
 	return c.ID
 }
 
-func (c *ClaimsSession) ToMap() map[string]interface{} {
+func (c ClaimsSession) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"ID":       c.ID,
 		"UUID":     c.UUID,

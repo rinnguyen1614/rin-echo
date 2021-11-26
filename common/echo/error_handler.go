@@ -9,9 +9,11 @@ import (
 	"rin-echo/common/echo/models"
 	"rin-echo/common/utils"
 	"rin-echo/common/validation"
+	"sort"
 
 	"github.com/labstack/echo/v4"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/thoas/go-funk"
 )
 
 type (
@@ -19,6 +21,7 @@ type (
 		ID         string      `json:"id,omitempty"`
 		Message    string      `json:"message,omitempty"`
 		InnerError interface{} `json:".inner_error,omitempty"`
+		Index      int         `json:"index,omitempty"`
 		Errors     []wrapError `json:"errors,omitempty"`
 	}
 )
@@ -74,7 +77,7 @@ func getStatusCode(err error) int {
 	case *validation.ValidationError:
 		return http.StatusBadRequest
 	case *common.RinError:
-		return http.StatusInternalServerError
+		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}
@@ -90,7 +93,7 @@ func getWrapError(isWrapOnError bool, c echo.Context, err error) interface{} {
 		wrap = &wrapError{
 			InnerError: rinerr.Cause().Error(),
 			ID:         rinerr.ID(),
-			Message:    Translate(localizer, rinerr.ID(), rinerr.Message()),
+			Message:    utils.Translate(localizer, rinerr.ID(), rinerr.Message()),
 			Errors:     make([]wrapError, 0),
 		}
 
@@ -106,12 +109,32 @@ func getWrapError(isWrapOnError bool, c echo.Context, err error) interface{} {
 			}
 		}
 
+		if err, ok := err.(*common.RinErrors); ok {
+			var (
+				errs = err.Errors()
+				keys = funk.Keys(errs).([]int)
+			)
+			if !sort.IntsAreSorted(keys) {
+				sort.Ints(keys)
+			}
+			for i, k := range keys {
+				wrerrs := wrapError{
+					Index: i,
+				}
+				for _, e := range errs[k] {
+					wrerr := getWrapError(isWrapOnError, c, e).(*wrapError)
+					wrerrs.Errors = append(wrerrs.Errors, *wrerr)
+				}
+				wrap.Errors = append(wrap.Errors, wrerrs)
+			}
+		}
+
 	} else if he, ok := err.(*echo.HTTPError); ok {
 		id := utils.ToString(he.Code)
 		wrap = &wrapError{
 			InnerError: err,
 			ID:         id,
-			Message:    Translate(localizer, id, err.Error()),
+			Message:    utils.Translate(localizer, id, err.Error()),
 		}
 	} else {
 		wrap = &wrapError{

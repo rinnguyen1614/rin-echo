@@ -27,7 +27,8 @@ type (
 
 	App struct {
 		// The application uniqueID. Once generated, don't modify
-		AppID string `json:"app_id,omitempty" yaml:"app_id,omitempty" ini:"app_id,omitempty"`
+		AppID   string `json:"app_id,omitempty" yaml:"app_id,omitempty" ini:"app_id,omitempty"`
+		AppName string `json:"app_name,omitempty" yaml:"app_name,omitempty" ini:"app_name,omitempty"`
 		// Env is the environment,which maybe development, testing, production.
 		Env string `json:"env,omitempty" yaml:"env,omitempty" ini:"env,omitempty"`
 

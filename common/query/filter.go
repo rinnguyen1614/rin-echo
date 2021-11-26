@@ -37,10 +37,31 @@ func (f Filter) Tokens() []Token {
 	return f.tokens
 }
 
-func (f Filter) BuildQuery(db *gorm.DB, primarySchema *schema.Schema, modelRes interface{}) (*gorm.DB, bool, map[string]string, error) {
+func (f Filter) Fields() []string {
+	var fields []string
+	for _, token := range f.tokens {
+		if token.Kind == FIELD {
+			fields = append(fields, token.Value.(string))
+		}
+	}
+	return fields
+}
+
+func (f Filter) Validate(mapFields map[string]reflect.StructField) (err error) {
+	notFounds, err := FindFieldNotExists(f.Fields(), mapFields)
+	if err != nil {
+		return err
+	}
+	if len(notFounds) != 0 {
+		return fmt.Errorf("failed to found filter's fields: %s", strings.Join(notFounds, ", "))
+	}
+	return nil
+}
+
+func (f Filter) BuildQuery(db *gorm.DB, primarySchema *schema.Schema, preloadSchemas map[string]*schema.Schema, primaryFields map[string]reflect.StructField) (*gorm.DB, bool, map[string]string, error) {
 
 	var (
-		tx           = db
+		tx           = db.WithContext(db.Statement.Context)
 		primaryTable = primarySchema.Table
 		argsCount    = make(map[string]int, 0)
 		nToken       = len(f.tokens)
@@ -54,18 +75,12 @@ func (f Filter) BuildQuery(db *gorm.DB, primarySchema *schema.Schema, modelRes i
 		fieldNamesByTableDB = make(map[string]string)
 		fieldNameByNames    = make(map[string]string)
 		valueArgs           = make(map[string]interface{})
-		primaryFields       map[string]reflect.StructField
 		sqlBuilder          strings.Builder
 		iter                int
 	)
 
 	if nToken == 0 {
 		return tx, false, nil, nil
-	}
-
-	primaryFields, _, err := utils.GetFieldsByJsonTag(modelRes)
-	if err != nil {
-		return nil, false, nil, err
 	}
 
 	for iter < nToken {
@@ -118,15 +133,18 @@ func (f Filter) BuildQuery(db *gorm.DB, primarySchema *schema.Schema, modelRes i
 						association      = fullAssociationsByRequestName[requestTableName]
 						tableJoined      = tableJoinedByFullAssociation[association]
 						tableName        = tableJoined
-						smt              = tx.Statement
 					)
 
 					if len(association) == 0 {
-						var lastFieldName string
+						//var lastFieldName string
 						for i, splited := range spliteds {
 							field, ok := prevFields[splited]
 							if !ok {
 								return nil, false, nil, fmt.Errorf("failed to found '%s' field", splited)
+							}
+							schema, ok := preloadSchemas[field.Name]
+							if !ok {
+								return nil, false, nil, fmt.Errorf("failed to found '%s' schema", field.Name)
 							}
 							currentModel := reflect.New(field.Type).Interface()
 							prevFields, _, err = utils.GetFieldsByJsonTag(currentModel)
@@ -134,26 +152,19 @@ func (f Filter) BuildQuery(db *gorm.DB, primarySchema *schema.Schema, modelRes i
 								return nil, false, nil, err
 							}
 
-							err = smt.Parse(currentModel)
-							if err != nil {
-								return nil, false, nil, err
-							}
-
-							tableJoined += smt.Schema.Table
+							tableJoined += schema.Table
 							association += field.Name
+							fieldNamesByTableDB[tableJoined] = field.Name
+							fieldNameByNames[field.Name] = field.Name
 							if i != len(spliteds)-1 {
 								association += "."
 								tableJoined += "."
 							} else {
-								lastFieldName = field.Name
-								tableName = smt.Schema.Table
+								tableName = schema.Table
 							}
 						}
 						fullAssociationsByRequestName[requestTableName] = association
 						tableJoinedByFullAssociation[association] = tableJoined
-						fieldNamesByTableDB[tableJoined] = lastFieldName
-						fieldNameByNames[lastFieldName] = lastFieldName
-
 					} else if idot := strings.LastIndexByte(tableJoined, '.'); idot != -1 {
 						tableName = tableJoined[idot:]
 					}

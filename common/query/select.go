@@ -1,6 +1,8 @@
 package query
 
 import (
+	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -26,12 +28,26 @@ func ParseSelect(str, separateFields string) (Select, error) {
 	)
 
 	for _, fs := range re.Split(str, -1) {
-		sel.Fields = append(sel.Fields, fs)
+		if fs != "" {
+			sel.Fields = append(sel.Fields, fs)
+		}
 	}
 
 	return sel, nil
 }
 
-func (s *Select) Validate(entity interface{}) error {
+func (s *Select) Validate(mapFields map[string]reflect.StructField) error {
+	// _, dif := funk.Difference(fields, s.Fields)
+	// if notFounds := dif.([]string); len(notFounds) != 0 {
+	// 	return fmt.Errorf("failed to found select's fields: %s", strings.Join(notFounds, ", "))
+	// }
+
+	notFounds, err := FindFieldNotExists(s.Fields, mapFields)
+	if err != nil {
+		return err
+	}
+	if len(notFounds) != 0 {
+		return fmt.Errorf("failed to found select's fields: %s", strings.Join(notFounds, ", "))
+	}
 	return nil
 }

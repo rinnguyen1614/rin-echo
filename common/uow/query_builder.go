@@ -4,6 +4,7 @@ import (
 	"reflect"
 	iuow "rin-echo/common/uow/interfaces"
 
+	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
@@ -22,7 +23,6 @@ type (
 )
 
 func NewQueryBuilder(model interface{}) (iuow.QueryBuilder, error) {
-
 	if model == nil {
 		panic("NewQueryBuilder requires model")
 	}
@@ -117,22 +117,54 @@ func BuildQuery(db *gorm.DB, queryBuilder iuow.QueryBuilder) *gorm.DB {
 	schema = stmt.Schema
 
 	for pQ, pBuilder := range queryBuilder.Preloads() {
-		if sels := pBuilder.Select(); len(sels) != 0 {
-			refs := schema.Relationships.Relations[pQ].References
-			for _, ref := range refs {
-				if ref.OwnPrimaryKey {
-					pBuilder.SetSelect(ref.ForeignKey.DBName)
-					queryBuilder.SetSelect(ref.PrimaryKey.DBName)
-				} else {
-					pBuilder.SetSelect(ref.PrimaryKey.DBName)
-					queryBuilder.SetSelect(ref.ForeignKey.DBName)
+		if pBuilder != nil {
+			var (
+				selsMap    = funk.Map(queryBuilder.Select(), func(x string) (string, string) { return x, x }).(map[string]string)
+				selsPreMap = funk.Map(pBuilder.Select(), func(x string) (string, string) { return x, x }).(map[string]string)
+				rel        = schema.Relationships.Relations[pQ]
+				refs       = rel.References
+			)
+
+			if rel.JoinTable == nil {
+				for _, ref := range refs {
+					var (
+						key    = ref.PrimaryKey.DBName
+						preKey = ref.ForeignKey.DBName
+					)
+					if !ref.OwnPrimaryKey {
+						key = ref.ForeignKey.DBName
+						preKey = ref.PrimaryKey.DBName
+					}
+					if _, ok := selsMap[key]; !ok {
+						queryBuilder.SetSelect(key)
+					}
+					if _, ok := selsPreMap[preKey]; !ok {
+						pBuilder.SetSelect(preKey)
+					}
+				}
+			} else {
+				for _, ref := range refs {
+					var (
+						key = ref.PrimaryKey.DBName
+					)
+					if !ref.OwnPrimaryKey {
+						if _, ok := selsPreMap[key]; !ok {
+							pBuilder.SetSelect(key)
+						}
+					} else {
+						if _, ok := selsMap[key]; !ok {
+							queryBuilder.SetSelect(key)
+						}
+					}
 				}
 			}
-		}
 
-		tx = tx.Preload(pQ, func(db *gorm.DB) *gorm.DB {
-			return BuildQuery(db, pBuilder)
-		})
+			tx = tx.Preload(pQ, func(db *gorm.DB) *gorm.DB {
+				return BuildQuery(db, pBuilder)
+			})
+		} else {
+			tx = tx.Preload(pQ)
+		}
 	}
 
 	for cQ, cArgs := range queryBuilder.Conditions() {
@@ -147,7 +179,7 @@ func BuildQuery(db *gorm.DB, queryBuilder iuow.QueryBuilder) *gorm.DB {
 		tx = tx.Order(or)
 	}
 
-	if limit, offset := queryBuilder.Pagination(); offset != 0 && limit != 0 {
+	if limit, offset := queryBuilder.Pagination(); offset >= 0 && limit > 0 {
 		tx = tx.Offset(offset).Limit(limit)
 	}
 

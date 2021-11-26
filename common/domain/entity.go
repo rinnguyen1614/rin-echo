@@ -1,11 +1,8 @@
 package domain
 
 import (
-	"rin-echo/common/utils"
 	"time"
 )
-
-type UUID = utils.UUID
 
 type (
 	Entity struct {

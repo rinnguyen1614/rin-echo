@@ -10,21 +10,45 @@ type (
 	UnitOfWork interface {
 		DB() *gorm.DB
 
+		Model(v interface{}) *gorm.DB
+
+		Association(v interface{}, name string) *gorm.Association
+
 		WithContext(common.Context) UnitOfWork
 
 		Transaction(func(*gorm.DB) error) error
 
 		TransactionUnitOfWork(func(UnitOfWork) error) error
 
-		Rollback(tx *gorm.DB) error
+		// Rollback(tx *gorm.DB) error
 
-		RollbackUnitOfWork(ux UnitOfWork) error
+		// RollbackUnitOfWork(ux UnitOfWork) error
 	}
 
 	Repository interface {
+		DB() *gorm.DB
+
 		Model() *gorm.DB
 
-		Transaction(fc func(tx *gorm.DB) error) (err error)
+		// Transaction(fc func(tx *gorm.DB) error) (err error)
+
+		Create(v interface{}) error
+
+		CreateInBatches(v interface{}, batchSize int) error
+
+		Update(v interface{}) error
+
+		UpdateValues(conds map[string][]interface{}, values map[string]interface{}) error
+
+		UpdateWithoutHooks(conds map[string][]interface{}, values map[string]interface{}) error
+
+		UpdateWithPrimaryKey(id uint, values map[string]interface{}) error
+
+		UpdateWithoutHooksWithPrimaryKey(id uint, values map[string]interface{}) error
+
+		Delete(id uint) error
+
+		DeleteMany(ids []uint) error
 
 		/*
 			- conds : key is query string, value is the array of the query's arguments
@@ -38,23 +62,11 @@ type (
 
 		QueryBuilder(QueryBuilder) *gorm.DB
 
-		Create(v interface{}) error
-
-		CreateInBatches(v interface{}, batchSize int) error
-
-		Update(conds map[string][]interface{}, values map[string]interface{}) error
-
-		UpdateWithoutHooks(conds map[string][]interface{}, values map[string]interface{}) error
-
-		UpdateWithPrimaryKey(id uint, values map[string]interface{}) error
-
-		UpdateWithoutHooksWithPrimaryKey(id uint, values map[string]interface{}) error
-
 		Find(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error
 
-		Get(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error
-
 		First(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error
+
+		Get(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error
 
 		Count(conds map[string][]interface{}) int64
 
@@ -77,9 +89,13 @@ type (
 		// find by id
 		FindID(dest interface{}, ids []uint, preloads map[string][]interface{}) error
 
-		GetID(dest interface{}, ids []uint, preloads map[string][]interface{}) error
-
 		FirstID(dest interface{}, id uint, preloads map[string][]interface{}) error
+
+		GetID(dest interface{}, id uint, preloads map[string][]interface{}) error
+
+		CountID(ids []uint) int64
+
+		ContainsID(ids []uint) bool
 	}
 
 	QueryBuilder interface {

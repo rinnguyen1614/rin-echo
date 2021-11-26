@@ -21,6 +21,9 @@ type (
 		MustSession() common.Session
 		Session() (common.Session, error)
 
+		Operation() (name, method string)
+		SetOperation(name, method string)
+
 		RequestContext() common.Context
 	}
 
@@ -28,12 +31,14 @@ type (
 		echo.Context
 	}
 
-	funcSession func() common.Session
+	SessionInstance func() common.Session
 )
 
 var (
-	SessionKey   = "rin-echo-session"
-	LocalizerKey = "rin-echo-localizer"
+	SessionKey         = "rin-echo-session"
+	LocalizerKey       = "rin-echo-localizer"
+	OperationNameKey   = "rin-echo-operation-name"
+	OperationMethodKey = "rin-echo-operation-method"
 )
 
 func NewContextx(c echo.Context) Context {
@@ -61,7 +66,7 @@ func Contextx(c echo.Context) (Context, error) {
 	return cc, nil
 }
 
-func (c *contextx) Localizer() (*i18n.Localizer, error) {
+func (c contextx) Localizer() (*i18n.Localizer, error) {
 	localizer := c.Get(LocalizerKey)
 	if localizer == nil {
 		return nil, ERR_LOCALIZER_NOT_FOUND
@@ -87,14 +92,14 @@ func (c *contextx) SetLocalizer(localizer *i18n.Localizer) {
 
 func (c *contextx) SetSession(session common.Session) {
 	// using to get concrete type of session.
-	var f funcSession = func() common.Session {
+	var f SessionInstance = func() common.Session {
 		return session
 	}
 
 	c.Set(SessionKey, f)
 }
 
-func (c *contextx) MustSession() common.Session {
+func (c contextx) MustSession() common.Session {
 	session, err := c.Session()
 	if err != nil {
 		panic(err)
@@ -102,19 +107,32 @@ func (c *contextx) MustSession() common.Session {
 	return session
 }
 
-func (c *contextx) Session() (common.Session, error) {
+func (c contextx) Session() (common.Session, error) {
 	session := c.Get(SessionKey)
 	if session == nil {
 		return nil, ERR_SESSION_NOT_FOUND
 	}
-	f := session.(funcSession)
+	f := session.(SessionInstance)
 	return f(), nil
+}
+
+func (c *contextx) Operation() (name, method string) {
+	if v := c.Get(OperationNameKey); v != nil {
+		name = v.(string)
+	}
+	if v := c.Get(OperationMethodKey); v != nil {
+		method = v.(string)
+	}
+
+	return name, method
+}
+
+func (c *contextx) SetOperation(name, method string) {
+	c.Set(OperationNameKey, name)
+	c.Set(OperationMethodKey, method)
 }
 
 func (c *contextx) RequestContext() common.Context {
 	cc, _ := c.Session()
-	return common.Context{
-		Context: c.Request().Context(),
-		Session: cc,
-	}
+	return common.NewContext(c.Request().Context(), cc)
 }

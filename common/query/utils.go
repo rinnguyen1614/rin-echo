@@ -2,7 +2,9 @@ package query
 
 import (
 	"fmt"
+	"reflect"
 	iuow "rin-echo/common/uow/interfaces"
+	"rin-echo/common/utils"
 	"sort"
 	"strings"
 
@@ -48,14 +50,7 @@ func getClauseFrom(primarySchema *schema.Schema, table string, fieldsByTableJoin
 			for _, tb := range tbSplit {
 				if _, ok := tableSchemas[tb]; !ok {
 					if rel, ok := prevSchema.Relationships.Relations[fieldRelation]; ok {
-						tableSchemas[tb] = rel.FieldSchema
-						clauseFrom.Joins = append(clauseFrom.Joins, clause.Join{
-							Type:  clause.LeftJoin,
-							Table: clause.Table{Name: tb},
-							ON: clause.Where{
-								Exprs: getEqExps(rel, prevTable, tb),
-							},
-						})
+						clauseFrom.Joins = append(clauseFrom.Joins, getClauseJoins(rel, prevTable, tb)...)
 					} else {
 						return clause.From{}, fmt.Errorf("clause: failed to found schema for '%s'", tb)
 					}
@@ -66,13 +61,8 @@ func getClauseFrom(primarySchema *schema.Schema, table string, fieldsByTableJoin
 			}
 		} else if rel, ok := primarySchema.Relationships.Relations[fieldRelation]; ok {
 			tableSchemas[tableJoin] = rel.FieldSchema
-			clauseFrom.Joins = append(clauseFrom.Joins, clause.Join{
-				Type:  clause.LeftJoin,
-				Table: clause.Table{Name: tableJoin},
-				ON: clause.Where{
-					Exprs: getEqExps(rel, table, tableJoin),
-				},
-			})
+			clauseFrom.Joins = append(clauseFrom.Joins, getClauseJoins(rel, table, tableJoin)...)
+
 		} else {
 			return clause.From{}, fmt.Errorf("clause: failed to found schema for '%s'", tableJoin)
 		}
@@ -81,22 +71,63 @@ func getClauseFrom(primarySchema *schema.Schema, table string, fieldsByTableJoin
 	return clauseFrom, nil
 }
 
+func getClauseJoins(relation *schema.Relationship, table, tableJoin string) []clause.Join {
+	var clauseJoins []clause.Join
+	if relation.JoinTable == nil {
+		clauseJoins = append(clauseJoins, clause.Join{
+			Type:  clause.LeftJoin,
+			Table: clause.Table{Name: tableJoin},
+			ON: clause.Where{
+				Exprs: getEqExps(relation, table, tableJoin),
+			},
+		})
+	} else {
+		clauseJoins = append(clauseJoins,
+			clause.Join{
+				Type:  clause.LeftJoin,
+				Table: clause.Table{Name: relation.JoinTable.Table},
+				ON: clause.Where{
+					Exprs: getEqExps(relation, table, relation.JoinTable.Table),
+				},
+			},
+			clause.Join{
+				Type:  clause.LeftJoin,
+				Table: clause.Table{Name: tableJoin},
+				ON: clause.Where{
+					Exprs: getEqExps(relation, tableJoin, relation.JoinTable.Table),
+				},
+			})
+	}
+	return clauseJoins
+}
+
 func getEqExps(relation *schema.Relationship, table, tableJoin string) []clause.Expression {
 	var (
 		exprs = make([]clause.Expression, 0)
 	)
 
-	for _, ref := range relation.References {
-		if ref.OwnPrimaryKey {
-			exprs = append(exprs, clause.Eq{
-				Column: clause.Column{Table: tableJoin, Name: ref.ForeignKey.DBName},
-				Value:  clause.Column{Table: table, Name: ref.PrimaryKey.DBName},
-			})
-		} else {
-			exprs = append(exprs, clause.Eq{
-				Column: clause.Column{Table: tableJoin, Name: ref.PrimaryKey.DBName},
-				Value:  clause.Column{Table: table, Name: ref.ForeignKey.DBName},
-			})
+	if relation.JoinTable == nil {
+		for _, ref := range relation.References {
+			if ref.OwnPrimaryKey {
+				exprs = append(exprs, clause.Eq{
+					Column: clause.Column{Table: tableJoin, Name: ref.ForeignKey.DBName},
+					Value:  clause.Column{Table: table, Name: ref.PrimaryKey.DBName},
+				})
+			} else {
+				exprs = append(exprs, clause.Eq{
+					Column: clause.Column{Table: tableJoin, Name: ref.PrimaryKey.DBName},
+					Value:  clause.Column{Table: table, Name: ref.ForeignKey.DBName},
+				})
+			}
+		}
+	} else {
+		for _, ref := range relation.References {
+			if ref.OwnPrimaryKey {
+				exprs = append(exprs, clause.Eq{
+					Column: clause.Column{Table: tableJoin, Name: ref.ForeignKey.DBName},
+					Value:  clause.Column{Table: table, Name: ref.PrimaryKey.DBName},
+				})
+			}
 		}
 	}
 
@@ -147,4 +178,54 @@ func getJoins(db *gorm.DB, tableJoins []string, queryBuilder iuow.QueryBuilder, 
 	}
 
 	return tx, nil
+}
+
+//
+func FindFieldNotExists(fields []string, mapFields map[string]reflect.StructField) (fieldNotFounds []string, err error) {
+
+	sort.Strings(fields)
+
+	for i := 0; i < len(fields); i++ {
+		var (
+			field      = fields[i]
+			prevFields = mapFields
+		)
+		for {
+			var (
+				name = field
+				iDot = strings.IndexByte(field, '.')
+			)
+			if iDot == -1 {
+				if _, ok := prevFields[name]; !ok {
+					fieldNotFounds = append(fieldNotFounds, fields[i])
+				}
+				break
+			} else {
+				name = field[:iDot]
+				if structField, ok := prevFields[name]; !ok {
+					fieldNotFounds = append(fieldNotFounds, fields[i])
+					// next field that has same prefix
+					for ; i < len(fields)-1; i++ {
+						part := fields[i+1]
+						iPartDot := strings.IndexByte(part, '.')
+						if iPartDot != -1 && part[:iPartDot] == name {
+							fieldNotFounds = append(fieldNotFounds, part)
+						} else {
+							// because all fields in fields that are sorted, so fields after the index will not be equal
+							break
+						}
+					}
+					break
+				} else {
+					prevFields, _, err = utils.GetFullFieldsByJsonTag(reflect.New(structField.Type).Interface())
+					if err != nil {
+						return nil, err
+					}
+					field = field[iDot+1:]
+				}
+			}
+		}
+	}
+
+	return fieldNotFounds, nil
 }

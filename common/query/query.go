@@ -4,10 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"rin-echo/common"
+	"rin-echo/common/model"
+	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
 	"strings"
 
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
@@ -23,7 +27,7 @@ type (
 
 var (
 	SeparateTemp        = "_separate_"
-	EscapedCommaPattern = `_separate_\s*`
+	EscapedCommaPattern = `\s*_separate_\s*`
 )
 
 type Interface interface {
@@ -150,11 +154,10 @@ func iterFunc(query *Query, name string, field interface{}, setFunc func(*Query,
 	}
 }
 
-func (q *Query) Validate(entity interface{}) error {
-	q.AddError(q.sel.Validate(entity))
-
-	q.AddError(q.sort.Validate(entity))
-
+func (q *Query) Validate(fields map[string]reflect.StructField) error {
+	q.AddError(q.allSelect.Validate(fields))
+	q.AddError(q.allSort.Validate(fields))
+	q.AddError(q.filter.Validate(fields))
 	return q.Error
 }
 
@@ -167,29 +170,91 @@ func (q *Query) AddError(err error) error {
 	return q.Error
 }
 
-func (q Query) Bind(db *gorm.DB, queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, modelRes interface{}) error {
+// Get queryResult from query.
+//
+// - repo: the repository executes queryBuilder (find & count).
+//
+// - queryBuilder: it is filled by query's select, order and filter
+//
+// - preloadBuilders: Each of preloadBuilders is filled by select, order and filter of preload's query.
+// It is preload of queryBuilder
+//
+// - srcModel: should be a struct type/ pointer of struct type, it is used to querying in DB
+//
+// - desModel: should be a struct type/ pointer of struct type, it is used to responsed to the client
+func (q *Query) QueryResult(repo iuow.Repository, queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, srcModel interface{}, desModel interface{}) (*model.QueryResult, error) {
+	var (
+		typs = map[string]reflect.Type{
+			"src":  reflect.ValueOf(srcModel).Type(),
+			"dest": reflect.ValueOf(desModel).Type()}
+	)
 
-	err := q.bindSelectAndOrder(queryBuilder, preloadBuilders, modelRes)
-	if err != nil {
-		return err
+	for k, typ := range typs {
+		if typ.Kind() == reflect.Ptr {
+			typ = typ.Elem()
+		}
+
+		if typ.Kind() != reflect.Struct {
+			return nil, fmt.Errorf("%s must is underlying struct type", k)
+		}
 	}
 
-	err = q.bindCondition(db, queryBuilder, modelRes)
+	var (
+		srcModels      = reflect.New(reflect.SliceOf(typs["src"])).Interface()
+		fields, _, err = utils.GetFullFieldsByJsonTag(desModel)
+	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	totalRecords, err := q.BindQueryBuilder(queryBuilder, preloadBuilders, repo.DB(), fields)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = repo.QueryBuilderFind(srcModels, queryBuilder); err != nil {
+		return nil, err
+	}
+
+	// new slice of desModel with fields that get from query' selects
+	prune, err := utils.NewSliceOfStructsByTag(desModel, q.FlatSelect(), "json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = copier.CopyWithOption(prune, srcModels, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewQueryResult(prune, totalRecords, q.Paging().Limit, q.Paging().Offset), nil
 }
 
-func (q Query) bindSelectAndOrder(queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, modelRes interface{}) error {
-	fields, _, err := utils.GetFieldsByJsonTag(modelRes)
-	if err != nil {
-		return err
+// bind query's select, order, filter to queryBuilder and preloadBuilders
+//
+// - db: use to build query for filter's query
+//
+// - fields: are allowed to query
+func (q Query) BindQueryBuilder(queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, db *gorm.DB, fields map[string]reflect.StructField) (totalRecords int64, err error) {
+	if err := q.Validate(fields); err != nil {
+		return 0, common.NewRinErrorWithInner(err, "query_parameters_errors", q.Error.Error())
 	}
 
 	queryBuilder.SetPagination(q.Paging().Limit, q.Paging().Offset)
 
+	if err := q.bindSelectAndOrder(queryBuilder, preloadBuilders, fields); err != nil {
+		return 0, err
+	}
+
+	totalRecords, err = q.bindCondition(queryBuilder, preloadBuilders, db, fields)
+	if err != nil {
+		return 0, err
+	}
+
+	return totalRecords, err
+}
+
+func (q Query) bindSelectAndOrder(queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, fields map[string]reflect.StructField) error {
 	for _, sort := range q.Sort().Fields {
 		queryBuilder.SetOrder(sort.Field, sort.Order)
 	}
@@ -201,72 +266,91 @@ func (q Query) bindSelectAndOrder(queryBuilder iuow.QueryBuilder, preloadBuilder
 	for pre, preQuery := range q.preloads {
 		field, ok := fields[pre]
 		if !ok {
-			return fmt.Errorf("Not found '%s' field", pre)
+			return fmt.Errorf("failed to found '%s' field", pre)
 		}
 
 		if preBuilder, ok := preloadBuilders[field.Name]; ok {
 			queryBuilder.SetPreload(field.Name, preBuilder)
-			if err := preQuery.bindSelectAndOrder(preBuilder, preloadBuilders, reflect.New(field.Type).Interface()); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (q Query) bindCondition(db *gorm.DB, queryBuilder iuow.QueryBuilder, modelRes interface{}) error {
-	var (
-		tx            = db
-		stmt          = gorm.Statement{DB: db}
-		filter        = q.Filter()
-		primarySchema *schema.Schema
-	)
-
-	err := stmt.Parse(queryBuilder.Model())
-	if err != nil {
-		panic(err)
-	}
-	primarySchema = stmt.Schema
-
-	tx, hasCondition, fieldNames, err := filter.BuildQuery(db, primarySchema, modelRes)
-	if err != nil {
-		return err
-	}
-
-	if hasCondition {
-		var funcSetCondition func(*gorm.DB, iuow.QueryBuilder) error
-
-		funcSetCondition = func(tx *gorm.DB, qB iuow.QueryBuilder) error {
-			err := setCondition(tx, qB)
+			fields, _, err := utils.GetFieldsByJsonTag(reflect.New(field.Type).Interface())
 			if err != nil {
 				return err
 			}
 
-			for preloadName, preloadBuilder := range qB.Preloads() {
-				if _, ok := fieldNames[preloadName]; ok {
-					err = funcSetCondition(tx, preloadBuilder)
-					if err != nil {
-						return err
-					}
-				}
+			if err := preQuery.bindSelectAndOrder(preBuilder, preloadBuilders, fields); err != nil {
+				return err
 			}
-			return nil
 		}
-
-		err = funcSetCondition(tx, queryBuilder)
-		if err != nil {
-			return err
-		}
-
 	}
+
 	return nil
+}
+
+// if query has condition, it
+//
+// - executes WHERE CLAUSE with limit & offset
+// to get the values of PrimaryFieldDBNames and set them in queryBuilder's condition
+//
+// - counts records with filter (without limit & offset)
+//
+// - resets querybuilder's offset, because the values of queryBuiler's condition had limited & offseted.
+func (q Query) bindCondition(queryBuilder iuow.QueryBuilder, preloadBuilders map[string]iuow.QueryBuilder, db *gorm.DB, fields map[string]reflect.StructField) (totalRecords int64, err error) {
+	var (
+		tx             = db.WithContext(db.Statement.Context)
+		stmt           = gorm.Statement{DB: db}
+		filter         = q.Filter()
+		preloadSchemas = make(map[string]*schema.Schema)
+		primarySchema  *schema.Schema
+	)
+
+	if err := stmt.Parse(queryBuilder.Model()); err != nil {
+		panic(err)
+	}
+	primarySchema = stmt.Schema
+
+	for pre, preBuilder := range preloadBuilders {
+		if err := stmt.Parse(preBuilder.Model()); err != nil {
+			panic(err)
+		}
+		preloadSchemas[pre] = stmt.Schema
+	}
+
+	tx, hasCondition, fieldNames, err := filter.BuildQuery(tx, primarySchema, preloadSchemas, fields)
+	if err != nil {
+		return 0, err
+	}
+
+	if !hasCondition {
+		return uow.Count(stmt.DB), err
+	}
+
+	if err = setCondition(tx, queryBuilder); err != nil {
+		return 0, err
+	}
+
+	for preloadName, preloadBuilder := range preloadBuilders {
+		if _, ok := fieldNames[preloadName]; ok {
+			if err = setCondition(tx, preloadBuilder); err != nil {
+				return 0, err
+			}
+		}
+	}
+
+	// - resets querybuilder's offset, because the values of queryBuiler's condition had limited & offseted.
+	limit, _ := queryBuilder.Pagination()
+	queryBuilder.SetPagination(limit, 0)
+
+	var columns []string
+	for _, field := range primarySchema.PrimaryFieldDBNames {
+		col := primarySchema.Table + "." + field
+		columns = append(columns, col)
+	}
+	return uow.Count(tx.Table(primarySchema.Table).Distinct(columns)), nil
 }
 
 func setCondition(db *gorm.DB, queryBuilder iuow.QueryBuilder) error {
 	var (
-		tx          = db
-		stmt        = gorm.Statement{DB: db}
+		tx          = db.WithContext(db.Statement.Context)
+		stmt        = gorm.Statement{DB: tx}
 		columns     []string
 		columnTypes []reflect.Type
 		modelSchema *schema.Schema
@@ -289,6 +373,10 @@ func setCondition(db *gorm.DB, queryBuilder iuow.QueryBuilder) error {
 		values    = make([]interface{}, len(columns))
 		rows      *sql.Rows
 	)
+
+	if limit, offset := queryBuilder.Pagination(); offset >= 0 && limit > 0 {
+		tx = tx.Offset(offset).Limit(limit)
+	}
 
 	rows, err = tx.Distinct(columns).Rows()
 	if err != nil {

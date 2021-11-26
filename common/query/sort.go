@@ -2,8 +2,12 @@ package query
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/thoas/go-funk"
 )
 
 var (
@@ -44,7 +48,27 @@ func ParseSort(str, separateFields, separateSortField string) (Sort, error) {
 	return sort, nil
 }
 
-func (s *Sort) Validate(entity interface{}) error {
+func (s *Sort) Validate(mapFields map[string]reflect.StructField) error {
+	// var (
+	// 	notFounds []string
+	// 	mapFields = funk.Map(fields, func(x string) (string, string) { return x, x }).(map[string]string)
+	// )
+	// for sField := range s.FieldsByName {
+	// 	if _, ok := mapFields[sField]; !ok {
+	// 		notFounds = append(notFounds, sField)
+	// 	}
+	// }
+	// if len(notFounds) != 0 {
+	// 	return fmt.Errorf("failed to found sort's fields: %s", strings.Join(notFounds, ", "))
+	// }
+
+	notFounds, err := FindFieldNotExists(funk.Keys(s.FieldsByName).([]string), mapFields)
+	if err != nil {
+		return err
+	}
+	if len(notFounds) != 0 {
+		return fmt.Errorf("failed to found sort's fields: %s", strings.Join(notFounds, ", "))
+	}
 	return nil
 }
 

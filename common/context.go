@@ -1,36 +1,63 @@
 package common
 
 import (
-	"context"
-	"time"
+	ctx "context"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type (
-	Context struct {
-		context.Context
-		Session Session
+	Context interface {
+		ctx.Context
+		SetSession(Session)
+		MustSession() Session
+		Session() (Session, error)
+
+		Localizer() (*i18n.Localizer, error)
+		MustLocalizer() *i18n.Localizer
+		SetLocalizer(*i18n.Localizer)
+	}
+	context struct {
+		ctx.Context
+		session   Session
+		localizer *i18n.Localizer
 	}
 )
 
-func (c Context) WithDeadline(d time.Time) (Context, context.CancelFunc) {
-	ctx, f := context.WithDeadline(c.Context, d)
-	return Context{
+func NewContext(ctx ctx.Context, session Session) Context {
+	return &context{
 		Context: ctx,
-		Session: c.Session,
-	}, f
-}
-
-func (c Context) WithTimeout(timeout time.Duration) (Context, context.CancelFunc) {
-	ctx, f := context.WithTimeout(c.Context, timeout)
-	return Context{
-		Context: ctx,
-		Session: c.Session,
-	}, f
-}
-
-func (c Context) WithValue(key, value interface{}) Context {
-	return Context{
-		Context: context.WithValue(c.Context, key, value),
-		Session: c.Session,
+		session: session,
 	}
+}
+
+func (c *context) WithContext(ctx ctx.Context) Context {
+	return &context{
+		Context: ctx,
+		session: c.session,
+	}
+}
+
+func (c context) Session() (Session, error) {
+	return c.session, nil
+}
+
+func (c context) MustSession() Session {
+	return c.session
+}
+
+func (c *context) SetSession(session Session) {
+	c.session = session
+}
+
+func (c context) Localizer() (*i18n.Localizer, error) {
+	return c.localizer, nil
+}
+
+func (c context) MustLocalizer() *i18n.Localizer {
+	return c.localizer
+}
+
+func (c *context) SetLocalizer(localizer *i18n.Localizer) {
+	c.localizer = localizer
 }

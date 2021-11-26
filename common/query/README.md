@@ -4,7 +4,7 @@
 GET /users
 
 ?sorts=created_at, username:desc // sort by created_at, then descendingly by username
-&filters=username|full_name in admin,administrator | full_name in admin, administrator
+&filters=username|full_name in system,systemistrator | full_name in system, systemistrator
 &page=1
 &page=2
 ```

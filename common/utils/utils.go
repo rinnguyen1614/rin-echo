@@ -1,7 +1,11 @@
 package utils
 
 import (
+	"reflect"
+	"runtime"
 	"strconv"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func ToString(value interface{}) string {
@@ -30,4 +34,28 @@ func ToString(value interface{}) string {
 		return strconv.FormatUint(v, 10)
 	}
 	return ""
+}
+
+func Translate(localizer *i18n.Localizer, msgID, defaultMsg string) string {
+	if localizer == nil {
+		return defaultMsg
+	}
+
+	msg, err := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: msgID,
+		DefaultMessage: &i18n.Message{
+			ID:    msgID,
+			Other: defaultMsg,
+		},
+	})
+
+	if err != nil {
+		return err.Error()
+	}
+
+	return msg
+}
+
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
