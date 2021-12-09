@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	Role_systemistrator = "systemistrator"
-	Role_User           = "user"
+	RoleAdmistrator = "admistrator"
+	RoleUser        = "user"
 )
 
 type Role struct {

@@ -36,7 +36,7 @@ type (
 
 		auther       *jwt.JWT
 		repo         domain.UserRepository
-		repoLoginLog domain.UserLoginLogRepository
+		repoLoginLog domain.SecurityLogRepository
 	}
 )
 
@@ -45,7 +45,7 @@ func NewAccountService(uow iuow.UnitOfWork, logger *zap.Logger, auther *jwt.JWT)
 		Service:      echox.NewService(uow, logger),
 		auther:       auther,
 		repo:         repository.NewUserRepository(uow.DB()),
-		repoLoginLog: repository.NewUserLoginLogRepository(uow.DB()),
+		repoLoginLog: repository.NewSecurityLogRepository(uow.DB()),
 	}
 }
 
@@ -86,7 +86,7 @@ func (s accountService) createLoginLog(username string) {
 		message    string
 	)
 
-	loginLog := domain.NewLoginLog(
+	loginLog := domain.NewSecurityLog(
 		username,
 		location,
 		ipAddress,

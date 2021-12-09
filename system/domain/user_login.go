@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	PROVIDER_PHONE    = "phone"
-	PROVIDER_PASSWORD = "username/password"
+	ProviderPhone    = "phone"
+	ProviderPassword = "username/password"
 )
 
 type UserLogin struct {

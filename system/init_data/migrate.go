@@ -23,10 +23,10 @@ func Migrate(db *gorm.DB) {
 		{
 			ID: "202104050001",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&domain.LoginLog{})
+				return tx.AutoMigrate(&domain.SecurityLog{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&domain.LoginLog{})
+				return tx.Migrator().DropTable(&domain.SecurityLog{})
 			},
 		},
 		{

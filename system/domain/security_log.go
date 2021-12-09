@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type LoginLog struct {
+type SecurityLog struct {
 	domain.CreationEntity
 
 	Username   string    `gorm:"column:username;size:255;"`
@@ -26,7 +26,7 @@ type LoginLog struct {
 	Message    string    `gorm:"column:message;size:255;"`
 }
 
-func NewLoginLog(username string,
+func NewSecurityLog(username string,
 	location string,
 	ipAddress string,
 	userAgent string,
@@ -34,7 +34,7 @@ func NewLoginLog(username string,
 	deviceName string,
 	time time.Time,
 	statusCode int,
-	message string) *LoginLog {
+	message string) *SecurityLog {
 	var (
 		agent                       = user_agent.New(userAgent)
 		browserName, browserVersion = agent.Browser()
@@ -44,7 +44,7 @@ func NewLoginLog(username string,
 		//model                       = agent.Model()
 	)
 
-	return &LoginLog{
+	return &SecurityLog{
 		Username:   username,
 		Location:   location,
 		IPAddress:  ipAddress,
@@ -60,8 +60,8 @@ func NewLoginLog(username string,
 	}
 }
 
-func NewLoginLogFromAuditLog(auditLog AuditLog) *LoginLog {
-	return NewLoginLog(
+func NewSecurityLogFromAuditLog(auditLog AuditLog) *SecurityLog {
+	return NewSecurityLog(
 		auditLog.Username,
 		auditLog.Location,
 		auditLog.IPAddress,
@@ -74,8 +74,8 @@ func NewLoginLogFromAuditLog(auditLog AuditLog) *LoginLog {
 	)
 }
 
-type UserLoginLogRepository interface {
+type SecurityLogRepository interface {
 	iuow.RepositoryOfEntity
 
-	WithTransaction(db *gorm.DB) UserLoginLogRepository
+	WithTransaction(db *gorm.DB) SecurityLogRepository
 }
