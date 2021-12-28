@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	rquery "rin-echo/common/echo/models/query/rest_query"
+	"rin-echo/common/setting"
 
 	"go.uber.org/zap"
 )
@@ -18,13 +19,15 @@ var (
 type Handler struct {
 	Logger *zap.Logger
 
-	RestQuery rquery.RestQuery
+	RestQuery       rquery.RestQuery
+	SettingProvider setting.Provider
 }
 
-func NewHandler(logger *zap.Logger, restQuery rquery.RestQuery) Handler {
+func NewHandler(logger *zap.Logger, restQuery rquery.RestQuery, settingProvider setting.Provider) Handler {
 	return Handler{
-		Logger:    logger,
-		RestQuery: restQuery,
+		Logger:          logger,
+		RestQuery:       restQuery,
+		SettingProvider: settingProvider,
 	}
 }
 

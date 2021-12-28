@@ -4,6 +4,7 @@ import (
 	echox "rin-echo/common/echo"
 	"rin-echo/common/model"
 	"rin-echo/common/query"
+	"rin-echo/common/setting"
 	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
@@ -56,9 +57,9 @@ type (
 	}
 )
 
-func NewUserService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger) UserService {
+func NewUserService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, settingProvider setting.Provider, logger *zap.Logger) UserService {
 	return &userService{
-		Service: echox.NewService(uow, logger),
+		Service: echox.NewService(uow, settingProvider, logger),
 
 		permissionManager: permissionManager,
 		repo:              repository.NewUserRepository(uow.DB()),

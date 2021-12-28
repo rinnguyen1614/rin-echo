@@ -98,3 +98,7 @@ func (v *Validator) Validate(i interface{}) error {
 
 	return NewValidationErrorWithFields(err, fieldErrors)
 }
+
+func (v *Validator) Instance() *validator.Validate {
+	return v.validator
+}

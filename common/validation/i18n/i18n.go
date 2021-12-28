@@ -7,9 +7,9 @@ import (
 	"golang.org/x/text/language"
 )
 
-func RegisterDefaultTranslation(buldle *i18n.Bundle, tag language.Tag) {
+func RegisterDefaultTranslation(bundle *i18n.Bundle, tag language.Tag) {
 	switch tag {
 	case language.English:
-		en.RegisterDefaultTranslation(buldle)
+		en.RegisterDefaultTranslation(bundle)
 	}
 }

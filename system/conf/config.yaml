@@ -3,6 +3,7 @@ app:
   env: development
   max_page_size: 1000
   min_page_size: 10
+  encryption: "VjntyW4KhM"
   resources:
     resource: resources/resource.yaml
     menu: resources/menu.yaml
@@ -15,7 +16,7 @@ casbin:
 
 database:
   driver: postgresql
-  dns: host=localhost user=admin password=admin@0809 dbname=rin_admin port=5432 sslmode=disable
+  dns: host=localhost user=admin password=anhnguyen0809 dbname=rin_admin port=5432 sslmode=disable
   batch_size: 1000
 
 jwt:
@@ -25,4 +26,4 @@ jwt:
 
 server:
   host: localhost
-  port: 0809
+  port: 1809

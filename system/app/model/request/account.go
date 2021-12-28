@@ -6,10 +6,10 @@ type Login struct {
 }
 
 type Register struct {
-	Username string `json:"username" validate:"required,min=5"`
+	Username string `validate:"username_validate"`
 	FullName string `json:"full_name" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
+	Password string `json:"password" validate:"required,password_validate"`
 }
 
 func (r Register) ToCreateUser() CreateUser {
@@ -27,8 +27,8 @@ func (r Register) ToCreateUser() CreateUser {
 
 type ChangePassword struct {
 	Username        string `json:"username" validate:"required"`
-	CurrentPassword string `json:"current_password" validate:"required,min=6"`
-	NewPassword     string `json:"new_password" validate:"required,min=6"`
+	CurrentPassword string `json:"current_password" validate:"required"`
+	NewPassword     string `json:"new_password" validate:"password_validate"`
 }
 
 type UpdateProfile struct {

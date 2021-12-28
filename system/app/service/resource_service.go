@@ -6,6 +6,7 @@ import (
 	gormx "rin-echo/common/gorm"
 	"rin-echo/common/model"
 	"rin-echo/common/query"
+	"rin-echo/common/setting"
 	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
@@ -45,9 +46,9 @@ type (
 	}
 )
 
-func NewResourceService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger) ResourceService {
+func NewResourceService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, settingProvider setting.Provider, logger *zap.Logger) ResourceService {
 	return &resourceService{
-		Service:           echox.NewService(uow, logger),
+		Service:           echox.NewService(uow, settingProvider, logger),
 		permissionManager: permissionManager,
 		repo:              repository.NewResourceRepository(uow.DB()),
 	}

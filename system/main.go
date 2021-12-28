@@ -15,11 +15,15 @@ func main() {
 	initdata.Init()
 	router.RunHTTPServer(inject.GetEcho(), func(g *echo.Group) {
 		http := http.NewHttpServer(
-			app.NewApplication(inject.GetDB(),
+			app.NewApplication(
+				inject.GetConfig(),
+				inject.GetDB(),
+				inject.GetCache(),
 				inject.GetCasbin(),
 				inject.GetLogger(),
 				inject.GetRestQuery(),
-				inject.GetAuther()))
+				inject.GetAuther(),
+				inject.GetValidator()))
 		http.RegisterRouter(g)
 	})
 }

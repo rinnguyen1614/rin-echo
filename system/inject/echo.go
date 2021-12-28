@@ -3,7 +3,6 @@ package inject
 import (
 	echox "rin-echo/common/echo"
 	mwx "rin-echo/common/echo/middleware"
-	"rin-echo/common/validation"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,7 +12,7 @@ import (
 func GetEcho() *echo.Echo {
 	if service.echo == nil {
 		e := echo.New()
-		e.Validator = validation.NewValidator(GetI18n())
+		e.Validator = GetValidator()
 		e.Logger = echox.NewLogger(GetLogger(), "system")
 		e.Logger.SetLevel(log.DEBUG)
 		e.HTTPErrorHandler = echox.HTTPErrorHandlerWrapOnError(GetConfig().IsDevelopment())

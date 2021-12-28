@@ -32,6 +32,8 @@ type (
 		// Env is the environment,which maybe development, testing, production.
 		Env string `json:"env,omitempty" yaml:"env,omitempty" ini:"env,omitempty"`
 
+		Encryption string `json:"encryption,omitempty" yaml:"encryption,omitempty" ini:"encryption,omitempty"`
+
 		MaxPageSize int `json:"max_page_size,omitempty" yaml:"max_page_size,omitempty" ini:"max_page_size,omitempty"`
 		MinPageSize int `json:"min_page_size,omitempty" yaml:"min_page_size,omitempty" ini:"min_page_size,omitempty"`
 

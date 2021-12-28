@@ -4,6 +4,7 @@ import (
 	echox "rin-echo/common/echo"
 	rquery "rin-echo/common/echo/models/query/rest_query"
 	"rin-echo/common/model"
+	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
 
 	"rin-echo/system/app/model/request"
@@ -18,10 +19,15 @@ type RoleHandler struct {
 	service service.RoleService
 }
 
-func NewRoleHandler(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger, restQuery rquery.RestQuery) RoleHandler {
+func NewRoleHandler(uow iuow.UnitOfWork,
+	permissionManager domain.PermissionManager,
+	logger *zap.Logger,
+	restQuery rquery.RestQuery,
+	settingProvider setting.Provider) RoleHandler {
+
 	return RoleHandler{
-		Handler: echox.NewHandler(logger, restQuery),
-		service: service.NewRoleService(uow, permissionManager, logger),
+		Handler: echox.NewHandler(logger, restQuery, settingProvider),
+		service: service.NewRoleService(uow, permissionManager, settingProvider, logger),
 	}
 }
 

@@ -18,6 +18,7 @@ func NewHttpServer(app app.Application) HttpServer {
 func (h HttpServer) RegisterRouter(g *echo.Group) {
 	middleware.AddDefaultMiddleware(g)
 	h.RegisterResourceRouter(g)
+	h.RegisterSettingRouter(g)
 	h.RegisterMenuRouter(g)
 	h.RegisterAccountRouter(g)
 	h.RegisterRoleRouter(g)
