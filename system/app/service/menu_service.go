@@ -4,6 +4,7 @@ import (
 	"rin-echo/common"
 	echox "rin-echo/common/echo"
 	gormx "rin-echo/common/gorm"
+	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
@@ -40,9 +41,9 @@ type (
 	}
 )
 
-func NewMenuService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger) MenuService {
+func NewMenuService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, settingProvider setting.Provider, logger *zap.Logger) MenuService {
 	return &menuService{
-		Service:           echox.NewService(uow, logger),
+		Service:           echox.NewService(uow, settingProvider, logger),
 		permissionManager: permissionManager,
 		repo:              repository.NewMenuRepository(uow.DB()),
 		repoResource:      repository.NewResourceRepository(uow.DB()),

@@ -1,6 +1,7 @@
 package echo
 
 import (
+	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
 
@@ -10,25 +11,28 @@ import (
 
 type (
 	Service struct {
-		Uow       iuow.UnitOfWork
-		Localizer *i18n.Localizer
-		Logger    *zap.Logger
-		ctx       Context
+		Uow             iuow.UnitOfWork
+		SettingProvider setting.Provider
+		Localizer       *i18n.Localizer
+		Logger          *zap.Logger
+		ctx             Context
 	}
 )
 
-func NewService(uow iuow.UnitOfWork, logger *zap.Logger) *Service {
+func NewService(uow iuow.UnitOfWork, settingProvider setting.Provider, logger *zap.Logger) *Service {
 	return &Service{
-		Logger: logger,
-		Uow:    uow,
+		Logger:          logger,
+		Uow:             uow,
+		SettingProvider: settingProvider,
 	}
 }
 
-func NewServiceWithContext(ctx Context, uow iuow.UnitOfWork, logger *zap.Logger) Service {
+func NewServiceWithContext(ctx Context, uow iuow.UnitOfWork, settingProvider setting.Provider, logger *zap.Logger) Service {
 	return Service{
-		ctx:    ctx,
-		Uow:    uow.WithContext(ctx.RequestContext()),
-		Logger: logger,
+		ctx:             ctx,
+		Uow:             uow.WithContext(ctx.RequestContext()),
+		SettingProvider: settingProvider,
+		Logger:          logger,
 	}
 }
 
@@ -44,6 +48,7 @@ func (s *Service) WithContext(ctx Context) *Service {
 	*s2 = *s
 	s2.ctx = ctx
 	s2.Uow = s.Uow.WithContext(ctx.RequestContext())
+	s2.SettingProvider = s.SettingProvider.WithContext(ctx.RequestContext())
 
 	localizer, _ := ctx.Localizer()
 	s2.Localizer = localizer

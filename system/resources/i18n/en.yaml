@@ -11,6 +11,12 @@ token_missing:
 username_password_not_match:
   other: "Your username and password didn't match. Please try again"
 
+username_validate:
+  other: "Username must be between 6 and 30 characters that contains only letters (a-z) and number (0-9) "
+
+password_validate: 
+  other: "Password must be at least 8 characters in length that contains at least one uppercase letter, one lowercase letter, one number, one special character"
+
 "400":
   other: "The request was unacceptable, often due to missing a required parameter."
   description: "Requests without authentication or with invalid query parameters are considered invalid and will yield this response.."

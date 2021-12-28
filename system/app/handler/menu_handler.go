@@ -4,6 +4,7 @@ import (
 	echox "rin-echo/common/echo"
 	rquery "rin-echo/common/echo/models/query/rest_query"
 	"rin-echo/common/model"
+	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
 
 	"rin-echo/system/app/model/request"
@@ -18,10 +19,15 @@ type MenuHandler struct {
 	service service.MenuService
 }
 
-func NewMenuHandler(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger, restQuery rquery.RestQuery) MenuHandler {
+func NewMenuHandler(uow iuow.UnitOfWork,
+	permissionManager domain.PermissionManager,
+	logger *zap.Logger,
+	restQuery rquery.RestQuery,
+	settingProvider setting.Provider) MenuHandler {
+
 	return MenuHandler{
-		Handler: echox.NewHandler(logger, restQuery),
-		service: service.NewMenuService(uow, permissionManager, logger),
+		Handler: echox.NewHandler(logger, restQuery, settingProvider),
+		service: service.NewMenuService(uow, permissionManager, settingProvider, logger),
 	}
 }
 

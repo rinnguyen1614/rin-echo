@@ -2,8 +2,10 @@ package inject
 
 import (
 	"rin-echo/common/auth/jwt"
+	"rin-echo/common/cache"
 	"rin-echo/common/config"
 	"rin-echo/common/echo/models/query/rest_query"
+	"rin-echo/common/validation"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
@@ -21,14 +23,16 @@ func init() {
 }
 
 type Service struct {
-	cfg      *config.Config
-	db       *gorm.DB
-	logger   *zap.Logger
-	auther   *jwt.JWT
-	echo     *echo.Echo
-	enforcer *casbin.SyncedEnforcer
-	i18n     *i18n.Bundle
-	query    rest_query.RestQuery
+	cfg       *config.Config
+	db        *gorm.DB
+	cache     *cache.CacheManager
+	logger    *zap.Logger
+	auther    *jwt.JWT
+	echo      *echo.Echo
+	enforcer  *casbin.SyncedEnforcer
+	i18n      *i18n.Bundle
+	query     rest_query.RestQuery
+	validator *validation.Validator
 }
 
 func GetConfig() *config.Config {

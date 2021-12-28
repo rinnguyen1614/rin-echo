@@ -34,7 +34,7 @@ func (m *CacheManager) Register(name string, cache Cache) {
 		panic("cache: Register cache is nil")
 	}
 
-	if cache := m.Get(name); cache == nil {
+	if cache := m.Get(name); cache != nil {
 		panic("cache: Register called twice for cache " + name)
 	}
 

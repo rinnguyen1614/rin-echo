@@ -30,6 +30,15 @@ func Migrate(db *gorm.DB) {
 			},
 		},
 		{
+			ID: "202104050002",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&domain.Setting{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&domain.Setting{})
+			},
+		},
+		{
 			ID: "202104050100",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(&domain.Resource{})

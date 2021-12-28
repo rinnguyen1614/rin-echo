@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -24,4 +25,52 @@ type Cache interface {
 	IsExist(ctx context.Context, key string) (bool, error)
 	// Clear all cache.
 	ClearAll(ctx context.Context) error
+}
+
+type (
+	Factory func(key string) (value interface{})
+)
+
+func GetOrCreate(cache Cache, ctx context.Context, key string, factory Factory) (interface{}, error) {
+	value, err := cache.Get(ctx, key)
+	if err != nil {
+		if !errors.Is(err, ErrKeyDoNotExists) {
+			return nil, err
+		}
+		value = factory(key)
+		if err = cache.Set(ctx, key, value, 0); err != nil {
+			return nil, err
+		}
+	}
+
+	return value, nil
+}
+
+func GetOrCreateMulti(cache Cache, ctx context.Context, keys []string, factory Factory) ([]interface{}, error) {
+	values, err := cache.GetMulti(ctx, keys...)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(values) == 0 {
+		values = make([]interface{}, len(keys))
+	}
+
+	for i, value := range values {
+		if value != nil {
+			continue
+		}
+
+		var (
+			key      = keys[i]
+			newValue = factory(key)
+		)
+
+		if err = cache.Set(ctx, key, newValue, 0); err != nil {
+			return nil, err
+		}
+
+		values[i] = newValue
+	}
+	return values, nil
 }

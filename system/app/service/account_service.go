@@ -3,6 +3,7 @@ package service
 import (
 	"rin-echo/common/auth/jwt"
 	echox "rin-echo/common/echo"
+	"rin-echo/common/setting"
 	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters/repository"
@@ -36,16 +37,16 @@ type (
 
 		auther       *jwt.JWT
 		repo         domain.UserRepository
-		repoLoginLog domain.SecurityLogRepository
+		repoSecurity domain.SecurityLogRepository
 	}
 )
 
-func NewAccountService(uow iuow.UnitOfWork, logger *zap.Logger, auther *jwt.JWT) AccountService {
+func NewAccountService(uow iuow.UnitOfWork, settingProvider setting.Provider, logger *zap.Logger, auther *jwt.JWT) AccountService {
 	return &accountService{
-		Service:      echox.NewService(uow, logger),
+		Service:      echox.NewService(uow, settingProvider, logger),
 		auther:       auther,
 		repo:         repository.NewUserRepository(uow.DB()),
-		repoLoginLog: repository.NewSecurityLogRepository(uow.DB()),
+		repoSecurity: repository.NewSecurityLogRepository(uow.DB()),
 	}
 }
 
@@ -54,14 +55,14 @@ func (s *accountService) WithContext(ctx echox.Context) AccountService {
 		Service:      s.Service.WithContext(ctx),
 		auther:       s.auther,
 		repo:         s.repo.WithTransaction(s.Service.Uow.DB()),
-		repoLoginLog: s.repoLoginLog.WithTransaction(s.Service.Uow.DB()),
+		repoSecurity: s.repoSecurity.WithTransaction(s.Service.Uow.DB()),
 	}
 }
 
 func (s accountService) Login(cmd request.Login) (interface{}, error) {
 
 	defer func() {
-		s.createLoginLog(cmd.Username)
+		s.createSecurityLog(cmd.Username, "login")
 	}()
 
 	user, err := s.getUserByUserNameAndPassword(cmd.Username, cmd.Password)
@@ -73,7 +74,7 @@ func (s accountService) Login(cmd request.Login) (interface{}, error) {
 	return s.token(user)
 }
 
-func (s accountService) createLoginLog(username string) {
+func (s accountService) createSecurityLog(username, message string) {
 	var (
 		ctx        = s.Context()
 		location   string
@@ -83,7 +84,6 @@ func (s accountService) createLoginLog(username string) {
 		deviceName = ctx.Request().Header.Get(echox.HeaderDeviceName)
 		time       = time.Now()
 		statusCode int
-		message    string
 	)
 
 	loginLog := domain.NewSecurityLog(
@@ -98,13 +98,21 @@ func (s accountService) createLoginLog(username string) {
 		message,
 	)
 
-	s.repoLoginLog.Create(loginLog)
+	s.repoSecurity.Create(loginLog)
 }
 
 func (s accountService) ChangePassword(cmd request.ChangePassword) (interface{}, error) {
+	defer func() {
+		s.createSecurityLog(cmd.Username, "change_password")
+	}()
+
 	user, err := s.getUserByUserNameAndPassword(cmd.Username, cmd.CurrentPassword)
 
-	if err := s.repo.UpdatePassword(user, cmd.NewPassword); err != nil {
+	if err != nil {
+		return nil, err
+	}
+
+	if err = s.repo.UpdatePassword(user, cmd.NewPassword); err != nil {
 		return nil, err
 	}
 
@@ -134,11 +142,15 @@ func (s accountService) Profile(id uint) (response.Profile, error) {
 }
 
 func (s accountService) UpdateProfile(id uint, cmd request.UpdateProfile) error {
+
 	var user domain.User
 	if err := s.repo.GetID(&user, id, nil); err != nil {
 		return err
 	}
 
+	defer func() {
+		s.createSecurityLog(user.Username, "update_profile")
+	}()
 	return nil
 }
 
@@ -185,4 +197,8 @@ func (s accountService) getUserByUserNameAndPassword(username, password string) 
 		return nil, errors.ErrUserNamePasswordNotMatch
 	}
 	return user, nil
+}
+
+func (s accountService) checkPassword(password string) {
+
 }

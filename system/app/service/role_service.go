@@ -2,6 +2,7 @@ package service
 
 import (
 	echox "rin-echo/common/echo"
+	"rin-echo/common/setting"
 	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters/repository"
@@ -46,9 +47,9 @@ type (
 	}
 )
 
-func NewRoleService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger) RoleService {
+func NewRoleService(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, settingProvider setting.Provider, logger *zap.Logger) RoleService {
 	return &roleService{
-		Service: echox.NewService(uow, logger),
+		Service: echox.NewService(uow, settingProvider, logger),
 
 		permissionManager: permissionManager,
 		repo:              repository.NewRoleRepository(uow.DB()),

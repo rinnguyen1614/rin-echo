@@ -3,6 +3,7 @@ package handler
 import (
 	echox "rin-echo/common/echo"
 	"rin-echo/common/model"
+	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
 
 	"rin-echo/system/app/model/request"
@@ -19,10 +20,14 @@ type UserHandler struct {
 	service service.UserService
 }
 
-func NewUserHandler(uow iuow.UnitOfWork, permissionManager domain.PermissionManager, logger *zap.Logger, restQuery rquery.RestQuery) UserHandler {
+func NewUserHandler(uow iuow.UnitOfWork,
+	permissionManager domain.PermissionManager,
+	logger *zap.Logger,
+	restQuery rquery.RestQuery,
+	settingProvider setting.Provider) UserHandler {
 	return UserHandler{
-		Handler: echox.NewHandler(logger, restQuery),
-		service: service.NewUserService(uow, permissionManager, logger),
+		Handler: echox.NewHandler(logger, restQuery, settingProvider),
+		service: service.NewUserService(uow, permissionManager, settingProvider, logger),
 	}
 }
 

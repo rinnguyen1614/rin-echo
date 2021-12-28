@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	c, err := NewRedisCache("redis-14954.c289.us-west-1-2.ec2.cloud.redislabs.com:14954")
+	c, err := NewRedisCache("redis://admin:admin0809@localhost:6379/3?dial_timeout=3&db=1&read_timeout=6s&max_retries=2")
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +22,7 @@ func init() {
 }
 
 func TestRedisCache(t *testing.T) {
-	expiration := 3 * time.Second
+	expiration := 5 * time.Second
 
 	assert.Nil(t, rc.Set(ctx, "key", 1, expiration))
 
@@ -42,13 +42,13 @@ func TestRedisCache(t *testing.T) {
 	// test incr
 	incr, err := rc.Incr(ctx, "key")
 	assert.Nil(t, err)
-	assert.Equal(t, 2, incr)
+	assert.Equal(t, int64(2), incr)
 
 	// test decr
 	decr, err := rc.Decr(ctx, "key")
 	assert.Nil(t, err)
 	val, _ = rc.Get(ctx, "key")
-	assert.Equal(t, 1, decr)
+	assert.Equal(t, int64(1), decr)
 	rc.Delete(ctx, "key")
 
 	res, _ = rc.IsExist(ctx, "key")
