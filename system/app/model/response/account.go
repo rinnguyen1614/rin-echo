@@ -27,18 +27,16 @@ func NewProfile(user domain.User) Profile {
 type UserMenu struct {
 	model.Model
 
-	Name      string `json:"name" `
-	Slug      string `json:"slug" `
-	ParentID  uint   `json:"parent_id" `
-	Path      string `json:"path" `
-	Component string `json:"component"`
-	Sort      int    `json:"sort"`
-	Type      string `json:"type"`
-	Meta      struct {
-		Title string `json:"title"`
-		Icon  string `json:"icon"`
-	}
-	Children UserMenus
+	Name      string    `json:"name" `
+	Slug      string    `json:"slug" `
+	ParentID  uint      `json:"parent_id" `
+	Path      string    `json:"path" `
+	Component string    `json:"component"`
+	Sort      int       `json:"sort"`
+	Type      string    `json:"type"`
+	Title     string    `json:"title"`
+	Icon      string    `json:"icon"`
+	Children  UserMenus `json:"children"`
 }
 
 func NewUserMenu(e domain.Menu) UserMenu {
@@ -51,11 +49,39 @@ func NewUserMenu(e domain.Menu) UserMenu {
 		Component: e.Component,
 		Sort:      e.Sort,
 		Type:      e.Type,
-		Meta: struct {
-			Title string `json:"title"`
-			Icon  string `json:"icon"`
-		}(e.Meta),
+		Title:     e.Title,
+		Icon:      e.Icon,
 	}
 }
 
 type UserMenus []UserMenu
+
+type UserPermission struct {
+	Name    string   `json:"name"`
+	Actions []string `json:"actions"`
+}
+
+type UserPermissions []*UserPermission
+
+func NewUserPermissions(fields []map[string]interface{}) UserPermissions {
+	var (
+		mapByParentSlug = make(map[string]*UserPermission)
+		result          UserPermissions
+	)
+
+	for _, field := range fields {
+		parentSlug := field["parent_slug"].(string)
+		m, ok := mapByParentSlug[parentSlug]
+		if !ok {
+			m = &UserPermission{
+				Name:    parentSlug,
+				Actions: make([]string, 0),
+			}
+			result = append(result, m)
+			mapByParentSlug[parentSlug] = m
+		}
+		m.Actions = append(m.Actions, field["slug"].(string))
+	}
+
+	return result
+}

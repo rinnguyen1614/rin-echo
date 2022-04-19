@@ -187,7 +187,7 @@ func RequestLoggerWithConfig(config RequestLoggerConfig) echo.MiddlewareFunc {
 			}
 			if config.LogRequestBody {
 				if req.Method != http.MethodGet && req.Body != nil {
-					requestBody, err = ioutil.ReadAll(req.Body) // read
+					requestBody, err := ioutil.ReadAll(req.Body) // read
 					if err != nil {
 						echox.Logj(logger, log.ErrorLevel, map[string]interface{}{
 							"message": "Read body from request error",

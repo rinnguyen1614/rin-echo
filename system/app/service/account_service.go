@@ -27,7 +27,9 @@ type (
 
 		Profile(id uint) (response.Profile, error)
 
-		FindMenuTrees(userId uint) (response.UserMenus, error)
+		FindMenuTrees(userID uint) (response.UserMenus, error)
+
+		FindPermissions(userID uint) (response.UserPermissions, error)
 
 		WithContext(ctx echox.Context) AccountService
 	}
@@ -160,7 +162,7 @@ func (s accountService) FindMenuTrees(userId uint) (response.UserMenus, error) {
 		menus    domain.Menus
 		result   response.UserMenus
 	)
-	if err := uow.Find(repoMenu.QueryByUsers([]uint{userId}, nil), &menus); err != nil {
+	if err := uow.Find(repoMenu.QueryByUser(userId, nil), &menus); err != nil {
 		return nil, err
 	}
 
@@ -169,6 +171,19 @@ func (s accountService) FindMenuTrees(userId uint) (response.UserMenus, error) {
 	}
 
 	return result, nil
+}
+
+func (s accountService) FindPermissions(userId uint) (response.UserPermissions, error) {
+	var (
+		repoPermission = repository.NewPermissionRepository(s.Uow.DB())
+		fields, err    = repoPermission.FindByUser(userId)
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response.NewUserPermissions(fields), nil
 }
 
 func (s accountService) token(user *domain.User) (interface{}, error) {

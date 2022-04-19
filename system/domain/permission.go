@@ -107,4 +107,6 @@ type PermissionRepository interface {
 	WithTransaction(db *gorm.DB) PermissionRepository
 
 	QueryByResources(resourceIDs []uint, preloads map[string][]interface{}) *gorm.DB
+
+	FindByUser(userID uint) ([]map[string]interface{}, error)
 }

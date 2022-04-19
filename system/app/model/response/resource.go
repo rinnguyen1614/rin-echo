@@ -13,7 +13,7 @@ type Resource struct {
 	Path        string `json:"path"`
 	Method      string `json:"method"`
 	Description string `json:"description"`
-	ParentID    *uint  `json:"parent_id"`
+	ParentID    uint   `json:"parent_id"`
 	Menus       []struct {
 		model.Model
 
@@ -31,7 +31,7 @@ func NewResource(e domain.Resource) Resource {
 		Path:        e.Path,
 		Method:      e.Method,
 		Description: e.Description,
-		ParentID:    e.ParentID,
+		ParentID:    *e.ParentID,
 	}
 }
 

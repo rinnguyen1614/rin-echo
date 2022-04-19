@@ -16,10 +16,8 @@ type Menu struct {
 	Component string `json:"component"`
 	Sort      int    `json:"sort"`
 	Type      string `json:"type"`
-	Meta      struct {
-		Title string `json:"title"`
-		Icon  string `json:"icon"`
-	}
+	Title     string `json:"title"`
+	Icon      string `json:"icon"`
 }
 
 func NewMenu(e domain.Menu) Menu {
@@ -33,10 +31,8 @@ func NewMenu(e domain.Menu) Menu {
 		Component:              e.Component,
 		Sort:                   e.Sort,
 		Type:                   e.Type,
-		Meta: struct {
-			Title string `json:"title"`
-			Icon  string `json:"icon"`
-		}(e.Meta),
+		Icon:                   e.Icon,
+		Title:                  e.Title,
 	}
 }
 

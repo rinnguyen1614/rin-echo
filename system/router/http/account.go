@@ -22,5 +22,6 @@ func (h HttpServer) RegisterAccountRouter(g *echo.Group) {
 		router.GET("/token_info", echox.WrapHandler(h.app.AccountHandler.TokenInfo))
 		router.GET("/profile", echox.WrapHandler(h.app.AccountHandler.Profile))
 		router.GET("/menus", echox.WrapHandler(h.app.AccountHandler.Menus))
+		router.GET("/permissions", echox.WrapHandler(h.app.AccountHandler.Permissions))
 	}
 }

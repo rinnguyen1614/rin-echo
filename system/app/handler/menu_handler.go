@@ -91,3 +91,19 @@ func (h MenuHandler) Get(c echox.Context) error {
 	// echox.OKWithData(c, result)
 	return nil
 }
+
+func (h MenuHandler) TreeQuery(c echox.Context) error {
+	query, err := h.RestQuery.Query(c.Request())
+
+	if err != nil {
+		return err
+	}
+	result, err := h.service.WithContext(c).FindTrees(query)
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, result)
+
+	return nil
+}

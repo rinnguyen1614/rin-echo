@@ -15,6 +15,10 @@ func (cmd ResourceCommon) IsEmptyPathAndMethod() bool {
 	return cmd.Path == "" || cmd.Method == ""
 }
 
+func (cmd ResourceCommon) IsEqualPathAndMethod(path, method string) bool {
+	return cmd.Path == path && cmd.Method == method
+}
+
 type CreateResource struct {
 	ResourceCommon
 

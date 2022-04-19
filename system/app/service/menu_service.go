@@ -4,14 +4,20 @@ import (
 	"rin-echo/common"
 	echox "rin-echo/common/echo"
 	gormx "rin-echo/common/gorm"
+	"rin-echo/common/model"
+	"rin-echo/common/query"
 	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
+	"rin-echo/common/utils"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
+	"rin-echo/system/app/model/response"
 	"rin-echo/system/domain"
 	"rin-echo/system/domain/query_builder"
+	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
 
+	"github.com/jinzhu/copier"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 )
@@ -30,7 +36,7 @@ type (
 
 		// Find(q *query.Query) (*model.QueryResult, error)
 
-		// FindTrees(q *query.Query) (*model.QueryResult, error)
+		FindTrees(q *query.Query) (*model.QueryResult, error)
 	}
 
 	menuService struct {
@@ -81,7 +87,7 @@ func (s menuService) Create(cmd request.CreateMenu) (uint, error) {
 }
 
 func (s menuService) createRecursive(cmd request.CreateMenu, parent *domain.Menu) (uint, error) {
-	menu, err := domain.NewMenu(cmd.Name, cmd.Slug, cmd.Path, cmd.Hidden, cmd.Component, cmd.Sort, cmd.Type, domain.Meta(cmd.Meta), parent, cmd.ResourceIDs)
+	menu, err := domain.NewMenu(cmd.Name, cmd.Slug, cmd.Path, cmd.Hidden, cmd.Component, cmd.Sort, cmd.Type, cmd.Icon, cmd.Title, parent, cmd.ResourceIDs)
 	if err != nil {
 		return 0, err
 	}
@@ -129,7 +135,7 @@ func (s menuService) Update(id uint, cmd request.UpdateMenu) (err error) {
 		}
 
 		cmd.Populate(&menu)
-		if err = repo.Update(menu); err != nil {
+		if err = repo.Update(&menu); err != nil {
 			return err
 		}
 
@@ -388,4 +394,52 @@ func (s menuService) CheckExistResources(resourceIDs []uint, indexsByResourceID 
 	}
 
 	return nil
+}
+
+func (s menuService) FindTrees(q *query.Query) (*model.QueryResult, error) {
+	var (
+		repo            = s.repo
+		queryBuilder    = querybuilder.NewMenuQueryBuilder()
+		preloadBuilders = map[string]iuow.QueryBuilder{
+			"Resources": querybuilder.NewResourceQueryBuilder(),
+		}
+		srcModels = new(domain.Menus)
+		desModel  = response.MenuTree{}
+		nChild    = 4
+	)
+
+	fields, _, err := utils.GetFullFieldsByJsonTag(desModel)
+	// remove children because "resource" table don't contains "children" field.
+	delete(fields, "children")
+
+	totalRecords, err := q.BindQueryBuilder(queryBuilder, preloadBuilders, repo.DB(), fields)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = repo.QueryBuilderFind(srcModels, queryBuilder); err != nil {
+		return nil, err
+	}
+
+	selects := q.FlatSelect()
+	// nests n child, child has fields that includes by all fields of root
+	for i, preChil, fields := 0, "", selects; i < nChild; i++ {
+		preChil += "children."
+		for _, f := range fields {
+			selects = append(selects, preChil+f)
+		}
+	}
+
+	// new slice of desModel with fields that get from query' selects
+	prune, err := utils.NewSliceOfStructsByTag(desModel, selects, "json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = copier.CopyWithOption(prune, srcModels.ToTree(), copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewQueryResult(prune, totalRecords, q.Paging().Limit, q.Paging().Offset), nil
 }

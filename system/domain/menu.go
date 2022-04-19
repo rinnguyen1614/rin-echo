@@ -26,19 +26,15 @@ type Menu struct {
 	Sort      int    `gorm:"column:sort;index;size:4;default:0;"`
 	MenuLevel uint   `gorm:"column:menu_level;size:4;default:0;"`
 	Type      string `gorm:"column:type;size:2;index;"`
-	Meta
+	Title     string `gorm:"column:title;size:255"`
+	Icon      string `gorm:"column:icon;size:128;"`
 
 	Resources   Resources `gorm:"many2many:menu_resources"`
 	Permissions Permissions
 	Children    Menus `gorm:"-"`
 }
 
-type Meta struct {
-	Title string `gorm:"column:title;size:255"`
-	Icon  string `gorm:"column:icon;size:128;"`
-}
-
-func NewMenu(name string, slug string, path string, hidden bool, component string, sort int, typ string, meta Meta, parent *Menu, resourceIDs []uint) (*Menu, error) {
+func NewMenu(name string, slug string, path string, hidden bool, component string, sort int, typ string, icon, title string, parent *Menu, resourceIDs []uint) (*Menu, error) {
 	m := &Menu{
 		Name:      name,
 		Slug:      slug,
@@ -46,6 +42,8 @@ func NewMenu(name string, slug string, path string, hidden bool, component strin
 		Hidden:    hidden,
 		Component: component,
 		Sort:      sort,
+		Icon:      icon,
+		Title:     title,
 	}
 
 	if typ != "" {
@@ -57,7 +55,6 @@ func NewMenu(name string, slug string, path string, hidden bool, component strin
 		m.SetTypeDefault()
 	}
 
-	m.SetMeta(meta)
 	m.SetParent(parent)
 	m.AssignToResources(resourceIDs)
 
@@ -81,10 +78,6 @@ func (m *Menu) AssignToResources(resourceIDs []uint) {
 	for _, rID := range resourceIDs {
 		m.AssignToResource(rID)
 	}
-}
-
-func (m *Menu) SetMeta(meta Meta) {
-	m.Meta = meta
 }
 
 func (m *Menu) SetParent(parent *Menu) {
@@ -162,5 +155,5 @@ type MenuRepository interface {
 
 	WithTransaction(db *gorm.DB) MenuRepository
 
-	QueryByUsers(userIDs []uint, preloads map[string][]interface{}) *gorm.DB
+	QueryByUser(userID uint, preloads map[string][]interface{}) *gorm.DB
 }

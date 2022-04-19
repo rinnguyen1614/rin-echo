@@ -123,7 +123,7 @@ func (s resourceService) Update(id uint, cmd request.UpdateResource) (err error)
 				return err
 			}
 		}
-		if !cmd.IsEmptyPathAndMethod() {
+		if !cmd.IsEqualPathAndMethod(resource.Path, resource.Method) {
 			if err = s.CheckExistPathAndMethod(cmd.Path, cmd.Method); err != nil {
 				return err
 			}
@@ -151,7 +151,7 @@ func (s resourceService) Update(id uint, cmd request.UpdateResource) (err error)
 		updatePermission = cmd.Path != resource.Path || cmd.Method != resource.Method
 
 		cmd.Populate(&resource)
-		if err := repo.Update(resource); err != nil {
+		if err := repo.Update(&resource); err != nil {
 			return err
 		}
 

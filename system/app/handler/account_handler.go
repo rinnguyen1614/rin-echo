@@ -193,6 +193,17 @@ func (h AccountHandler) Menus(c echox.Context) error {
 	return nil
 }
 
+func (h AccountHandler) Permissions(c echox.Context) error {
+	session := c.MustSession()
+	result, err := h.service.WithContext(c).FindPermissions(session.UserID())
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, result)
+	return nil
+}
+
 func (h AccountHandler) Setting(c echox.Context) error {
 	return nil
 }

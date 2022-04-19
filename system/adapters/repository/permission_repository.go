@@ -59,3 +59,17 @@ func (r permissionRepository) FindByMenus(menuIDs []uint, preloads map[string][]
 
 	return des, nil
 }
+
+func (r permissionRepository) FindByUser(userID uint) ([]map[string]interface{}, error) {
+	var des = make([]map[string]interface{}, 0)
+
+	if err := uow.Find(r.Query(nil, nil).
+		Joins("inner join menus on menus.id = permissions.menu_id").
+		Joins("inner join menus as parent_menus on parent_menus.id = menus.parent_id").
+		Joins("inner join user_roles on user_roles.role_id = permissions.role_id and user_roles.user_id = ?", userID).
+		Select("menus.slug, parent_menus.slug as parent_slug"), &des); err != nil {
+		return nil, err
+	}
+
+	return des, nil
+}

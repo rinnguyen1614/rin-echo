@@ -23,8 +23,8 @@ func (repo *menuRepository) WithTransaction(db *gorm.DB) domain.MenuRepository {
 	}
 }
 
-func (r menuRepository) QueryByUsers(userIDs []uint, preloads map[string][]interface{}) *gorm.DB {
+func (r menuRepository) QueryByUser(userID uint, preloads map[string][]interface{}) *gorm.DB {
 	return r.Query(nil, preloads).
 		Joins("inner join permissions on menus.id = permissions.menu_id and permissions.is_granted = 'true'").
-		Joins("inner join user_roles on permissions.role_id = user_roles.role_id and user_roles.user_id IN ?", userIDs)
+		Joins("inner join user_roles on permissions.role_id = user_roles.role_id and user_roles.user_id = ?", userID)
 }
