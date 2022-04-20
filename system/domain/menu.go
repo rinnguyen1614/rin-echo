@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	MenuTypes       = []string{"M", "A"} // M: Menu, A: Action
+	MenuTypes       = []string{"M", "MI", "A"} // M: Menu, MI: Menu Item, A: Action
 	MenuTypeDefault = "M"
 )
 

@@ -18,6 +18,10 @@ func NewPermissionManager(e *casbin.SyncedEnforcer) domain.PermissionManager {
 	}
 }
 
+func (m permissionManager) HasPermissionForRole(roleID uint, resource domain.Resource) bool {
+	return m.enforcer.HasPermissionForUser(utils.ToString(roleID), resource.Path, resource.Method)
+}
+
 func (m permissionManager) AddRole(roleID uint) (bool, error) {
 	return m.enforcer.AddNamedGroupingPolicy("g", utils.ToString(roleID))
 }

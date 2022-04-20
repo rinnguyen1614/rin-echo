@@ -24,7 +24,7 @@ func ConvertMapToSliceOfValues(dest interface{}, src interface{}) error {
 	}
 
 	if destReflectValue.Kind() != reflect.Slice {
-		return errors.New("The dest's not a slice type")
+		return errors.New("The dest isn't a slice type")
 	}
 
 	isSrcPtr := srcReflectValue.Type().Elem().Kind() == reflect.Ptr
@@ -54,7 +54,7 @@ func ConvertMapToStruct(dest interface{}, src map[string]interface{}) error {
 	destReflectValue := reflect.ValueOf(dest)
 
 	if destReflectValue.Kind() != reflect.Ptr || destReflectValue.IsNil() {
-		return errors.New("dest requires non-nil pointer")
+		return errors.New("The dest requires non-nil pointer")
 	}
 
 	destReflectValue = destReflectValue.Elem()

@@ -1,115 +1,115 @@
-- name: systemistrator
-  slug: systemistrator
+- name: Aministration
+  slug: admin
   children:
-    - name: Resource
-      slug: resource
+    - name: Resources
+      slug: resources
       children:
         - name: Get List Resources
-          slug: resource:get_list
+          slug: resources:get_list
           path: /api/v1/resources
           method: GET
         - name: Get Resource
-          slug: resource:get
+          slug: resources:get
           path: /api/v1/resources/:id
           method: GET
         - name: Get Resource Trees
-          slug: resource:get_tree
+          slug: resources:get_tree
           path: /api/v1/resources/tree
           method: GET
         - name: Create Resource
-          slug: resource:create
+          slug: resources:create
           path: /api/v1/resources
           method: POST
         - name: Update Resource
-          slug: resource:update
+          slug: resources:update
           path: /api/v1/resources/:id
           method: PUT
         - name: Delete Resource
-          slug: resource:delete
+          slug: resources:delete
           path: /api/v1/resources/:id
           method: DELETE
-    - name: Menu
-      slug: menu
+    - name: Menus
+      slug: menus
       children:
         - name: Get List Menus
-          slug: menu:get_list
+          slug: menus:get_list
           path: /api/v1/menus
           method: GET
         - name: Get Menu
-          slug: menu:get
+          slug: menus:get
           path: /api/v1/menus/:id
           method: GET
         - name: Get Menu Trees
-          slug: menu:get_tree
+          slug: menus:get_tree
           path: /api/v1/menus/tree
           method: GET
         - name: Create Menu
-          slug: menu:create
+          slug: menus:create
           path: /api/v1/menus
           method: POST
         - name: Update Menu
-          slug: menu:update
+          slug: menus:update
           path: /api/v1/menus/:id
           method: PUT
         - name: Delete Menu
-          slug: menu:delete
+          slug: menus:delete
           path: /api/v1/menus/:id
           method: DELETE
-    - name: User
-      slug: user
-      children:
-        - name: Get List Users
-          slug: user:get_list
-          path: /api/v1/users
-          method: GET
-        - name: Get User
-          slug: user:get
-          path: /api/v1/users/:id
-          method: GET
-        - name: Create User
-          slug: user:create
-          path: /api/v1/users
-          method: POST
-        - name: Update User
-          slug: user:update
-          path: /api/v1/users/:id
-          method: PUT
-        - name: Delete User
-          slug: user:delete
-          path: /api/v1/users/:id
-          method: DELETE
-        - name: Disable User
-          slug: user:disable
-          path: /api/v1/users/:id/disable
-          method: PATH
-        - name: Enable User
-          slug: user:enable
-          path: "/api/v1/users/:id/enable"
-          method: PATH
-    - name: Role
-      slug: role
+    - name: Roles
+      slug: roles
       children:
         - name: Get List Roles
-          slug: role:get_list
+          slug: roles:get_list
           path: /api/v1/roles
           method: GET
         - name: Get Role
-          slug: role:get
+          slug: roles:get
           path: /api/v1/roles/:id
           method: GET
         - name: Create Role
-          slug: role:create
+          slug: roles:create
           path: /api/v1/roles
           method: POST
         - name: Update Role
-          slug: role:update
+          slug: roles:update
           path: /api/v1/roles/:id
           method: PUT
         - name: Delete Role
-          slug: role:delete
+          slug: roles:delete
           path: /api/v1/roles/:id
           method: DELETE
         - name: Select Role
-          slug: role:select
+          slug: roles:select
           path: /api/v1/roles/select
           method: GET
+    - name: Users
+      slug: users
+      children:
+        - name: Get List Users
+          slug: users:get_list
+          path: /api/v1/users
+          method: GET
+        - name: Get User
+          slug: users:get
+          path: /api/v1/users/:id
+          method: GET
+        - name: Create User
+          slug: users:create
+          path: /api/v1/users
+          method: POST
+        - name: Update User
+          slug: users:update
+          path: /api/v1/users/:id
+          method: PUT
+        - name: Delete User
+          slug: users:delete
+          path: /api/v1/users/:id
+          method: DELETE
+        - name: Disable User
+          slug: users:disable
+          path: /api/v1/users/:id/disable
+          method: PATH
+        - name: Enable User
+          slug: users:enable
+          path: /api/v1/users/:id/enable
+          method: PATH

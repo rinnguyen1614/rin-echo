@@ -1,6 +1,8 @@
 package domain
 
 type PermissionManager interface {
+	HasPermissionForRole(roleID uint, resource Resource) bool
+
 	AddRole(roleID uint) (bool, error)
 
 	AddRoleForUser(userID uint, roleID uint) (bool, error)

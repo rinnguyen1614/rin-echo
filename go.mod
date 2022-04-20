@@ -3,7 +3,7 @@ module rin-echo
 go 1.16
 
 require (
-	github.com/casbin/casbin/v2 v2.37.4
+	github.com/casbin/casbin/v2 v2.44.1
 	github.com/casbin/gorm-adapter/v3 v3.4.4
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
 	github.com/go-playground/validator/v10 v10.9.0

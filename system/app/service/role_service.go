@@ -190,8 +190,9 @@ func (s roleService) removePermissionsFromRole(ux iuow.UnitOfWork, role *domain.
 
 func (s roleService) assignPermissionsToRole(ux iuow.UnitOfWork, role *domain.Role, permissionNews domain.Permissions) (err error) {
 	var (
-		repoResource = repository.NewResourceRepository(ux.DB())
-		resources    domain.Resources
+		repoResource    = repository.NewResourceRepository(ux.DB())
+		resources       domain.Resources
+		resourcesForPer domain.Resources
 	)
 
 	if err = uow.Find(repoResource.QueryByMenus(permissionNews.MenuIDs(), nil).Select("resources.path, resources.method"), &resources); err != nil {
@@ -202,7 +203,13 @@ func (s roleService) assignPermissionsToRole(ux iuow.UnitOfWork, role *domain.Ro
 		return err
 	}
 	if len(resources) != 0 {
-		if _, err = s.permissionManager.AddPermissionsForRole(role.ID, resources); err != nil {
+		for _, re := range resources {
+			if !s.permissionManager.HasPermissionForRole(role.ID, *re) {
+				resourcesForPer = append(resourcesForPer, re)
+			}
+		}
+
+		if _, err = s.permissionManager.AddPermissionsForRole(role.ID, resourcesForPer); err != nil {
 			return err
 		}
 	}
