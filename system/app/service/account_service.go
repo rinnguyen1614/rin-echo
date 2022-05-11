@@ -4,7 +4,6 @@ import (
 	"rin-echo/common/auth/jwt"
 	echox "rin-echo/common/echo"
 	"rin-echo/common/setting"
-	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
@@ -156,13 +155,13 @@ func (s accountService) UpdateProfile(id uint, cmd request.UpdateProfile) error 
 	return nil
 }
 
-func (s accountService) FindMenuTrees(userId uint) (response.UserMenus, error) {
+func (s accountService) FindMenuTrees(userID uint) (response.UserMenus, error) {
 	var (
-		repoMenu = repository.NewMenuRepository(s.Uow.DB())
-		menus    domain.Menus
-		result   response.UserMenus
+		repoMenu   = repository.NewMenuRepository(s.Uow.DB())
+		menus, err = repoMenu.FindByUser(userID, map[string][]interface{}{"hidden": {false}})
+		result     response.UserMenus
 	)
-	if err := uow.Find(repoMenu.QueryByUser(userId, nil), &menus); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -173,10 +172,10 @@ func (s accountService) FindMenuTrees(userId uint) (response.UserMenus, error) {
 	return result, nil
 }
 
-func (s accountService) FindPermissions(userId uint) (response.UserPermissions, error) {
+func (s accountService) FindPermissions(userID uint) (response.UserPermissions, error) {
 	var (
 		repoPermission = repository.NewPermissionRepository(s.Uow.DB())
-		fields, err    = repoPermission.FindByUser(userId)
+		fields, err    = repoPermission.FindByUser(userID)
 	)
 
 	if err != nil {

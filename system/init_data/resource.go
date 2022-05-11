@@ -15,8 +15,8 @@ import (
 type Resource struct {
 	Name        string     `json:"name" validate:"required,min=5"`
 	Slug        string     `json:"slug" validate:"required,min=6"`
-	Path        string     `json:"path"`
-	Method      string     `json:"method"`
+	Object      string     `json:"object"`
+	Action      string     `json:"action"`
 	Description string     `json:"description"`
 	Children    []Resource `json:"children"`
 }
@@ -49,7 +49,7 @@ func initResources(uow iuow.UnitOfWork, path string) error {
 }
 
 func createResource(repo domain.ResourceRepository, cmd Resource, parent *domain.Resource) (uint, error) {
-	resource, err := domain.NewResource(cmd.Name, cmd.Slug, cmd.Path, cmd.Method, cmd.Description, parent)
+	resource, err := domain.NewResource(cmd.Name, cmd.Slug, cmd.Object, cmd.Action, cmd.Description, parent)
 	if err != nil {
 		return 0, err
 	}

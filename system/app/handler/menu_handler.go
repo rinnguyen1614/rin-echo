@@ -82,13 +82,13 @@ func (h MenuHandler) Delete(c echox.Context) error {
 }
 
 func (h MenuHandler) Get(c echox.Context) error {
-	// id, err := CheckRequestIDParam(c.Param("id"))
-	// result, err := h.service.WithContext(c).Get(id)
-	// if err != nil {
-	// 	return err
-	// }
+	id, err := CheckRequestIDParam(c.Param("id"))
+	result, err := h.service.WithContext(c).Get(id)
+	if err != nil {
+		return err
+	}
 
-	// echox.OKWithData(c, result)
+	echox.OKWithData(c, result)
 	return nil
 }
 

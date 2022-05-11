@@ -3,6 +3,7 @@ package response
 import (
 	"rin-echo/common/model"
 	"rin-echo/system/domain"
+	"rin-echo/system/util"
 )
 
 type Menu struct {
@@ -26,7 +27,7 @@ func NewMenu(e domain.Menu) Menu {
 		Name:                   e.Name,
 		Slug:                   e.Slug,
 		Path:                   e.Path,
-		ParentID:               *e.ParentID,
+		ParentID:               util.DefaultValue(e.ParentID, uint(0)).(uint),
 		Hidden:                 e.Hidden,
 		Component:              e.Component,
 		Sort:                   e.Sort,

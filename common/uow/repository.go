@@ -168,11 +168,11 @@ func (r Repository) Get(dest interface{}, conds map[string][]interface{}, preloa
 	return err
 }
 
-func (r Repository) Count(conds map[string][]interface{}) int64 {
+func (r Repository) Count(conds map[string][]interface{}) (int64, error) {
 	return Count(r.Query(conds, nil))
 }
 
-func (r Repository) Contains(conds map[string][]interface{}) bool {
+func (r Repository) Contains(conds map[string][]interface{}) (bool, error) {
 	return Contains(r.Query(conds, nil))
 }
 
@@ -197,10 +197,10 @@ func (r Repository) QueryBuilderGet(dest interface{}, queryBuilder iuow.QueryBui
 	return err
 }
 
-func (r Repository) QueryBuilderCount(queryBuilder iuow.QueryBuilder) int64 {
+func (r Repository) QueryBuilderCount(queryBuilder iuow.QueryBuilder) (int64, error) {
 	return Count(r.QueryBuilder(queryBuilder))
 }
 
-func (r Repository) QueryBuilderContains(queryBuilder iuow.QueryBuilder) bool {
+func (r Repository) QueryBuilderContains(queryBuilder iuow.QueryBuilder) (bool, error) {
 	return Contains(r.QueryBuilder(queryBuilder))
 }

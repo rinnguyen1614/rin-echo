@@ -8,25 +8,25 @@ import (
 )
 
 type Resource struct {
-	domain.Entity
+	domain.FullAuditedEntity
 
 	Name        string `gorm:"column:name;size:100;default:'';not null;"`
 	Slug        string `gorm:"column:slug;size:100;uniqueIndex;default:'';not null;"`
-	Path        string `gorm:"column:path;size:100;default:'';index:idx_resources_path_method,unique,where: path <> '' and method <> '';"`
-	Method      string `gorm:"column:method;size:100;default:'';index:idx_resources_path_method,unique,where: path <> '' and method <> '';"`
+	Object      string `gorm:"column:object;size:100;default:'';index:idx_resources_object_action,unique,where: object <> '' and action <> '';"`
+	Action      string `gorm:"column:action;size:100;default:'';index:idx_resources_object_action,unique,where: object <> '' and action <> '';"`
 	Description string `gorm:"column:description;"`
 	ParentID    *uint  `gorm:"column:parent_id;index;"`
 
-	Menus    Menus       `gorm:"many2many:menu_resources"`
-	Children []*Resource `gorm:"-"`
+	Permissions Permissions
+	Children    []*Resource `gorm:"-"`
 }
 
-func NewResource(name, slug, path, method, description string, parent *Resource) (*Resource, error) {
+func NewResource(name, slug, object, action, description string, parent *Resource) (*Resource, error) {
 	r := Resource{
 		Name:        name,
 		Slug:        slug,
-		Path:        path,
-		Method:      method,
+		Object:      object,
+		Action:      action,
 		Description: description,
 	}
 
@@ -42,11 +42,19 @@ func (r *Resource) SetParent(parent *Resource) {
 	}
 }
 
-func (r *Resource) IsEmptyPathOrMethod() bool {
-	return r.Method == "" || r.Path == ""
+func (r *Resource) IsEmptyObjectOrAction() bool {
+	return r.Action == "" || r.Object == ""
 }
 
 type Resources []*Resource
+
+func (rs Resources) IDs() []uint {
+	var ids []uint
+	for _, a := range rs {
+		ids = append(ids, a.ID)
+	}
+	return ids
+}
 
 func (rs Resources) ToMap() map[uint]*Resource {
 	result := make(map[uint]*Resource)
@@ -84,6 +92,4 @@ type ResourceRepository interface {
 	iuow.RepositoryOfEntity
 
 	WithTransaction(db *gorm.DB) ResourceRepository
-
-	QueryByMenus(menuIDs []uint, preloads map[string][]interface{}) *gorm.DB
 }

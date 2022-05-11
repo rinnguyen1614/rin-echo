@@ -2,114 +2,114 @@
   slug: admin
   children:
     - name: Resources
-      slug: resources
+      slug: admin/resources
       children:
         - name: Get List Resources
-          slug: resources:get_list
-          path: /api/v1/resources
-          method: GET
+          slug: admin/resources:get_list
+          object: /api/v1/resources
+          action: GET
         - name: Get Resource
-          slug: resources:get
-          path: /api/v1/resources/:id
-          method: GET
+          slug: admin/resources:get
+          object: /api/v1/resources/:id
+          action: GET
         - name: Get Resource Trees
-          slug: resources:get_tree
-          path: /api/v1/resources/tree
-          method: GET
+          slug: admin/resources:get_tree
+          object: /api/v1/resources/tree
+          action: GET
         - name: Create Resource
-          slug: resources:create
-          path: /api/v1/resources
-          method: POST
-        - name: Update Resource
-          slug: resources:update
-          path: /api/v1/resources/:id
-          method: PUT
+          slug: admin/resources:create
+          object: /api/v1/resources
+          action: POST
+        - name: Edit Resource
+          slug: admin/resources:edit
+          object: /api/v1/resources/:id
+          action: PUT
         - name: Delete Resource
-          slug: resources:delete
-          path: /api/v1/resources/:id
-          method: DELETE
+          slug: admin/resources:delete
+          object: /api/v1/resources/:id
+          action: DELETE
     - name: Menus
-      slug: menus
+      slug: admin/menus
       children:
         - name: Get List Menus
-          slug: menus:get_list
-          path: /api/v1/menus
-          method: GET
+          slug: admin/menus:get_list
+          object: /api/v1/menus
+          action: GET
         - name: Get Menu
-          slug: menus:get
-          path: /api/v1/menus/:id
-          method: GET
+          slug: admin/menus:get
+          object: /api/v1/menus/:id
+          action: GET
         - name: Get Menu Trees
-          slug: menus:get_tree
-          path: /api/v1/menus/tree
-          method: GET
+          slug: admin/menus:get_tree
+          object: /api/v1/menus/tree
+          action: GET
         - name: Create Menu
-          slug: menus:create
-          path: /api/v1/menus
-          method: POST
-        - name: Update Menu
-          slug: menus:update
-          path: /api/v1/menus/:id
-          method: PUT
+          slug: admin/menus:create
+          object: /api/v1/menus
+          action: POST
+        - name: Edit Menu
+          slug: admin/menus:edit
+          object: /api/v1/menus/:id
+          action: PUT
         - name: Delete Menu
-          slug: menus:delete
-          path: /api/v1/menus/:id
-          method: DELETE
+          slug: admin/menus:delete
+          object: /api/v1/menus/:id
+          action: DELETE
     - name: Roles
-      slug: roles
+      slug: admin/roles
       children:
         - name: Get List Roles
-          slug: roles:get_list
-          path: /api/v1/roles
-          method: GET
+          slug: admin/roles:get_list
+          object: /api/v1/roles
+          action: GET
         - name: Get Role
-          slug: roles:get
-          path: /api/v1/roles/:id
-          method: GET
+          slug: admin/roles:get
+          object: /api/v1/roles/:id
+          action: GET
         - name: Create Role
-          slug: roles:create
-          path: /api/v1/roles
-          method: POST
-        - name: Update Role
-          slug: roles:update
-          path: /api/v1/roles/:id
-          method: PUT
+          slug: admin/roles:create
+          object: /api/v1/roles
+          action: POST
+        - name: Edit Role
+          slug: admin/roles:edit
+          object: /api/v1/roles/:id
+          action: PUT
         - name: Delete Role
-          slug: roles:delete
-          path: /api/v1/roles/:id
-          method: DELETE
+          slug: admin/roles:delete
+          object: /api/v1/roles/:id
+          action: DELETE
         - name: Select Role
-          slug: roles:select
-          path: /api/v1/roles/select
-          method: GET
+          slug: admin/roles:select
+          object: /api/v1/roles/select
+          action: GET
     - name: Users
-      slug: users
+      slug: admin/users
       children:
         - name: Get List Users
-          slug: users:get_list
-          path: /api/v1/users
-          method: GET
+          slug: admin/users:get_list
+          object: /api/v1/users
+          action: GET
         - name: Get User
-          slug: users:get
-          path: /api/v1/users/:id
-          method: GET
+          slug: admin/users:get
+          object: /api/v1/users/:id
+          action: GET
         - name: Create User
-          slug: users:create
-          path: /api/v1/users
-          method: POST
-        - name: Update User
-          slug: users:update
-          path: /api/v1/users/:id
-          method: PUT
+          slug: admin/users:create
+          object: /api/v1/users
+          action: POST
+        - name: Edit User
+          slug: admin/users:edit
+          object: /api/v1/users/:id
+          action: PUT
         - name: Delete User
-          slug: users:delete
-          path: /api/v1/users/:id
-          method: DELETE
+          slug: admin/users:delete
+          object: /api/v1/users/:id
+          action: DELETE
         - name: Disable User
-          slug: users:disable
-          path: /api/v1/users/:id/disable
-          method: PATH
+          slug: admin/users:disable
+          object: /api/v1/users/:id/disable
+          action: PATH
         - name: Enable User
-          slug: users:enable
-          path: /api/v1/users/:id/enable
-          method: PATH
+          slug: admin/users:enable
+          object: /api/v1/users/:id/enable
+          action: PATH

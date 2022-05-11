@@ -1,11 +1,13 @@
 package request
 
+import "rin-echo/system/domain"
+
 type RoleCommon struct {
-	Name      string `validate:"required,min=5"`
-	Slug      string `validate:"min=6"`
-	IsStatic  bool   `json:"is_static"`
-	IsDefault bool   `json:"is_default"`
-	MenuIDs   []uint `json:"menu_ids"`
+	Name        string `validate:"required,min=3"`
+	Slug        string `validate:"required,min=3"`
+	IsDefault   bool   `json:"is_default"`
+	ResourceIDs []uint `json:"resource_ids"`
+	MenuIDs     []uint `json:"menu_ids"`
 }
 
 type CreateRole struct {
@@ -14,4 +16,10 @@ type CreateRole struct {
 
 type UpdateRole struct {
 	RoleCommon
+}
+
+func (cmd UpdateRole) Populate(role *domain.Role) {
+	role.Name = cmd.Name
+	role.Slug = cmd.Slug
+	role.IsDefault = cmd.IsDefault
 }

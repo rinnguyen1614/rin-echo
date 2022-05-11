@@ -26,11 +26,11 @@ func (r RepositoryOfEntity) FirstID(dest interface{}, id uint, preloads map[stri
 	return r.First(dest, map[string][]interface{}{"id": {id}}, preloads)
 }
 
-func (r RepositoryOfEntity) CountID(ids []uint) int64 {
+func (r RepositoryOfEntity) CountID(ids []uint) (int64, error) {
 	return r.Count(map[string][]interface{}{"id": {ids}})
 }
 
-func (r RepositoryOfEntity) ContainsID(ids []uint) bool {
+func (r RepositoryOfEntity) ContainsID(ids []uint) (bool, error) {
 	return r.Contains(map[string][]interface{}{"id": {ids}})
 }
 

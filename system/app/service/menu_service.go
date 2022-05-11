@@ -7,6 +7,7 @@ import (
 	"rin-echo/common/model"
 	"rin-echo/common/query"
 	"rin-echo/common/setting"
+	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
 	"rin-echo/system/adapters/repository"
@@ -18,7 +19,6 @@ import (
 	"rin-echo/system/errors"
 
 	"github.com/jinzhu/copier"
-	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 )
 
@@ -30,9 +30,9 @@ type (
 
 		Update(id uint, cmd request.UpdateMenu) (err error)
 
-		// Delete(id uint) (err error)
+		Delete(id uint) (err error)
 
-		// Get(id uint) (response.Menu, error)
+		Get(id uint) (response.Menu, error)
 
 		// Find(q *query.Query) (*model.QueryResult, error)
 
@@ -87,7 +87,7 @@ func (s menuService) Create(cmd request.CreateMenu) (uint, error) {
 }
 
 func (s menuService) createRecursive(cmd request.CreateMenu, parent *domain.Menu) (uint, error) {
-	menu, err := domain.NewMenu(cmd.Name, cmd.Slug, cmd.Path, cmd.Hidden, cmd.Component, cmd.Sort, cmd.Type, cmd.Icon, cmd.Title, parent, cmd.ResourceIDs)
+	menu, err := domain.NewMenu(cmd.Name, cmd.Slug, cmd.Path, cmd.Hidden, cmd.Component, cmd.Sort, cmd.Type, cmd.Icon, cmd.Title, parent)
 	if err != nil {
 		return 0, err
 	}
@@ -139,60 +139,6 @@ func (s menuService) Update(id uint, cmd request.UpdateMenu) (err error) {
 			return err
 		}
 
-		return s.SetResources(&menu, cmd.ResourceIDs)
-	})
-}
-
-func (s menuService) SetResources(menu *domain.Menu, resourceIDs []uint) error {
-	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
-		var (
-			repoResource = s.repoResource.WithTransaction(ux.DB())
-			repo         = s.repo.WithTransaction(ux.DB())
-			newResources domain.Resources
-		)
-
-		err := repo.Find(menu, nil, map[string][]interface{}{"Resources": nil, "Permissions": nil})
-		if err != nil {
-			return err
-		}
-
-		if err = repoResource.FindID(&newResources, resourceIDs, nil); err != nil {
-			return err
-		}
-
-		resourceNews, resourceDels := menu.CompareResources(newResources)
-		roleIDs := menu.Permissions.RoleIDs()
-
-		// remove from removed resoures
-		if len(resourceDels) != 0 {
-			if err = ux.Association(menu, "Resources").Delete(resourceDels); err != nil {
-				return err
-			}
-			if len(roleIDs) != 0 {
-				for _, r := range resourceDels {
-					if _, err := s.permissionManager.RemovePermissionForRoles(roleIDs, *r); err != nil {
-						return err
-					}
-
-				}
-			}
-		}
-
-		// add to added resoures
-		if len(resourceNews) != 0 {
-			if err = ux.Association(menu, "Resources").Append(resourceNews); err != nil {
-				return err
-			}
-			if len(roleIDs) != 0 {
-				for _, r := range resourceNews {
-					if _, err := s.permissionManager.AddPermissionForRoles(roleIDs, *r); err != nil {
-						return err
-					}
-
-				}
-			}
-		}
-
 		return nil
 	})
 }
@@ -200,8 +146,13 @@ func (s menuService) SetResources(menu *domain.Menu, resourceIDs []uint) error {
 func (s menuService) Delete(id uint) (err error) {
 	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
 		var (
-			repo = s.repo.WithTransaction(ux.DB())
+			repo       = s.repo.WithTransaction(ux.DB())
+			hasRole, _ = uow.Contains(ux.DB().Table("menu_roles").Where("menu_id", id))
 		)
+
+		if hasRole {
+			return errors.ErrMenuReferencedRole
+		}
 
 		if err := repo.Delete(id); err != nil {
 			return err
@@ -213,14 +164,12 @@ func (s menuService) Delete(id uint) (err error) {
 
 func (s menuService) CheckForCreate(cmds request.CreateMenus, checkParent bool) (parentsByIndex map[int]*domain.Menu, err error) {
 	var (
-		errorsByIndex      = make(map[int][]error)
-		childrenByIndex    = make(map[int]request.CreateMenus)
-		indexsBySlug       = make(map[string]int)
-		indexsByParentID   = make(map[uint][]int)
-		indexsByResourceID = make(map[uint][]int)
-		cmdSlugs           []string
-		cmdParentIDs       []uint
-		cmdResourceIDs     []uint
+		errorsByIndex    = make(map[int][]error)
+		childrenByIndex  = make(map[int]request.CreateMenus)
+		indexsBySlug     = make(map[string]int)
+		indexsByParentID = make(map[uint][]int)
+		cmdSlugs         []string
+		cmdParentIDs     []uint
 	)
 
 	parentsByIndex = make(map[int]*domain.Menu)
@@ -241,15 +190,6 @@ func (s menuService) CheckForCreate(cmds request.CreateMenus, checkParent bool) 
 			indexsByParentID[m.ParentID] = idxs
 		}
 
-		if resourceIDs := m.ResourceIDs; len(resourceIDs) > 0 {
-			cmdResourceIDs = append(cmdResourceIDs, resourceIDs...)
-			for _, reID := range m.ResourceIDs {
-				idxs := indexsByResourceID[reID]
-				idxs = append(idxs, i)
-				indexsByResourceID[reID] = idxs
-			}
-		}
-
 		if len(m.Children) != 0 {
 			childrenByIndex[i] = m.Children
 		}
@@ -263,12 +203,6 @@ func (s menuService) CheckForCreate(cmds request.CreateMenus, checkParent bool) 
 
 	if len(cmdParentIDs) != 0 && checkParent {
 		if parentsByIndex, err = s.CheckExistParents(cmdParentIDs, indexsByParentID, errorsByIndex); err != nil {
-			return nil, err
-		}
-	}
-
-	if len(cmdResourceIDs) != 0 {
-		if err = s.CheckExistResources(cmdResourceIDs, indexsByResourceID, errorsByIndex); err != nil {
 			return nil, err
 		}
 	}
@@ -371,29 +305,12 @@ func (s menuService) CheckExistParents(parentIDs []uint, indexsByParentID map[ui
 	return parentsByIndex, nil
 }
 
-func (s menuService) CheckExistResources(resourceIDs []uint, indexsByResourceID map[uint][]int, errorsByIndex map[int][]error) error {
-	var (
-		resourceIDsFound []uint
-		repoResource     = repository.NewResourceRepository(s.Uow.DB())
-	)
-
-	var qb = query_builder.NewResourceQueryBuilder()
-	qb.SetCondition(gormx.InOperator.Condition("id"), resourceIDs)
-	qb.SetSelect("id")
-	if err := repoResource.QueryBuilderFind(&resourceIDsFound, qb); err != nil {
-		return err
+func (s menuService) Get(id uint) (response.Menu, error) {
+	var menu domain.Menu
+	if err := s.repo.GetID(&menu, id, nil); err != nil {
+		return response.Menu{}, err
 	}
-
-	mapResourceIDs := funk.Map(resourceIDsFound, func(x uint) (uint, uint) { return x, x }).(map[uint]uint)
-	for reID, idxs := range indexsByResourceID {
-		if _, ok := mapResourceIDs[reID]; !ok {
-			for i := range idxs {
-				errorsByIndex[i] = append(errorsByIndex[i], errors.ErrResourceNotFound)
-			}
-		}
-	}
-
-	return nil
+	return response.NewMenu(menu), nil
 }
 
 func (s menuService) FindTrees(q *query.Query) (*model.QueryResult, error) {

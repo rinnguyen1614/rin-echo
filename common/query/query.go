@@ -320,7 +320,7 @@ func (q Query) bindCondition(queryBuilder iuow.QueryBuilder, preloadBuilders map
 	}
 
 	if !hasCondition {
-		return uow.Count(stmt.DB), err
+		return uow.Count(tx.Table(primarySchema.Table))
 	}
 
 	if err = setCondition(tx, queryBuilder); err != nil {
@@ -344,7 +344,7 @@ func (q Query) bindCondition(queryBuilder iuow.QueryBuilder, preloadBuilders map
 		col := primarySchema.Table + "." + field
 		columns = append(columns, col)
 	}
-	return uow.Count(tx.Table(primarySchema.Table).Distinct(columns)), nil
+	return uow.Count(tx.Table(primarySchema.Table).Distinct(columns))
 }
 
 func setCondition(db *gorm.DB, queryBuilder iuow.QueryBuilder) error {

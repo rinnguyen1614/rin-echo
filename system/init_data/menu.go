@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils/file"
 	"rin-echo/system/adapters/repository"
@@ -14,18 +13,17 @@ import (
 )
 
 type Menu struct {
-	Name      string   `json:"name" `
-	Slug      string   `json:"slug"`
-	ParentID  uint     `json:"parent_id" `
-	Path      string   `json:"path"`
-	Hidden    bool     `json:"hidden"`
-	Component string   `json:"component"`
-	Sort      int      `json:"sort"`
-	Type      string   `json:"type"`
-	Title     string   `json:"title"`
-	Icon      string   `json:"icon"`
-	Resources []string `json:"resources"`
-	Children  []Menu   `json:"children"`
+	Name      string `json:"name" `
+	Slug      string `json:"slug"`
+	ParentID  uint   `json:"parent_id" `
+	Path      string `json:"path"`
+	Hidden    bool   `json:"hidden"`
+	Component string `json:"component"`
+	Sort      int    `json:"sort"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Icon      string `json:"icon"`
+	Children  []Menu `json:"children"`
 }
 
 func initMenus(uow iuow.UnitOfWork, path string) error {
@@ -58,14 +56,8 @@ func initMenus(uow iuow.UnitOfWork, path string) error {
 }
 
 func createMenu(repo domain.MenuRepository, repoResource domain.ResourceRepository, cmd Menu, parent *domain.Menu) (uint, error) {
-	var resourceIDs []uint
-	if len(cmd.Resources) > 0 {
-		if err := uow.Find(repoResource.Query(map[string][]interface{}{"slug": {cmd.Resources}}, nil).Select("id"), &resourceIDs); err != nil {
-			return 0, err
-		}
-	}
 
-	menu, err := domain.NewMenu(cmd.Name, cmd.Slug, cmd.Path, cmd.Hidden, cmd.Component, cmd.Sort, cmd.Type, cmd.Icon, cmd.Title, parent, resourceIDs)
+	menu, err := domain.NewMenu(cmd.Name, cmd.Slug, cmd.Path, cmd.Hidden, cmd.Component, cmd.Sort, cmd.Type, cmd.Icon, cmd.Title, parent)
 	if err != nil {
 		return 0, err
 	}

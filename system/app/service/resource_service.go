@@ -84,7 +84,7 @@ func (s resourceService) Create(cmd request.CreateResource) (uint, error) {
 }
 
 func (s resourceService) createRecursive(cmd request.CreateResource, parent *domain.Resource) (uint, error) {
-	resource, err := domain.NewResource(cmd.Name, cmd.Slug, cmd.Path, cmd.Method, cmd.Description, parent)
+	resource, err := domain.NewResource(cmd.Name, cmd.Slug, cmd.Object, cmd.Action, cmd.Description, parent)
 	if err != nil {
 		return 0, err
 	}
@@ -123,8 +123,8 @@ func (s resourceService) Update(id uint, cmd request.UpdateResource) (err error)
 				return err
 			}
 		}
-		if !cmd.IsEqualPathAndMethod(resource.Path, resource.Method) {
-			if err = s.CheckExistPathAndMethod(cmd.Path, cmd.Method); err != nil {
+		if !cmd.IsEqualObjectAndAction(resource.Object, resource.Action) {
+			if err = s.CheckExistObjectAndAction(cmd.Object, cmd.Action); err != nil {
 				return err
 			}
 		}
@@ -148,7 +148,7 @@ func (s resourceService) Update(id uint, cmd request.UpdateResource) (err error)
 			resource.SetParent(parent)
 		}
 
-		updatePermission = cmd.Path != resource.Path || cmd.Method != resource.Method
+		updatePermission = cmd.Object != resource.Object || cmd.Action != resource.Action
 
 		cmd.Populate(&resource)
 		if err := repo.Update(&resource); err != nil {
@@ -190,12 +190,12 @@ func (s resourceService) UpdatePermission(oldResource domain.Resource, newResour
 func (s resourceService) Delete(id uint) (err error) {
 	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
 		var (
-			repo    = s.repo.WithTransaction(ux.DB())
-			hasMenu = uow.Contains(ux.DB().Table("menu_resources").Where("resource_id", id))
+			repo       = s.repo.WithTransaction(ux.DB())
+			hasRole, _ = uow.Contains(ux.DB().Table("permissions").Where("resource_id", id))
 		)
 
-		if hasMenu {
-			return errors.ErrResourceReferencedMenu
+		if hasRole {
+			return errors.ErrResourceReferencedRole
 		}
 
 		if err := repo.Delete(id); err != nil {
@@ -207,7 +207,7 @@ func (s resourceService) Delete(id uint) (err error) {
 }
 
 func (s resourceService) CheckExistBySlug(slug string) error {
-	if ok := s.repo.Contains(map[string][]interface{}{"slug": {slug}}); ok {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"slug": {slug}}); ok {
 		return errors.ErrResourceSlugExists
 	}
 
@@ -215,16 +215,16 @@ func (s resourceService) CheckExistBySlug(slug string) error {
 }
 
 func (s resourceService) CheckExistParent(parentID uint) error {
-	if ok := s.repo.Contains(map[string][]interface{}{"id": {parentID}}); !ok {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"id": {parentID}}); !ok {
 		return errors.ErrResourceParentNotFound
 	}
 
 	return nil
 }
 
-func (s resourceService) CheckExistPathAndMethod(path, method string) error {
-	if ok := s.repo.Contains(map[string][]interface{}{"path": {path}, "method": {method}}); !ok {
-		return errors.ErrResourcePathAndMethodExists
+func (s resourceService) CheckExistObjectAndAction(object, action string) error {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"object": {object}, "action": {action}}); !ok {
+		return errors.ErrResourceObjectAndActionExists
 	}
 
 	return nil
@@ -232,14 +232,14 @@ func (s resourceService) CheckExistPathAndMethod(path, method string) error {
 
 func (s resourceService) Check(cmds request.CreateResources, checkParent bool) (parentsByIndex map[int]*domain.Resource, err error) {
 	var (
-		errorsByIndex         = make(map[int][]error)
-		childrenByIndex       = make(map[int]request.CreateResources)
-		indexsBySlug          = make(map[string]int)
-		indexsByPathAndMethod = make(map[string]int)
-		indexsByParentID      = make(map[uint][]int)
-		cmdSlugs              []string
-		cmdPaths              []string
-		cmdParentIDs          []uint
+		errorsByIndex           = make(map[int][]error)
+		childrenByIndex         = make(map[int]request.CreateResources)
+		indexsBySlug            = make(map[string]int)
+		indexsByObjectAndAction = make(map[string]int)
+		indexsByParentID        = make(map[uint][]int)
+		cmdSlugs                []string
+		cmdPaths                []string
+		cmdParentIDs            []uint
 	)
 
 	parentsByIndex = make(map[int]*domain.Resource)
@@ -253,14 +253,14 @@ func (s resourceService) Check(cmds request.CreateResources, checkParent bool) (
 			indexsBySlug[cmd.Slug] = i
 		}
 
-		// path_method
-		cmdPaths = append(cmdPaths, cmd.Path)
-		if !cmd.IsEmptyPathAndMethod() {
-			key := joinPathAndMethod(cmd.Path, cmd.Method)
-			if _, ok := indexsByPathAndMethod[key]; ok {
-				errorsByIndex[i] = append(errorsByIndex[i], errors.ErrResourcePathAndMethodExists)
+		// object_action
+		cmdPaths = append(cmdPaths, cmd.Object)
+		if !cmd.IsEmptyObjectAndAction() {
+			key := joinObjectAndAction(cmd.Object, cmd.Action)
+			if _, ok := indexsByObjectAndAction[key]; ok {
+				errorsByIndex[i] = append(errorsByIndex[i], errors.ErrResourceObjectAndActionExists)
 			} else {
-				indexsByPathAndMethod[key] = i
+				indexsByObjectAndAction[key] = i
 			}
 		}
 
@@ -284,7 +284,7 @@ func (s resourceService) Check(cmds request.CreateResources, checkParent bool) (
 	}
 
 	if len(cmdPaths) != 0 {
-		if err := s.CheckExistByPathAndMethods(cmdPaths, indexsByPathAndMethod, errorsByIndex); err != nil {
+		if err := s.CheckExistByObjectAndActions(cmdPaths, indexsByObjectAndAction, errorsByIndex); err != nil {
 			return nil, err
 		}
 	}
@@ -333,23 +333,23 @@ func (s resourceService) CheckExistBySlugs(slugs []string, indexsBySlug map[stri
 	return nil
 }
 
-func (s resourceService) CheckExistByPathAndMethods(paths []string, indexsByPathAndMethod map[string]int, errorsByIndex map[int][]error) error {
+func (s resourceService) CheckExistByObjectAndActions(objects []string, indexsByObjectAndAction map[string]int, errorsByIndex map[int][]error) error {
 	var (
-		qb         = query_builder.NewResourceQueryBuilder()
-		pathsFound []map[string]interface{}
+		qb           = query_builder.NewResourceQueryBuilder()
+		objectsFound []map[string]interface{}
 	)
-	qb.SetCondition(gormx.InOperator.Condition("path"), paths)
-	qb.SetSelect("path", "method")
+	qb.SetCondition(gormx.InOperator.Condition("object"), objects)
+	qb.SetSelect("object", "action")
 
-	if err := s.repo.QueryBuilderFind(&pathsFound, qb); err != nil {
+	if err := s.repo.QueryBuilderFind(&objectsFound, qb); err != nil {
 		return err
 	}
 
-	for _, pF := range pathsFound {
-		path, method := pF["path"].(string), pF["method"].(string)
-		key := joinPathAndMethod(path, method)
-		if i, ok := indexsByPathAndMethod[key]; ok {
-			errorsByIndex[i] = append(errorsByIndex[i], errors.ErrResourcePathAndMethodExists)
+	for _, pF := range objectsFound {
+		object, action := pF["object"].(string), pF["action"].(string)
+		key := joinObjectAndAction(object, action)
+		if i, ok := indexsByObjectAndAction[key]; ok {
+			errorsByIndex[i] = append(errorsByIndex[i], errors.ErrResourceObjectAndActionExists)
 		}
 	}
 	return nil
@@ -411,7 +411,8 @@ func (s resourceService) FindTrees(q *query.Query) (*model.QueryResult, error) {
 		repo            = s.repo
 		queryBuilder    = querybuilder.NewResourceQueryBuilder()
 		preloadBuilders = map[string]iuow.QueryBuilder{
-			"Menus": querybuilder.NewMenuQueryBuilder(),
+			"Permissions": querybuilder.NewPermissionQueryBuilder(),
+			"Roles":       querybuilder.NewRoleQueryBuilder(),
 		}
 		srcModels = new(domain.Resources)
 		desModel  = response.ResourceTree{}
@@ -454,6 +455,6 @@ func (s resourceService) FindTrees(q *query.Query) (*model.QueryResult, error) {
 	return model.NewQueryResult(prune, totalRecords, q.Paging().Limit, q.Paging().Offset), nil
 }
 
-func joinPathAndMethod(path, method string) string {
-	return path + "_join_" + method
+func joinObjectAndAction(object, action string) string {
+	return object + "_join_" + action
 }

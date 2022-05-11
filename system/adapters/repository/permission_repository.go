@@ -64,10 +64,10 @@ func (r permissionRepository) FindByUser(userID uint) ([]map[string]interface{},
 	var des = make([]map[string]interface{}, 0)
 
 	if err := uow.Find(r.Query(nil, nil).
-		Joins("inner join menus on menus.id = permissions.menu_id").
-		Joins("inner join menus as parent_menus on parent_menus.id = menus.parent_id").
+		Joins("inner join resources on resources.id = permissions.resource_id").
+		Joins("inner join resources as parent_resources on parent_resources.id = resources.parent_id").
 		Joins("inner join user_roles on user_roles.role_id = permissions.role_id and user_roles.user_id = ?", userID).
-		Select("menus.slug, parent_menus.slug as parent_slug"), &des); err != nil {
+		Select("resources.slug, parent_resources.slug as parent_slug"), &des); err != nil {
 		return nil, err
 	}
 

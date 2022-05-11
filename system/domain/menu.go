@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	MenuTypes       = []string{"M", "MI", "A"} // M: Menu, MI: Menu Item, A: Action
+	MenuTypes       = []string{"M", "A"} // M: Menu,A: Action
 	MenuTypeDefault = "M"
 )
 
@@ -29,12 +29,11 @@ type Menu struct {
 	Title     string `gorm:"column:title;size:255"`
 	Icon      string `gorm:"column:icon;size:128;"`
 
-	Resources   Resources `gorm:"many2many:menu_resources"`
-	Permissions Permissions
-	Children    Menus `gorm:"-"`
+	Roles    []*Role `gorm:"many2many:menu_roles"`
+	Children Menus   `gorm:"-"`
 }
 
-func NewMenu(name string, slug string, path string, hidden bool, component string, sort int, typ string, icon, title string, parent *Menu, resourceIDs []uint) (*Menu, error) {
+func NewMenu(name string, slug string, path string, hidden bool, component string, sort int, typ string, icon, title string, parent *Menu) (*Menu, error) {
 	m := &Menu{
 		Name:      name,
 		Slug:      slug,
@@ -56,7 +55,6 @@ func NewMenu(name string, slug string, path string, hidden bool, component strin
 	}
 
 	m.SetParent(parent)
-	m.AssignToResources(resourceIDs)
 
 	return m, nil
 }
@@ -69,17 +67,6 @@ func (m *Menu) SetType(typ string) {
 	m.Type = typ
 }
 
-func (m *Menu) AssignToResource(resourceID uint) {
-	re := Resource{Entity: domain.Entity{ID: resourceID}}
-	m.Resources = append(m.Resources, &re)
-}
-
-func (m *Menu) AssignToResources(resourceIDs []uint) {
-	for _, rID := range resourceIDs {
-		m.AssignToResource(rID)
-	}
-}
-
 func (m *Menu) SetParent(parent *Menu) {
 	if parent == nil {
 		m.ParentID = nil
@@ -88,32 +75,6 @@ func (m *Menu) SetParent(parent *Menu) {
 		m.ParentID = &parent.ID
 		m.MenuLevel = parent.MenuLevel + 1
 	}
-}
-
-func (m Menu) CompareResources(newResources Resources) (resourceNews, resourceDels Resources) {
-	var (
-		oldByID = m.Resources.ToMap()
-		newByID = newResources.ToMap()
-	)
-
-	if len(newResources) != 0 {
-		for rID, ur := range newByID {
-			_, ok := oldByID[rID]
-			if ok {
-				delete(oldByID, rID)
-			} else {
-				resourceNews = append(resourceNews, ur)
-			}
-		}
-
-		for _, ur := range oldByID {
-			resourceDels = append(resourceDels, ur)
-		}
-	} else {
-		resourceDels = m.Resources
-	}
-
-	return
 }
 
 type Menus []*Menu
@@ -154,6 +115,6 @@ type MenuRepository interface {
 	iuow.RepositoryOfEntity
 
 	WithTransaction(db *gorm.DB) MenuRepository
-
-	QueryByUser(userID uint, preloads map[string][]interface{}) *gorm.DB
+	QueryByUser(userID uint, conds map[string][]interface{}) *gorm.DB
+	FindByUser(userID uint, conds map[string][]interface{}) (Menus, error)
 }

@@ -68,9 +68,9 @@ type (
 
 		Get(dest interface{}, conds map[string][]interface{}, preloads map[string][]interface{}) error
 
-		Count(conds map[string][]interface{}) int64
+		Count(conds map[string][]interface{}) (int64, error)
 
-		Contains(conds map[string][]interface{}) bool
+		Contains(conds map[string][]interface{}) (bool, error)
 
 		QueryBuilderFind(dest interface{}, queryBuilder QueryBuilder) error
 
@@ -78,9 +78,9 @@ type (
 
 		QueryBuilderFirst(dest interface{}, queryBuilder QueryBuilder) error
 
-		QueryBuilderCount(queryBuilder QueryBuilder) int64
+		QueryBuilderCount(queryBuilder QueryBuilder) (int64, error)
 
-		QueryBuilderContains(queryBuilder QueryBuilder) bool
+		QueryBuilderContains(queryBuilder QueryBuilder) (bool, error)
 	}
 
 	RepositoryOfEntity interface {
@@ -93,9 +93,9 @@ type (
 
 		GetID(dest interface{}, id uint, preloads map[string][]interface{}) error
 
-		CountID(ids []uint) int64
+		CountID(ids []uint) (int64, error)
 
-		ContainsID(ids []uint) bool
+		ContainsID(ids []uint) (bool, error)
 	}
 
 	QueryBuilder interface {

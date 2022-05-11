@@ -19,5 +19,6 @@ func (h HttpServer) RegisterRoleRouter(g *echo.Group) {
 		router.PUT("/:id", echox.WrapHandler(h.app.RoleHandler.Update))
 		router.DELETE("/:id", echox.WrapHandler(h.app.RoleHandler.Delete))
 		router.GET("/:id", echox.WrapHandler(h.app.RoleHandler.Get))
+		router.GET("", echox.WrapHandler(h.app.RoleHandler.Query))
 	}
 }

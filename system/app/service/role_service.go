@@ -2,14 +2,19 @@ package service
 
 import (
 	echox "rin-echo/common/echo"
+	"rin-echo/common/model"
+	"rin-echo/common/query"
 	"rin-echo/common/setting"
 	"rin-echo/common/uow"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
+	"rin-echo/system/app/model/response"
 	"rin-echo/system/domain"
+	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
 
+	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
 )
 
@@ -20,6 +25,12 @@ type (
 		Create(request.CreateRole) (uint, error)
 
 		Update(id uint, cmd request.UpdateRole) (err error)
+
+		Delete(id uint) (err error)
+
+		Query(q *query.Query) (*model.QueryResult, error)
+
+		Get(id uint) (response.Role, error)
 
 		// 	// Update()
 
@@ -81,7 +92,7 @@ func (s roleService) Create(cmd request.CreateRole) (uint, error) {
 			return err
 		}
 
-		role, err = domain.NewRole(cmd.Name, cmd.Slug, cmd.IsStatic, cmd.IsDefault)
+		role, err = domain.NewNotRoleStatic(cmd.Name, cmd.Slug, cmd.IsDefault)
 		if err != nil {
 			return err
 		}
@@ -90,12 +101,12 @@ func (s roleService) Create(cmd request.CreateRole) (uint, error) {
 			return err
 		}
 
-		if len(cmd.MenuIDs) != 0 {
-			newPermissions, _ := domain.NewPermissionsForRole(role.ID, cmd.MenuIDs)
+		if len(cmd.ResourceIDs) != 0 {
+			newPermissions, _ := domain.NewPermissionsForRole(role.ID, cmd.ResourceIDs)
 			return s.assignPermissionsToRole(ux, role, newPermissions)
 		}
 
-		return nil
+		return s.SetMenus(role, cmd.MenuIDs)
 
 	}); err != nil {
 		return 0, err
@@ -120,19 +131,27 @@ func (s roleService) Update(id uint, cmd request.UpdateRole) (err error) {
 				return err
 			}
 		}
-
+		cmd.Populate(&role)
 		if err = repo.Update(&role); err != nil {
 			return nil
+		}
+
+		if err = s.SetResources(&role, cmd.ResourceIDs); err != nil {
+			return err
 		}
 
 		return s.SetMenus(&role, cmd.MenuIDs)
 	})
 }
 
-func (s roleService) SetMenus(role *domain.Role, menuIDs []uint) (err error) {
+func (s roleService) SetResources(role *domain.Role, resourceIDs []uint) (err error) {
 
 	if role == nil {
 		panic("requires role")
+	}
+
+	if len(resourceIDs) == 0 {
+		return nil
 	}
 
 	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
@@ -146,23 +165,69 @@ func (s roleService) SetMenus(role *domain.Role, menuIDs []uint) (err error) {
 			return err
 		}
 
-		newPermissions, _ = domain.NewPermissionsForRole(role.ID, menuIDs)
+		newPermissions, _ = domain.NewPermissionsForRole(role.ID, resourceIDs)
 
 		permissionNews, permissionDels := role.ComparePermissions(newPermissions)
 
-		// remove from removed menus
+		// remove from removed resources
 		if len(permissionDels) != 0 {
 			if err = s.removePermissionsFromRole(ux, role, permissionDels); err != nil {
-				return nil
+				return err
+			}
+		}
+
+		// add to added resources
+		if len(permissionNews) != 0 {
+			if err = s.assignPermissionsToRole(ux, role, permissionNews); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
+func (s roleService) SetMenus(role *domain.Role, menuIDs []uint) error {
+	if role == nil {
+		panic("requires role")
+	}
+
+	if len(menuIDs) == 0 {
+		return nil
+	}
+
+	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
+		var (
+			repoMenu = s.repoMenu.WithTransaction(ux.DB())
+			repo     = s.repo.WithTransaction(ux.DB())
+			newMenus domain.Menus
+		)
+
+		err := repo.Find(role, nil, map[string][]interface{}{"Menus": nil})
+		if err != nil {
+			return err
+		}
+
+		if err = repoMenu.FindID(&newMenus, menuIDs, nil); err != nil {
+			return err
+		}
+
+		menusNews, menusDels := role.CompareMenus(newMenus)
+
+		// remove from removed menus
+		if len(menusDels) != 0 {
+			if err = ux.Association(role, "Menus").Delete(menusDels); err != nil {
+				return err
 			}
 		}
 
 		// add to added menus
-		if len(permissionNews) != 0 {
-			if err = s.assignPermissionsToRole(ux, role, permissionNews); err != nil {
-				return nil
+		if len(menusNews) != 0 {
+			if err = ux.Association(role, "Menus").Append(menusNews); err != nil {
+				return err
 			}
 		}
+
 		return nil
 	})
 }
@@ -172,7 +237,9 @@ func (s roleService) removePermissionsFromRole(ux iuow.UnitOfWork, role *domain.
 		repoResource = repository.NewResourceRepository(ux.DB())
 		resources    domain.Resources
 	)
-	if err = uow.Find(repoResource.QueryByMenus(permissionDels.MenuIDs(), nil).Select("resources.path, resources.method"), &resources); err != nil {
+	if err = uow.Find(repoResource.
+		Query(map[string][]interface{}{"id": {permissionDels.ResourceIDs()}}, nil).
+		Select("resources.object, resources.action"), &resources); err != nil {
 		return err
 	}
 
@@ -195,13 +262,16 @@ func (s roleService) assignPermissionsToRole(ux iuow.UnitOfWork, role *domain.Ro
 		resourcesForPer domain.Resources
 	)
 
-	if err = uow.Find(repoResource.QueryByMenus(permissionNews.MenuIDs(), nil).Select("resources.path, resources.method"), &resources); err != nil {
+	if err = uow.Find(repoResource.
+		Query(map[string][]interface{}{"id": {permissionNews.ResourceIDs()}}, nil).
+		Select("resources.object, resources.action"), &resources); err != nil {
 		return err
 	}
 
 	if err = ux.Association(role, "Permissions").Append(permissionNews); err != nil {
 		return err
 	}
+
 	if len(resources) != 0 {
 		for _, re := range resources {
 			if !s.permissionManager.HasPermissionForRole(role.ID, *re) {
@@ -216,10 +286,62 @@ func (s roleService) assignPermissionsToRole(ux iuow.UnitOfWork, role *domain.Ro
 	return nil
 }
 
+func (s roleService) Delete(id uint) (err error) {
+	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
+		var (
+			repo           = s.repo.WithTransaction(ux.DB())
+			hasResource, _ = uow.Contains(ux.DB().Table("permissions").Where("role_id", id))
+			hasMenu, _     = uow.Contains(ux.DB().Table("menu_roles").Where("role_id", id))
+		)
+
+		if hasResource {
+			return errors.ErrRoleReferencedResource
+		}
+
+		if hasMenu {
+			return errors.ErrRoleReferencedMenu
+		}
+
+		if err := repo.Delete(id); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (s roleService) CheckExistBySlug(slug string) error {
-	if ok := s.repo.Contains(map[string][]interface{}{"slug": {slug}}); ok {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"slug": {slug}}); ok {
 		return errors.ErrRoleSlugExists
 	}
 
 	return nil
+}
+
+func (s roleService) Query(q *query.Query) (*model.QueryResult, error) {
+	var (
+		queryBuilder    = querybuilder.NewRoleQueryBuilder()
+		preloadBuilders = map[string]iuow.QueryBuilder{
+			"UserRoles":   querybuilder.NewUserRoleQueryBuilder(),
+			"Permissions": querybuilder.NewPermissionQueryBuilder(),
+			"Menus":       querybuilder.NewMenuQueryBuilder(),
+		}
+	)
+
+	return q.QueryResult(s.repo, queryBuilder, preloadBuilders, domain.Role{}, response.Role{})
+}
+
+func (s roleService) Get(id uint) (response.Role, error) {
+	var (
+		role domain.Role
+		res  response.Role
+	)
+	if err := s.repo.GetID(&role, id, map[string][]interface{}{"Menus": nil, "Permissions": nil, "Permissions.Resource": nil}); err != nil {
+		return response.Role{}, err
+	}
+
+	if err := copier.CopyWithOption(&res, role, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		return response.Role{}, err
+	}
+	return res, nil
 }

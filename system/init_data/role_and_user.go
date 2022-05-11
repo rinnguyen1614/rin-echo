@@ -13,7 +13,7 @@ func initRoleAndUser(uow iuow.UnitOfWork, permissionManager domain.PermissionMan
 		repoRole = repository.NewRoleRepository(uow.DB())
 	)
 
-	// create admini and user role.
+	// create admin and user role.
 	rAdmin, err := repoRole.FirstBySlug(domain.RoleAdmin, nil)
 	if rAdmin == nil {
 		rNew, _ := domain.NewRole(strings.ToTitle(domain.RoleAdmin), domain.RoleAdmin, true, false)
@@ -21,7 +21,13 @@ func initRoleAndUser(uow iuow.UnitOfWork, permissionManager domain.PermissionMan
 			return err
 		}
 		rAdmin = rNew
-		assignPermissionsToRoleAdmin(uow, permissionManager, rAdmin)
+		if err := assignPermissionsToRoleAdmin(uow, permissionManager, rAdmin); err != nil {
+			return err
+		}
+
+		if err := assignMenusToRoleAdmin(uow, rAdmin); err != nil {
+			return err
+		}
 	}
 
 	rUser, err := repoRole.FirstBySlug(domain.RoleUser, nil)
@@ -40,7 +46,7 @@ func createUserAdmin(uow iuow.UnitOfWork, permissionManager domain.PermissionMan
 	var repoUser = repository.NewUserRepository(uow.DB())
 	user, err := repoUser.FirstByUsernameOrEmail("admin", nil)
 	if user == nil {
-		user, _ := domain.NewUser("admin", "admin@0809", "Admin", "admin@rin-echo.com", []uint{rAdmin.ID})
+		user, _ := domain.NewUser("admin", "Admin@0809", "Admin", "admin@rin-echo.com", []uint{rAdmin.ID})
 		if err = repoUser.Create(&user); err != nil {
 			return err
 		}
@@ -59,29 +65,25 @@ func createUserAdmin(uow iuow.UnitOfWork, permissionManager domain.PermissionMan
 // assignPermissions to admin role
 func assignPermissionsToRoleAdmin(ux iuow.UnitOfWork, permissionManager domain.PermissionManager, rAdmin *domain.Role) error {
 	var (
-		repo    = repository.NewMenuRepository(ux.DB())
-		menuIDs []uint
+		repo      = repository.NewResourceRepository(ux.DB())
+		resources domain.Resources
 	)
-	if err := uow.Find(repo.Query(nil, nil).Select("id"), &menuIDs); err != nil {
+	if err := uow.Find(repo.Query(nil, nil), &resources); err != nil {
 		return err
 	}
-	return assignPermissions(ux, permissionManager, rAdmin, menuIDs)
+
+	return assignPermissions(ux, permissionManager, rAdmin, resources)
 }
 
-func assignPermissions(ux iuow.UnitOfWork, permissionManager domain.PermissionManager, role *domain.Role, menuIDs []uint) (err error) {
-	if len(menuIDs) == 0 {
+func assignPermissions(ux iuow.UnitOfWork, permissionManager domain.PermissionManager, role *domain.Role, resources domain.Resources) (err error) {
+	if len(resources) == 0 {
 		return
 	}
 
 	var (
-		repoResource      = repository.NewResourceRepository(ux.DB())
-		newPermissions, _ = domain.NewPermissionsForRole(role.ID, menuIDs)
-		resources         domain.Resources
+		newPermissions, _ = domain.NewPermissionsForRole(role.ID, resources.IDs())
 		resourcesForPer   domain.Resources
 	)
-	if err = uow.Find(repoResource.QueryByMenus(menuIDs, nil).Select("resources.path, resources.method"), &resources); err != nil {
-		return err
-	}
 
 	if err = ux.Association(role, "Permissions").Append(newPermissions); err != nil {
 		return err
@@ -97,6 +99,30 @@ func assignPermissions(ux iuow.UnitOfWork, permissionManager domain.PermissionMa
 		if _, err = permissionManager.AddPermissionsForRole(role.ID, resourcesForPer); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// assignMenus to admin role
+func assignMenusToRoleAdmin(ux iuow.UnitOfWork, rAdmin *domain.Role) error {
+	var (
+		repo  = repository.NewMenuRepository(ux.DB())
+		menus domain.Menus
+	)
+	if err := uow.Find(repo.Query(nil, nil), &menus); err != nil {
+		return err
+	}
+
+	return assignMenus(ux, rAdmin, menus)
+}
+
+func assignMenus(ux iuow.UnitOfWork, role *domain.Role, menusNews domain.Menus) (err error) {
+	if len(menusNews) == 0 {
+		return
+	}
+
+	if err = ux.Association(role, "Menus").Append(menusNews); err != nil {
+		return err
 	}
 	return nil
 }

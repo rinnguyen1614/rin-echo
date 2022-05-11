@@ -45,8 +45,8 @@ func (re RBACCasbin) AddPermissionForRole(roleID uint, resource domain.Resource)
 func (re RBACCasbin) AddPermissionForRoles(roleIDs []uint, resource domain.Resource) (bool, error) {
 	var policies [][]string
 	for _, roleID := range roleIDs {
-		if !resource.IsEmptyPathOrMethod() {
-			policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		if !resource.IsEmptyObjectOrAction() {
+			policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 			policies = append(policies, policy)
 		}
 	}
@@ -57,8 +57,8 @@ func (re RBACCasbin) AddPermissionForRoles(roleIDs []uint, resource domain.Resou
 func (re RBACCasbin) AddPermissionsForRole(roleID uint, resources domain.Resources) (bool, error) {
 	var policies [][]string
 	for _, resource := range resources {
-		if !resource.IsEmptyPathOrMethod() {
-			policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		if !resource.IsEmptyObjectOrAction() {
+			policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 			policies = append(policies, policy)
 		}
 	}
@@ -73,7 +73,7 @@ func (re RBACCasbin) RemovePermissionForRole(roleID uint, resource domain.Resour
 func (re RBACCasbin) RemovePermissionForRoles(roleIDs []uint, resource domain.Resource) (bool, error) {
 	var policies [][]string
 	for _, roleID := range roleIDs {
-		policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 		policies = append(policies, policy)
 	}
 
@@ -83,7 +83,7 @@ func (re RBACCasbin) RemovePermissionForRoles(roleIDs []uint, resource domain.Re
 func (re RBACCasbin) RemovePermissionsForRole(roleID uint, resources domain.Resources) (bool, error) {
 	var policies [][]string
 	for _, resource := range resources {
-		policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 		policies = append(policies, policy)
 	}
 
@@ -95,14 +95,14 @@ func (re RBACCasbin) UpdatePermissionForRole(roleID uint, oldResource, newResour
 }
 
 func (re RBACCasbin) UpdatePermissionForRoles(roleIDs []uint, oldResource, newResource domain.Resource) (bool, error) {
-	if newResource.IsEmptyPathOrMethod() {
+	if newResource.IsEmptyObjectOrAction() {
 		return false, nil
 	}
 
 	var oldPolices, newPolicies [][]string
 	for _, roleID := range roleIDs {
-		oldPolicy := util.JoinSlice(utils.ToString(roleID), oldResource.Path, oldResource.Method)
-		newPolicy := util.JoinSlice(utils.ToString(roleID), newResource.Path, newResource.Method)
+		oldPolicy := util.JoinSlice(utils.ToString(roleID), oldResource.Object, oldResource.Action)
+		newPolicy := util.JoinSlice(utils.ToString(roleID), newResource.Object, newResource.Action)
 
 		oldPolices = append(oldPolices, oldPolicy)
 		newPolicies = append(newPolicies, newPolicy)

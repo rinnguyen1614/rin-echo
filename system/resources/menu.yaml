@@ -9,157 +9,23 @@
       slug: resources
       title: Resource Management
       path: /admin/resources
-      type: MI
+      type: A
       icon: source
-      children:
-        - slug: resources:create
-          name: Create Resource
-          type: A
-          resources:
-            - resources:create
-        - slug: resources:edit
-          name: Edit Resource
-          type: A
-          resources:
-            - resources:update
-            - resources:get
-        - slug: resources:delete
-          name: Delete Resource
-          type: A
-          resources:
-            - resources:delete
-        - slug: resources:list
-          name: List Resource
-          type: A
-          resources:
-            - resources:get_trees
-        - slug: resources:disable
-          name: Disable Resource
-          type: A
-          resources:
-            - resources:disable
-        - slug: resources:enable
-          name: Enable Resource
-          type: A
-          resources:
-            - resources:enable
     - name: Menus
       slug: menus
       title: Menu Management
       path: /admin/menus
-      type: MI
+      type: A
       icon: menu
-      children:
-        - slug: menus:create
-          name: Create Menu
-          type: A
-          resources:
-            - menus:create
-            - resource:get_trees
-        - slug: menus:edit
-          name: Edit Menu
-          type: A
-          resources:
-            - menus:update
-            - menus:get
-            - resource:get_tree
-        - slug: menus:delete
-          name: Delete Menu
-          type: A
-          resources:
-            - menus:delete
-        - slug: menus:list
-          name: List Menu
-          type: A
-          resources:
-            - menus:get_trees
-        - slug: menus:disable
-          name: Disable Menu
-          type: A
-          resources:
-            - menus:disable
-        - slug: menus:enable
-          name: Enable Menu
-          type: A
-          resources:
-            - menus:enable
     - name: Roles
       slug: roles
       title: Role Management
       path: /admin/roles
-      type: MI
+      type: A
       icon: business_center
-      children:
-        - slug: roles:create
-          name: Create Role
-          type: A
-          resources:
-            - roles:create
-            - menus:get_trees
-        - slug: roles:edit
-          name: Edit Role
-          type: A
-          resources:
-            - roles:update
-            - roles:get
-            - menus:get_trees
-        - slug: roles:delete
-          name: Delete Role
-          type: A
-          resources:
-            - roles:delete
-        - slug: roles:list
-          name: List Role
-          type: A
-          resources:
-            - roles:get_list
-        - slug: roles:disable
-          name: Disable Role
-          type: A
-          resources:
-            - roles:disable
-        - slug: roles:enable
-          name: Enable Role
-          type: A
-          resources:
-            - roles:enable
     - name: Users
       slug: users
       title: User Management
       path: /admin/users
-      type: MI
+      type: A
       icon: group
-      children:
-        - slug: users:create
-          name: Create User
-          type: A
-          resources:
-            - users:create
-            - roles:select
-        - slug: users:edit
-          name: Edit User
-          type: A
-          resources:
-            - users:get
-            - users:update
-            - roles:select
-        - slug: users:delete
-          name: Delete User
-          type: A
-          resources:
-            - users:delete
-        - slug: users:list
-          name: List User
-          type: A
-          resources:
-            - users:get_list
-        - slug: users:disable
-          name: Disable User
-          type: A
-          resources:
-            - users:disable
-        - slug: users:enable
-          name: Enable User
-          type: A
-          resources:
-            - users:enable

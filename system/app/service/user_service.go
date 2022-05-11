@@ -222,7 +222,7 @@ func (s userService) SetRoles(user *domain.User, roleIDs []uint) (err error) {
 }
 
 func (s userService) CheckExistByUsername(username string) error {
-	if ok := s.repo.Contains(map[string][]interface{}{"username": {username}}); ok {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"username": {username}}); ok {
 		return errors.ErrUserNameExists
 	}
 
@@ -230,7 +230,7 @@ func (s userService) CheckExistByUsername(username string) error {
 }
 
 func (s userService) CheckExistByEmail(email string) error {
-	if ok := s.repo.Contains(map[string][]interface{}{"email": {email}}); ok {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"email": {email}}); ok {
 		return errors.ErrEmailExists
 	}
 

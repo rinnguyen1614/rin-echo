@@ -10,32 +10,32 @@ import (
 type Permission struct {
 	domain.FullAuditedEntity
 
-	MenuID    uint  `gorm:"column:menu_id;index;not null;"`
-	RoleID    *uint `gorm:"column:role_id;index;"`
-	UserID    *uint `gorm:"column:user_id;index;"`
-	IsGranted bool  `gorm:"column:is_granted;"`
+	ResourceID uint  `gorm:"column:resource_id;index;not null;"`
+	RoleID     *uint `gorm:"column:role_id;index;"`
+	UserID     *uint `gorm:"column:user_id;index;"`
+	IsGranted  bool  `gorm:"column:is_granted;"`
 
-	Menu *Menu `gorm:"foreignKey:MenuID;references:id"`
-	User *User `gorm:"foreignKey:UserID;references:id"`
-	Role *Role `gorm:"foreignKey:RoleID;references:id"`
+	Resource *Resource `gorm:"foreignKey:ResourceID;references:id"`
+	User     *User     `gorm:"foreignKey:UserID;references:id"`
+	Role     *Role     `gorm:"foreignKey:RoleID;references:id"`
 }
 
-func NewPermission(menuID uint, roleID *uint, userID *uint) (*Permission, error) {
+func NewPermission(resourceID uint, roleID *uint, userID *uint) (*Permission, error) {
 	return &Permission{
-		MenuID:    menuID,
-		RoleID:    roleID,
-		UserID:    userID,
-		IsGranted: true,
+		ResourceID: resourceID,
+		RoleID:     roleID,
+		UserID:     userID,
+		IsGranted:  true,
 	}, nil
 }
 
-func NewPermissionForRole(roleID uint, menuID uint) (*Permission, error) {
-	return NewPermission(menuID, &roleID, nil)
+func NewPermissionForRole(roleID uint, resourceID uint) (*Permission, error) {
+	return NewPermission(resourceID, &roleID, nil)
 }
 
-func NewPermissionsForRole(roleID uint, menuIDs []uint) (Permissions, error) {
+func NewPermissionsForRole(roleID uint, resourceIDs []uint) (Permissions, error) {
 	var pers Permissions
-	for _, mID := range menuIDs {
+	for _, mID := range resourceIDs {
 		per, _ := NewPermissionForRole(roleID, mID)
 		pers = append(pers, per)
 	}
@@ -43,8 +43,8 @@ func NewPermissionsForRole(roleID uint, menuIDs []uint) (Permissions, error) {
 	return pers, nil
 }
 
-func NewPermissionForUser(userID uint, menuID uint) (*Permission, error) {
-	return NewPermission(menuID, nil, &userID)
+func NewPermissionForUser(userID uint, resourceID uint) (*Permission, error) {
+	return NewPermission(resourceID, nil, &userID)
 }
 
 func (p *Permission) Grant(allow bool) {
@@ -61,10 +61,10 @@ func (p Permissions) ToMap() map[uint]*Permission {
 	return dest
 }
 
-func (p Permissions) ToMapByMenuID() map[uint]*Permission {
+func (p Permissions) ToMapByResourceID() map[uint]*Permission {
 	dest := make(map[uint]*Permission)
 	for _, a := range p {
-		dest[a.MenuID] = a
+		dest[a.ResourceID] = a
 	}
 	return dest
 }
@@ -77,10 +77,10 @@ func (p Permissions) IDs() []uint {
 	return ids
 }
 
-func (p Permissions) MenuIDs() []uint {
+func (p Permissions) ResourceIDs() []uint {
 	var ids []uint
 	for _, a := range p {
-		ids = append(ids, a.MenuID)
+		ids = append(ids, a.ResourceID)
 	}
 	return ids
 }

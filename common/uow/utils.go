@@ -23,13 +23,13 @@ func First(db *gorm.DB, dest interface{}) error {
 	return db.First(dest).Error
 }
 
-func Count(db *gorm.DB) int64 {
+func Count(db *gorm.DB) (int64, error) {
 	var count int64
-	db.Count(&count)
-	return count
+	err := db.Count(&count).Error
+	return count, err
 }
 
-func Contains(db *gorm.DB) bool {
-	count := Count(db)
-	return count > 0
+func Contains(db *gorm.DB) (bool, error) {
+	count, err := Count(db)
+	return count > 0, err
 }

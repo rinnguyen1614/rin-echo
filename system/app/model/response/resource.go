@@ -3,24 +3,19 @@ package response
 import (
 	"rin-echo/common/model"
 	"rin-echo/system/domain"
+	"rin-echo/system/util"
 )
 
 type Resource struct {
 	model.Model
 
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Path        string `json:"path"`
-	Method      string `json:"method"`
-	Description string `json:"description"`
-	ParentID    uint   `json:"parent_id"`
-	Menus       []struct {
-		model.Model
-
-		Name string `json:"name" `
-		Slug string `json:"slug" `
-		Path string `json:"path" `
-	} `json:"menus"`
+	Name               string               `json:"name"`
+	Slug               string               `json:"slug"`
+	Object             string               `json:"object"`
+	Action             string               `json:"action"`
+	Description        string               `json:"description"`
+	ParentID           uint                 `json:"parent_id"`
+	ResourcePermission []ResourcePermission `json:"permissions"`
 }
 
 func NewResource(e domain.Resource) Resource {
@@ -28,10 +23,10 @@ func NewResource(e domain.Resource) Resource {
 		Model:       model.NewModel(e.ID),
 		Name:        e.Name,
 		Slug:        e.Slug,
-		Path:        e.Path,
-		Method:      e.Method,
+		Object:      e.Object,
+		Action:      e.Action,
 		Description: e.Description,
-		ParentID:    *e.ParentID,
+		ParentID:    util.DefaultValue(e.ParentID, uint(0)).(uint),
 	}
 }
 
@@ -43,3 +38,12 @@ type ResourceTree struct {
 }
 
 type ResourceTrees []*ResourceTree
+
+type ResourcePermission struct {
+	model.FullAuditedEntityModel
+	Role struct {
+		model.Model
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	} `json:"role"`
+}

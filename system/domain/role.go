@@ -15,12 +15,14 @@ const (
 type Role struct {
 	domain.FullAuditedEntity
 
-	Name        string `gorm:"column:name;size:100;default:'';not null;"`
-	Slug        string `gorm:"column:slug;size:100;uniqueIndex;default:'';not null;"`
-	IsStatic    bool   `gorm:"column:is_static;"`
-	IsDefault   bool   `gorm:"column:is_default;"`
+	Name      string `gorm:"column:name;size:100;default:'';not null;"`
+	Slug      string `gorm:"column:slug;size:100;uniqueIndex;default:'';not null;"`
+	IsStatic  bool   `gorm:"column:is_static;"`
+	IsDefault bool   `gorm:"column:is_default;"`
+
 	UserRoles   []*UserRole
 	Permissions Permissions
+	Menus       Menus `gorm:"many2many:menu_roles"`
 }
 
 func NewRole(name string, slug string, isStatic, isDefault bool) (*Role, error) {
@@ -34,31 +36,61 @@ func NewRole(name string, slug string, isStatic, isDefault bool) (*Role, error) 
 	return &u, nil
 }
 
+func NewNotRoleStatic(name string, slug string, isDefault bool) (*Role, error) {
+	return NewRole(name, slug, false, true)
+}
+
 func (r *Role) SetPermissions(permissions Permissions) {
 	r.Permissions = permissions
 }
 
 func (r *Role) ComparePermissions(newPermissions Permissions) (permissionsNews, permissionsDels Permissions) {
 	var (
-		oldByMenuID = r.Permissions.ToMapByMenuID()
-		newByMenuID = newPermissions.ToMapByMenuID()
+		oldByResourceID = r.Permissions.ToMapByResourceID()
+		newByResourceID = newPermissions.ToMapByResourceID()
 	)
 
 	if len(newPermissions) != 0 {
-		for rID, ur := range newByMenuID {
-			_, ok := oldByMenuID[rID]
+		for rID, ur := range newByResourceID {
+			_, ok := oldByResourceID[rID]
 			if ok {
-				delete(oldByMenuID, rID)
+				delete(oldByResourceID, rID)
 			} else {
 				permissionsNews = append(permissionsNews, ur)
 			}
 		}
 
-		for _, ur := range oldByMenuID {
+		for _, ur := range oldByResourceID {
 			permissionsDels = append(permissionsDels, ur)
 		}
 	} else {
 		permissionsDels = r.Permissions
+	}
+
+	return
+}
+
+func (r *Role) CompareMenus(newMenus Menus) (menuNews, menuDels Menus) {
+	var (
+		oldByID = r.Menus.ToMap()
+		newByID = newMenus.ToMap()
+	)
+
+	if len(newMenus) != 0 {
+		for rID, ur := range newByID {
+			_, ok := oldByID[rID]
+			if ok {
+				delete(oldByID, rID)
+			} else {
+				menuNews = append(menuNews, ur)
+			}
+		}
+
+		for _, ur := range oldByID {
+			menuDels = append(menuDels, ur)
+		}
+	} else {
+		menuDels = r.Menus
 	}
 
 	return

@@ -19,7 +19,7 @@ func NewPermissionManager(e *casbin.SyncedEnforcer) domain.PermissionManager {
 }
 
 func (m permissionManager) HasPermissionForRole(roleID uint, resource domain.Resource) bool {
-	return m.enforcer.HasPermissionForUser(utils.ToString(roleID), resource.Path, resource.Method)
+	return m.enforcer.HasPermissionForUser(utils.ToString(roleID), resource.Object, resource.Action)
 }
 
 func (m permissionManager) AddRole(roleID uint) (bool, error) {
@@ -58,8 +58,8 @@ func (m permissionManager) AddPermissionForRole(roleID uint, resource domain.Res
 func (m permissionManager) AddPermissionForRoles(roleIDs []uint, resource domain.Resource) (bool, error) {
 	var policies [][]string
 	for _, roleID := range roleIDs {
-		if !resource.IsEmptyPathOrMethod() {
-			policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		if !resource.IsEmptyObjectOrAction() {
+			policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 			policies = append(policies, policy)
 		}
 	}
@@ -70,8 +70,8 @@ func (m permissionManager) AddPermissionForRoles(roleIDs []uint, resource domain
 func (m permissionManager) AddPermissionsForRole(roleID uint, resources domain.Resources) (bool, error) {
 	var policies [][]string
 	for _, resource := range resources {
-		if !resource.IsEmptyPathOrMethod() {
-			policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		if !resource.IsEmptyObjectOrAction() {
+			policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 			policies = append(policies, policy)
 		}
 	}
@@ -84,9 +84,13 @@ func (m permissionManager) RemovePermissionForRole(roleID uint, resource domain.
 }
 
 func (m permissionManager) RemovePermissionForRoles(roleIDs []uint, resource domain.Resource) (bool, error) {
+	if resource.IsEmptyObjectOrAction() {
+		return true, nil
+	}
+
 	var policies [][]string
 	for _, roleID := range roleIDs {
-		policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
+		policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
 		policies = append(policies, policy)
 	}
 
@@ -96,8 +100,10 @@ func (m permissionManager) RemovePermissionForRoles(roleIDs []uint, resource dom
 func (m permissionManager) RemovePermissionsForRole(roleID uint, resources domain.Resources) (bool, error) {
 	var policies [][]string
 	for _, resource := range resources {
-		policy := util.JoinSlice(utils.ToString(roleID), resource.Path, resource.Method)
-		policies = append(policies, policy)
+		if !resource.IsEmptyObjectOrAction() {
+			policy := util.JoinSlice(utils.ToString(roleID), resource.Object, resource.Action)
+			policies = append(policies, policy)
+		}
 	}
 
 	return m.enforcer.RemovePolicies(policies)
@@ -108,14 +114,14 @@ func (m permissionManager) UpdatePermissionForRole(roleID uint, oldResource, new
 }
 
 func (m permissionManager) UpdatePermissionForRoles(roleIDs []uint, oldResource, newResource domain.Resource) (bool, error) {
-	if newResource.IsEmptyPathOrMethod() {
+	if newResource.IsEmptyObjectOrAction() {
 		return false, nil
 	}
 
 	var oldPolices, newPolicies [][]string
 	for _, roleID := range roleIDs {
-		oldPolicy := util.JoinSlice(utils.ToString(roleID), oldResource.Path, oldResource.Method)
-		newPolicy := util.JoinSlice(utils.ToString(roleID), newResource.Path, newResource.Method)
+		oldPolicy := util.JoinSlice(utils.ToString(roleID), oldResource.Object, oldResource.Action)
+		newPolicy := util.JoinSlice(utils.ToString(roleID), newResource.Object, newResource.Action)
 
 		oldPolices = append(oldPolices, oldPolicy)
 		newPolicies = append(newPolicies, newPolicy)
