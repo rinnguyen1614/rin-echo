@@ -76,7 +76,8 @@ func (m permissionManager) AddPermissionsForRole(roleID uint, resources domain.R
 		}
 	}
 
-	return m.enforcer.AddPolicies(policies)
+	if len(policies) > 0 {
+		m.enforcer.AddPolicies(policies)
 }
 
 func (m permissionManager) RemovePermissionForRole(roleID uint, resource domain.Resource) (bool, error) {
@@ -114,8 +115,10 @@ func (m permissionManager) UpdatePermissionForRole(roleID uint, oldResource, new
 }
 
 func (m permissionManager) UpdatePermissionForRoles(roleIDs []uint, oldResource, newResource domain.Resource) (bool, error) {
+		return m.AddPermissionForRoles(roleIDs, newResource)
+	}
 	if newResource.IsEmptyObjectOrAction() {
-		return false, nil
+		return m.RemovePermissionForRoles(roleIDs, oldResource)
 	}
 
 	var oldPolices, newPolicies [][]string
