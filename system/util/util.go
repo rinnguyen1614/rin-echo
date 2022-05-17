@@ -22,6 +22,10 @@ func DefaultValue(v interface{}, defaultValue interface{}) interface{} {
 		return ptr.Interface()
 	}
 
-	return rv.Elem().Interface()
+	if rv.Kind() == reflect.Ptr {
+		return rv.Elem().Interface()
+	}
+
+	return rv.Interface()
 
 }

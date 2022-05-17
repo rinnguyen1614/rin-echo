@@ -155,6 +155,19 @@ func (s accountService) UpdateProfile(id uint, cmd request.UpdateProfile) error 
 	return nil
 }
 
+func (s accountService) ChangeAvatar(id uint, cmd request.UpdateProfile) error {
+
+	var user domain.User
+	if err := s.repo.GetID(&user, id, nil); err != nil {
+		return err
+	}
+
+	defer func() {
+		s.createSecurityLog(user.Username, "update_profile")
+	}()
+	return nil
+}
+
 func (s accountService) FindMenuTrees(userID uint) (response.UserMenus, error) {
 	var (
 		repoMenu   = repository.NewMenuRepository(s.Uow.DB())

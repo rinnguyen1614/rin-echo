@@ -1,5 +1,7 @@
 package request
 
+import "time"
+
 type Login struct {
 	Username string `validate:"required,min=5"`
 	Password string `validate:"required,min=6"`
@@ -32,6 +34,7 @@ type ChangePassword struct {
 }
 
 type UpdateProfile struct {
-	FullName string `json:"full_name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
+	FullName    string    `json:"full_name" validate:"required"`
+	Email       string    `json:"email" validate:"required,email"`
+	DateOfBirth time.Time `json:"date_of_birth" validate:"datetime"`
 }
