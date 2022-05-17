@@ -5,34 +5,25 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
-	"rin-echo/common/utils"
-	"strings"
+	filex "rin-echo/common/utils/file"
 )
 
 type Local struct {
-	basePath     string
-	hashFilename bool
-	format       string
 }
 
-func NewLocal(basePath string) *Local {
-	return &Local{
-		basePath: path.Clean(basePath),
-	}
+func NewLocal() Upload {
+	return &Local{}
 }
 
-func (l *Local) Save(file *multipart.FileHeader) (*FileUploaded, error) {
+func (l *Local) Save(file *multipart.FileHeader, dst string) (*FileUploaded, error) {
 	var (
-		filename           = file.Filename
-		ext                = path.Ext(filename)
-		filenameWithoutExt = strings.TrimSuffix(filename, ext)
-		dst                string
+		dir, filename = path.Split(dst)
+		ext           = path.Ext(filename)
 	)
 
-	if l.hashFilename {
-		filename = utils.MD5([]byte(filenameWithoutExt)) + ext
+	if err := filex.MkdirAll(dir); err != nil {
+		return nil, err
 	}
-	dst = l.basePath + "/" + filename
 
 	src, err := file.Open()
 	if err != nil {

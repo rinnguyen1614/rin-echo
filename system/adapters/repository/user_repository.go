@@ -24,6 +24,10 @@ func (repo userRepository) UpdatePassword(user *domain.User, pwd string) error {
 	return repo.UpdateWithoutHooksWithPrimaryKey(user.ID, map[string]interface{}{"password": user.Password})
 }
 
+func (repo userRepository) UpdateAvatar(id uint, path string) error {
+	return repo.UpdateWithoutHooksWithPrimaryKey(id, map[string]interface{}{"avatar_path": path})
+}
+
 func (repo userRepository) FirstByUsernameOrEmail(usernameOrEmail string, preloads map[string][]interface{}) (*domain.User, error) {
 	var user domain.User
 

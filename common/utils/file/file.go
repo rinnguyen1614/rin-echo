@@ -40,3 +40,10 @@ func Size(path string) (int64, error) {
 	}
 	return file.Size(), nil
 }
+
+func MkdirAll(path string) error {
+	if !IsExist(path) {
+		return os.MkdirAll(path, os.ModePerm)
+	}
+	return nil
+}

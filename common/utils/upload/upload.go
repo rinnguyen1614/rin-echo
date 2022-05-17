@@ -3,8 +3,7 @@ package upload
 import "mime/multipart"
 
 type Upload interface {
-	Save(file *multipart.FileHeader) (*FileUploaded, error)
-	Delete(key string) error
+	Save(file *multipart.FileHeader, dst string) (*FileUploaded, error)
 }
 
 type FileUploaded struct {

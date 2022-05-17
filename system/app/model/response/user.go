@@ -5,9 +5,10 @@ import "rin-echo/common/model"
 type User struct {
 	model.FullAuditedEntityModel
 
-	Username string `json:"username"`
-	FullName string `json:"full_name" `
-	Email    string `json:"email" `
+	Username   string `json:"username"`
+	FullName   string `json:"full_name" `
+	Email      string `json:"email" `
+	AvatarPath string `json:"avatar_path"`
 
 	UserRoles []UserRole `json:"user_roles"`
 }

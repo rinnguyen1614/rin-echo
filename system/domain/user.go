@@ -18,6 +18,7 @@ type User struct {
 	Username    string `gorm:"unique;<-:create"`
 	Password    string
 	FullName    string
+	AvatarPath  string
 	Email       string `gorm:"unique"`
 	DateOfBirth *time.Time
 	//PhoneNumber string
@@ -111,6 +112,8 @@ type UserRepository interface {
 	iuow.RepositoryOfEntity
 
 	UpdatePassword(user *User, pwd string) error
+
+	UpdateAvatar(id uint, path string) error
 
 	FirstByUsernameOrEmail(usernameOrEmail string, preloads map[string][]interface{}) (*User, error)
 

@@ -184,12 +184,16 @@ func (h AccountHandler) UpdateProfile(c echox.Context) error {
 
 func (h AccountHandler) ChangeAvatar(c echox.Context) error {
 	session := c.MustSession()
-	profile, err := h.service.WithContext(c).Profile(session.UserID())
+	file, err := c.FormFile("file")
 	if err != nil {
 		return err
 	}
 
-	echox.OKWithData(c, profile)
+	f, err := h.service.WithContext(c).ChangeAvatar(session.UserID(), file)
+	if err != nil {
+		return err
+	}
+	echox.OKWithData(c, f)
 	return nil
 }
 
