@@ -18,8 +18,8 @@ func (r RepositoryOfEntity) FindID(dest interface{}, ids []uint, preloads map[st
 	return r.Find(dest, map[string][]interface{}{"id": {ids}}, preloads)
 }
 
-func (r RepositoryOfEntity) GetID(dest interface{}, ids uint, preloads map[string][]interface{}) error {
-	return r.Get(dest, map[string][]interface{}{"id": {ids}}, preloads)
+func (r RepositoryOfEntity) GetID(dest interface{}, id uint, preloads map[string][]interface{}) error {
+	return r.Get(dest, map[string][]interface{}{"id": {id}}, preloads)
 }
 
 func (r RepositoryOfEntity) FirstID(dest interface{}, id uint, preloads map[string][]interface{}) error {

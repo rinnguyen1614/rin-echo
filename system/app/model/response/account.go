@@ -9,18 +9,19 @@ import (
 type Profile struct {
 	model.Model
 
-	UUID     utils.UUID
-	Email    string `json:"email"`
-	FullName string `json:"full_name"`
-	Avatar   string `json:"avatar"`
+	UUID       utils.UUID
+	Email      string `json:"email"`
+	FullName   string `json:"full_name"`
+	AvatarPath string `json:"avatar_path"`
 }
 
 func NewProfile(user domain.User) Profile {
 	return Profile{
-		Model:    model.NewModel(user.ID),
-		UUID:     user.UUID,
-		Email:    user.Email,
-		FullName: user.FullName,
+		Model:      model.NewModel(user.ID),
+		UUID:       user.UUID,
+		Email:      user.Email,
+		FullName:   user.FullName,
+		AvatarPath: user.AvatarPath,
 	}
 }
 

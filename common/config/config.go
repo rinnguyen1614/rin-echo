@@ -38,6 +38,8 @@ type (
 		MinPageSize int `json:"min_page_size,omitempty" yaml:"min_page_size,omitempty" ini:"min_page_size,omitempty"`
 
 		Resources map[string]string `json:"resources,omitempty" yaml:"resources,omitempty" ini:"resources,omitempty"`
+
+		UploadPath string `json:"upload_path,omitempty" yaml:"upload_path,omitempty" ini:"upload_path,omitempty"`
 	}
 
 	Casbin struct {

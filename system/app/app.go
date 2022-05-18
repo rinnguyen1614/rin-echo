@@ -136,6 +136,12 @@ func definationsForApplication() []setting.SettingDefinition {
 			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
 			VisibleToClients: true,
 		},
+		{
+			Name:             "upload.avatar_path",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			DefaultValue:     "/static/avatar",
+			VisibleToClients: true,
+		},
 	}
 }
 

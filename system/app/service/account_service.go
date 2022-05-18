@@ -1,10 +1,13 @@
 package service
 
 import (
+	"mime/multipart"
 	"rin-echo/common/auth/jwt"
 	echox "rin-echo/common/echo"
 	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
+	"rin-echo/common/utils"
+	"rin-echo/common/utils/upload"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
 	"rin-echo/system/app/model/response"
@@ -26,6 +29,8 @@ type (
 
 		Profile(id uint) (response.Profile, error)
 
+		ChangeAvatar(id uint, file *multipart.FileHeader) (interface{}, error)
+
 		FindMenuTrees(userID uint) (response.UserMenus, error)
 
 		FindPermissions(userID uint) (response.UserPermissions, error)
@@ -39,6 +44,7 @@ type (
 		auther       *jwt.JWT
 		repo         domain.UserRepository
 		repoSecurity domain.SecurityLogRepository
+		upload       upload.Upload
 	}
 )
 
@@ -48,6 +54,7 @@ func NewAccountService(uow iuow.UnitOfWork, settingProvider setting.Provider, lo
 		auther:       auther,
 		repo:         repository.NewUserRepository(uow.DB()),
 		repoSecurity: repository.NewSecurityLogRepository(uow.DB()),
+		upload:       upload.NewLocal(),
 	}
 }
 
@@ -57,6 +64,7 @@ func (s *accountService) WithContext(ctx echox.Context) AccountService {
 		auther:       s.auther,
 		repo:         s.repo.WithTransaction(s.Service.Uow.DB()),
 		repoSecurity: s.repoSecurity.WithTransaction(s.Service.Uow.DB()),
+		upload:       upload.NewLocal(),
 	}
 }
 
@@ -155,17 +163,35 @@ func (s accountService) UpdateProfile(id uint, cmd request.UpdateProfile) error 
 	return nil
 }
 
-func (s accountService) UpdateAvatar(id uint, cmd request.UpdateProfile) error {
+func (s accountService) ChangeAvatar(id uint, file *multipart.FileHeader) (interface{}, error) {
 
-	var user domain.User
-	if err := s.repo.GetID(&user, id, nil); err != nil {
-		return err
+	var (
+		user          domain.User
+		basePath, err = s.SettingProvider.Get("upload.avatar_path")
+		path          string
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = s.repo.GetID(&user, id, nil); err != nil {
+		return nil, err
+	}
+	path = basePath + "/" + utils.Encrypt(user.Username, time.Now().Format("2006010250101")+utils.RandomLetter(2))
+	fileUploaded, err := s.upload.Save(file, path)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.UpdateAvatar(user.ID, path); err != nil {
+		return nil, err
 	}
 
 	defer func() {
-		s.createSecurityLog(user.Username, "update_avatar")
+		s.createSecurityLog(user.Username, "change_avatar")
 	}()
-	return nil
+
+	return response.NewFile(*fileUploaded), nil
 }
 
 func (s accountService) FindMenuTrees(userID uint) (response.UserMenus, error) {

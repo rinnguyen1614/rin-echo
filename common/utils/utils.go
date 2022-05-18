@@ -78,11 +78,11 @@ func Encrypt(passphrase, plaintext string) string {
 	b, _ := aes.NewCipher(key)
 	aesgcm, _ := cipher.NewGCM(b)
 	data := aesgcm.Seal(nil, iv, []byte(plaintext), nil)
-	return hex.EncodeToString(salt) + "-" + hex.EncodeToString(iv) + "-" + hex.EncodeToString(data)
+	return hex.EncodeToString(salt) + "_" + hex.EncodeToString(iv) + "_" + hex.EncodeToString(data)
 }
 
 func Decrypt(passphrase, ciphertext string) string {
-	arr := strings.Split(ciphertext, "-")
+	arr := strings.Split(ciphertext, "_")
 	salt, _ := hex.DecodeString(arr[0])
 	iv, _ := hex.DecodeString(arr[1])
 	data, _ := hex.DecodeString(arr[2])

@@ -17,6 +17,7 @@ import (
 	"rin-echo/system/domain/query_builder"
 	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
+	"rin-echo/system/util"
 
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
@@ -129,18 +130,11 @@ func (s resourceService) Update(id uint, cmd request.UpdateResource) (err error)
 			}
 		}
 
-		var parentID uint
-		if resource.ParentID != nil {
-			parentID = *resource.ParentID
-		}
-
-		if cmd.ParentID != parentID {
+		var parentID = util.DefaultValue(cmd.ParentID, 0).(uint)
+		if util.DefaultValue(beforeUpdate.ParentID, 0).(uint) != parentID {
 			var parent *domain.Resource
-			if cmd.ParentID != 0 {
-				if err := s.CheckExistParent(cmd.ParentID); err != nil {
-					return err
-				}
-				if err := s.repo.FirstID(&parent, cmd.ParentID, nil); err != nil {
+			if parentID != 0 {
+				if err := s.repo.GetID(&parent, parentID, nil); err != nil {
 					return err
 				}
 			}
@@ -175,12 +169,14 @@ func (s resourceService) UpdatePermission(oldResource domain.Resource, newResour
 			roleIDs        []uint
 		)
 
-		if err := uow.Find(repoPermission.QueryByResources([]uint{oldResource.ID}, nil).Select("permissions.role_id"), &roleIDs); err != nil {
+		if err := uow.Find(repoPermission.Query(map[string][]interface{}{"resource_id": {oldResource.ID}}, nil).Select("permissions.role_id"), &roleIDs); err != nil {
 			return err
 		}
 
-		if _, err := s.permissionManager.UpdatePermissionForRoles(roleIDs, oldResource, newResource); err != nil {
-			return err
+		if len(roleIDs) > 0 {
+			if _, err := s.permissionManager.UpdatePermissionForRoles(roleIDs, oldResource, newResource); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -223,7 +219,7 @@ func (s resourceService) CheckExistParent(parentID uint) error {
 }
 
 func (s resourceService) CheckExistObjectAndAction(object, action string) error {
-	if ok, _ := s.repo.Contains(map[string][]interface{}{"object": {object}, "action": {action}}); !ok {
+	if ok, _ := s.repo.Contains(map[string][]interface{}{"object": {object}, "action": {action}}); ok {
 		return errors.ErrResourceObjectAndActionExists
 	}
 

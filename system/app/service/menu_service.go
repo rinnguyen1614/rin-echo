@@ -17,6 +17,7 @@ import (
 	"rin-echo/system/domain/query_builder"
 	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
+	"rin-echo/system/util"
 
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
@@ -109,8 +110,9 @@ func (s menuService) Update(id uint, cmd request.UpdateMenu) (err error) {
 	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
 
 		var (
-			repo = s.repo.WithTransaction(ux.DB())
-			menu domain.Menu
+			repo         = s.repo.WithTransaction(ux.DB())
+			menu         domain.Menu
+			beforeUpdate domain.Menu
 		)
 
 		err := repo.GetID(&menu, id, nil)
@@ -118,15 +120,13 @@ func (s menuService) Update(id uint, cmd request.UpdateMenu) (err error) {
 			return err
 		}
 
-		var parentID uint
-		if menu.ParentID != nil {
-			parentID = *menu.ParentID
-		}
+		beforeUpdate = menu
 
-		if cmd.ParentID != parentID {
+		var parentID = util.DefaultValue(cmd.ParentID, 0).(uint)
+		if util.DefaultValue(beforeUpdate.ParentID, 0).(uint) != parentID {
 			var parent *domain.Menu
-			if cmd.ParentID != 0 {
-				if err := repo.FirstID(&parent, cmd.ParentID, nil); err != nil {
+			if parentID != 0 {
+				if err := s.repo.GetID(&parent, parentID, nil); err != nil {
 					return err
 				}
 			}

@@ -5,6 +5,7 @@ import (
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
 	"rin-echo/system/errors"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -13,12 +14,14 @@ import (
 type User struct {
 	domain.FullAuditedEntity
 
-	UUID     utils.UUID
-	Username string `gorm:"unique;<-:create"`
-	Password string
-	FullName string
-	Email    string `gorm:"unique"`
-	// PhoneNumber string
+	UUID        utils.UUID
+	Username    string `gorm:"unique;<-:create"`
+	Password    string
+	FullName    string
+	AvatarPath  string
+	Email       string `gorm:"unique"`
+	DateOfBirth *time.Time
+	//PhoneNumber string
 	// PhotoURL    string
 	// ProviderId  string
 
@@ -109,6 +112,8 @@ type UserRepository interface {
 	iuow.RepositoryOfEntity
 
 	UpdatePassword(user *User, pwd string) error
+
+	UpdateAvatar(id uint, path string) error
 
 	FirstByUsernameOrEmail(usernameOrEmail string, preloads map[string][]interface{}) (*User, error)
 

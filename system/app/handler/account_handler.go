@@ -160,6 +160,43 @@ func (h AccountHandler) TokenInfo(c echox.Context) error {
 	return nil
 }
 
+func (h AccountHandler) Profile(c echox.Context) error {
+	session := c.MustSession()
+	profile, err := h.service.WithContext(c).Profile(session.UserID())
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, profile)
+	return nil
+}
+
+func (h AccountHandler) UpdateProfile(c echox.Context) error {
+	session := c.MustSession()
+	profile, err := h.service.WithContext(c).Profile(session.UserID())
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, profile)
+	return nil
+}
+
+func (h AccountHandler) ChangeAvatar(c echox.Context) error {
+	session := c.MustSession()
+	file, err := c.FormFile("file")
+	if err != nil {
+		return err
+	}
+
+	f, err := h.service.WithContext(c).ChangeAvatar(session.UserID(), file)
+	if err != nil {
+		return err
+	}
+	echox.OKWithData(c, f)
+	return nil
+}
+
 func (h AccountHandler) Menus(c echox.Context) error {
 	session := c.MustSession()
 	result, err := h.service.WithContext(c).FindMenuTrees(session.UserID())
