@@ -2,8 +2,8 @@ package response
 
 import (
 	"rin-echo/common/model"
+	"rin-echo/common/utils"
 	"rin-echo/system/domain"
-	"rin-echo/system/util"
 )
 
 type Resource struct {
@@ -26,7 +26,7 @@ func NewResource(e domain.Resource) Resource {
 		Object:      e.Object,
 		Action:      e.Action,
 		Description: e.Description,
-		ParentID:    util.DefaultValue(e.ParentID, uint(0)).(uint),
+		ParentID:    utils.DefaultValue(e.ParentID, uint(0)).(uint),
 	}
 }
 

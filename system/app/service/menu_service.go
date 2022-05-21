@@ -17,7 +17,6 @@ import (
 	"rin-echo/system/domain/query_builder"
 	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
-	"rin-echo/system/util"
 
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
@@ -122,8 +121,8 @@ func (s menuService) Update(id uint, cmd request.UpdateMenu) (err error) {
 
 		beforeUpdate = menu
 
-		var parentID = util.DefaultValue(cmd.ParentID, 0).(uint)
-		if util.DefaultValue(beforeUpdate.ParentID, 0).(uint) != parentID {
+		var parentID = utils.DefaultValue(cmd.ParentID, 0).(uint)
+		if utils.DefaultValue(beforeUpdate.ParentID, 0).(uint) != parentID {
 			var parent *domain.Menu
 			if parentID != 0 {
 				if err := s.repo.GetID(&parent, parentID, nil); err != nil {

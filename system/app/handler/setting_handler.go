@@ -6,6 +6,7 @@ import (
 	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/common/utils"
+	"rin-echo/common/validation"
 	"rin-echo/system/app/model/request"
 	"strconv"
 
@@ -19,9 +20,10 @@ type SettingHandler struct {
 func NewSettingHandler(uow iuow.UnitOfWork,
 	logger *zap.Logger,
 	restQuery rquery.RestQuery,
-	settingProvider setting.Provider) SettingHandler {
+	settingProvider setting.Provider,
+	validator *validation.Validator) SettingHandler {
 	return SettingHandler{
-		Handler: echox.NewHandler(logger, restQuery, settingProvider),
+		Handler: echox.NewHandler(logger, restQuery, settingProvider, validator),
 	}
 }
 

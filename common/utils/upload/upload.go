@@ -1,6 +1,13 @@
 package upload
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+	"rin-echo/common"
+)
+
+var (
+	ErrMaxUploadSize = common.NewRinError("max_upload_size", "uploaded file size exceeds the limit")
+)
 
 type Upload interface {
 	Save(file *multipart.FileHeader, dst string) (*FileUploaded, error)
@@ -11,6 +18,7 @@ type FileUploaded struct {
 	path     string
 	size     int64
 	ext      string
+	name     string
 }
 
 func (f FileUploaded) Filename() string {
@@ -27,4 +35,8 @@ func (f FileUploaded) Size() int64 {
 
 func (f FileUploaded) Ext() string {
 	return f.ext
+}
+
+func (f FileUploaded) Name() string {
+	return f.name
 }

@@ -6,6 +6,7 @@ import (
 	"rin-echo/common/model"
 	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
+	"rin-echo/common/validation"
 
 	"rin-echo/system/app/model/request"
 	"rin-echo/system/app/service"
@@ -23,10 +24,11 @@ func NewRoleHandler(uow iuow.UnitOfWork,
 	permissionManager domain.PermissionManager,
 	logger *zap.Logger,
 	restQuery rquery.RestQuery,
-	settingProvider setting.Provider) RoleHandler {
+	settingProvider setting.Provider,
+	validator *validation.Validator) RoleHandler {
 
 	return RoleHandler{
-		Handler: echox.NewHandler(logger, restQuery, settingProvider),
+		Handler: echox.NewHandler(logger, restQuery, settingProvider, validator),
 		service: service.NewRoleService(uow, permissionManager, settingProvider, logger),
 	}
 }

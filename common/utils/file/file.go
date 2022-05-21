@@ -5,6 +5,13 @@ import (
 	"os"
 )
 
+const (
+	B  = 1
+	KB = 1024 * B
+	MB = 1024 * KB
+	GB = 1024 * MB
+)
+
 func Create(content bytes.Buffer, name string) error {
 	file, err := os.Create(name)
 	if err != nil {

@@ -16,6 +16,7 @@ func GetEcho() *echo.Echo {
 		e.Logger = echox.NewLogger(GetLogger(), "system")
 		e.Logger.SetLevel(log.DEBUG)
 		e.HTTPErrorHandler = echox.HTTPErrorHandlerWrapOnError(GetConfig().IsDevelopment())
+		e.Static("/public", "./static/public")
 
 		e.Use(mwx.Contextx())
 		e.Use(mwx.Logger())
@@ -23,7 +24,6 @@ func GetEcho() *echo.Echo {
 		e.Use(middleware.RemoveTrailingSlash())
 		e.Use(mwx.Localizer(GetI18n()))
 		e.Use(mwx.RequestID())
-
 		service.echo = e
 	}
 	return service.echo

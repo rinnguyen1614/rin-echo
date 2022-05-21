@@ -7,6 +7,7 @@ import (
 
 	rquery "rin-echo/common/echo/models/query/rest_query"
 	"rin-echo/common/setting"
+	"rin-echo/common/validation"
 
 	"go.uber.org/zap"
 )
@@ -21,13 +22,16 @@ type Handler struct {
 
 	RestQuery       rquery.RestQuery
 	SettingProvider setting.Provider
+
+	Validator *validation.Validator
 }
 
-func NewHandler(logger *zap.Logger, restQuery rquery.RestQuery, settingProvider setting.Provider) Handler {
+func NewHandler(logger *zap.Logger, restQuery rquery.RestQuery, settingProvider setting.Provider, validator *validation.Validator) Handler {
 	return Handler{
 		Logger:          logger,
 		RestQuery:       restQuery,
 		SettingProvider: settingProvider,
+		Validator:       validator,
 	}
 }
 

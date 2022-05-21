@@ -9,6 +9,7 @@ import (
 	setting_adapter "rin-echo/common/setting/adapter"
 	setting_scope "rin-echo/common/setting/scope"
 	"rin-echo/common/utils"
+	"rin-echo/common/utils/file"
 	"rin-echo/common/validation"
 	"rin-echo/system/adapters"
 	"rin-echo/system/adapters/manager"
@@ -31,6 +32,8 @@ type Application struct {
 	MenuHandler     handler.MenuHandler
 	RoleHandler     handler.RoleHandler
 	UserHandler     handler.UserHandler
+
+	FileHandler handler.FileHandler
 }
 
 func NewApplication(
@@ -58,12 +61,14 @@ func NewApplication(
 	)
 
 	return Application{
-		SettingHandler:  handler.NewSettingHandler(uow, logger, restQuery, settingProvider),
-		AccountHandler:  handler.NewAccountHandler(uow, permissionManager, logger, restQuery, settingProvider, auther),
-		ResourceHandler: handler.NewResourceHandler(uow, permissionManager, logger, restQuery, settingProvider),
-		MenuHandler:     handler.NewMenuHandler(uow, permissionManager, logger, restQuery, settingProvider),
-		RoleHandler:     handler.NewRoleHandler(uow, permissionManager, logger, restQuery, settingProvider),
-		UserHandler:     handler.NewUserHandler(uow, permissionManager, logger, restQuery, settingProvider),
+		SettingHandler:  handler.NewSettingHandler(uow, logger, restQuery, settingProvider, validator),
+		AccountHandler:  handler.NewAccountHandler(uow, permissionManager, logger, restQuery, settingProvider, validator, auther),
+		ResourceHandler: handler.NewResourceHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
+		MenuHandler:     handler.NewMenuHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
+		RoleHandler:     handler.NewRoleHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
+		UserHandler:     handler.NewUserHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
+
+		FileHandler: handler.NewFileHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 	}
 }
 
@@ -137,9 +142,27 @@ func definationsForApplication() []setting.SettingDefinition {
 			VisibleToClients: true,
 		},
 		{
-			Name:             "upload.avatar_path",
+			Name:             "files.public.path",
 			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
-			DefaultValue:     "/static/avatar",
+			DefaultValue:     "static/public",
+			VisibleToClients: true,
+		},
+		{
+			Name:             "files.upload.path",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			DefaultValue:     "static/upload",
+			VisibleToClients: true,
+		},
+		{
+			Name:             "files.upload.max_size",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			DefaultValue:     utils.ToString(file.MB * 10),
+			VisibleToClients: true,
+		},
+		{
+			Name:             "files.avatar_path",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			DefaultValue:     "static/public/avatar",
 			VisibleToClients: true,
 		},
 	}

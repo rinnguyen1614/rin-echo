@@ -7,6 +7,7 @@ type FileResponse struct {
 	Size     int64  `json:"size"`
 	Filename string `json:"file_name"`
 	Ext      string `json:"ext"`
+	Name     string `json:"name"`
 }
 
 func NewFile(file upload.FileUploaded) FileResponse {
@@ -15,5 +16,6 @@ func NewFile(file upload.FileUploaded) FileResponse {
 		Path:     file.Path(),
 		Size:     file.Size(),
 		Ext:      file.Ext(),
+		Name:     file.Name(),
 	}
 }

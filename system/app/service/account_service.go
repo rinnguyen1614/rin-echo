@@ -49,12 +49,13 @@ type (
 )
 
 func NewAccountService(uow iuow.UnitOfWork, settingProvider setting.Provider, logger *zap.Logger, auther *jwt.JWT) AccountService {
+	uploadMaxSize := setting.MustGet[int64](settingProvider, "files.upload.max_size")
 	return &accountService{
 		Service:      echox.NewService(uow, settingProvider, logger),
 		auther:       auther,
 		repo:         repository.NewUserRepository(uow.DB()),
 		repoSecurity: repository.NewSecurityLogRepository(uow.DB()),
-		upload:       upload.NewLocal(),
+		upload:       upload.NewLocal(uploadMaxSize),
 	}
 }
 
@@ -64,7 +65,7 @@ func (s *accountService) WithContext(ctx echox.Context) AccountService {
 		auther:       s.auther,
 		repo:         s.repo.WithTransaction(s.Service.Uow.DB()),
 		repoSecurity: s.repoSecurity.WithTransaction(s.Service.Uow.DB()),
-		upload:       upload.NewLocal(),
+		upload:       s.upload,
 	}
 }
 
@@ -167,7 +168,7 @@ func (s accountService) ChangeAvatar(id uint, file *multipart.FileHeader) (inter
 
 	var (
 		user          domain.User
-		basePath, err = s.SettingProvider.Get("upload.avatar_path")
+		basePath, err = s.SettingProvider.Get("files.avatar_path")
 		path          string
 	)
 	if err != nil {

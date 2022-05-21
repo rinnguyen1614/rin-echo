@@ -6,6 +6,7 @@ import (
 	rquery "rin-echo/common/echo/models/query/rest_query"
 	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
+	"rin-echo/common/validation"
 	"rin-echo/system/app/model/request"
 	"rin-echo/system/app/service"
 	"rin-echo/system/domain"
@@ -25,10 +26,11 @@ func NewAccountHandler(uow iuow.UnitOfWork,
 	logger *zap.Logger,
 	restQuery rquery.RestQuery,
 	settingProvider setting.Provider,
+	validator *validation.Validator,
 	auther *jwt.JWT) AccountHandler {
 
 	return AccountHandler{
-		Handler:     echox.NewHandler(logger, restQuery, settingProvider),
+		Handler:     echox.NewHandler(logger, restQuery, settingProvider, validator),
 		service:     service.NewAccountService(uow, settingProvider, logger, auther),
 		userService: service.NewUserService(uow, permissionManager, settingProvider, logger),
 	}
