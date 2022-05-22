@@ -41,6 +41,16 @@ func NewFileHandler(uow iuow.UnitOfWork,
 	}
 }
 
+// UploadFile godoc
+// @Summary      Upload file
+// @Description  Upload file with the input payload
+// @Tags         files
+// @Accept       multipart/form-data
+// @Produce      application/json
+// @Param 		 files formData file true "Muilti files"
+// @Success      200  {object}  models.Response{data=[]response.FileResponse} "{"data": {}}"
+// @Router       /files/upload [post]
+// @Security Bearer
 func (h FileHandler) Upload(c echox.Context) error {
 	session := c.MustSession().(*inject.Claims)
 	form, err := c.MultipartForm()
@@ -68,6 +78,14 @@ func (h FileHandler) Upload(c echox.Context) error {
 	return nil
 }
 
+// DownloadFile godoc
+// @Summary      Download file
+// @Description  Download file with query's path
+// @Tags         files
+// @Param 		 path query string true "path of file"
+// @Success      200
+// @Router       /files/download [post]
+// @Security Bearer
 func (h FileHandler) Download(c echox.Context) error {
 	path := c.QueryParam("path")
 	if path == "" {

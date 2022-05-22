@@ -16,6 +16,8 @@ type Role struct {
 	Menus       []RoleMenu       `json:"menus"`
 }
 
+type Roles []*Role
+
 type RolePermission struct {
 	model.Model
 	Resource struct {

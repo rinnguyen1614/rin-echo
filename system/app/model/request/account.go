@@ -34,9 +34,9 @@ type ChangePassword struct {
 }
 
 type UpdateProfile struct {
-	FullName    string    `json:"full_name" validate:"required"`
-	Email       string    `json:"email" validate:"required,email"`
-	DateOfBirth time.Time `json:"date_of_birth" validate:"datetime"`
+	FullName    string     `json:"full_name" validate:"required"`
+	Email       string     `json:"email" validate:"required,email"`
+	DateOfBirth *time.Time `json:"date_of_birth" validate:"datetime"`
 }
 
 type UpdateAvatar struct {

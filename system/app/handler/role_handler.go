@@ -33,6 +33,16 @@ func NewRoleHandler(uow iuow.UnitOfWork,
 	}
 }
 
+// CreateRole godoc
+// @Summary      Create a new role
+// @Description  Create a new role with the input payload
+// @Tags         roles
+// @Accept       application/json
+// @Produce      application/json
+// @Param 		 data body request.CreateRole true "Create role"
+// @Success      200  {object}  models.Response{data=model.Model} "{"data": {}}"
+// @Router       /roles [post]
+// @Security Bearer
 func (h RoleHandler) Create(c echox.Context) error {
 	var cmd request.CreateRole
 	if err := c.Bind(&cmd); err != nil {
@@ -50,6 +60,17 @@ func (h RoleHandler) Create(c echox.Context) error {
 	return nil
 }
 
+// UpdateRole godoc
+// @Summary      Update role identified by the given id
+// @Description  Update the role corresponding to the input id
+// @Tags         roles
+// @Accept       application/json
+// @Produce      application/json
+// @Param 		 id path int true "ID of the role to be updated"
+// @Param 		 data body request.UpdateRole true "Update role"
+// @Success      200  {object}  models.Response{data=model.Model} "{"data": {}}"
+// @Router       /roles/{id} [put]
+// @Security Bearer
 func (h RoleHandler) Update(c echox.Context) error {
 	var cmd request.UpdateRole
 	if err := c.Bind(&cmd); err != nil {
@@ -72,6 +93,16 @@ func (h RoleHandler) Update(c echox.Context) error {
 	return nil
 }
 
+// DeleteRole godoc
+// @Summary      Delete role identified by the given id
+// @Description  Delete the role corresponding to the input id
+// @Tags         roles
+// @Accept       application/json
+// @Produce      application/json
+// @Param 		 id path int true "ID of the role to be deleted"
+// @Success      200  {object}  models.Response "{"data": {}}"
+// @Router       /roles/{id} [delete]
+// @Security Bearer
 func (h RoleHandler) Delete(c echox.Context) error {
 	id, err := CheckRequestIDParam(c.Param("id"))
 	err = h.service.WithContext(c).Delete(id)
@@ -83,6 +114,16 @@ func (h RoleHandler) Delete(c echox.Context) error {
 	return nil
 }
 
+// GetRole godoc
+// @Summary 	Get details for a given id
+// @Description Get details of role corresponding to the input id
+// @Tags 		roles
+// @Accept  	application/json
+// @Produce  	application/json
+// @Param 		id path int true "ID of the role"
+// @Success     200  {object} models.Response{data=response.Role} "{"data": {}}"
+// @Router 		/roles/{id} [get]
+// @Security Bearer
 func (h RoleHandler) Get(c echox.Context) error {
 	id, err := CheckRequestIDParam(c.Param("id"))
 	result, err := h.service.WithContext(c).Get(id)
@@ -94,6 +135,20 @@ func (h RoleHandler) Get(c echox.Context) error {
 	return nil
 }
 
+// GetRoles godoc
+// @Summary 	Get details of all roles
+// @Description Get details of all roles
+// @Tags 		roles
+// @Accept  	application/json
+// @Produce  	application/json
+// @Param 		page_size query int true "pageSize"
+// @Param 		page query int true "page"
+// @Param 		filters query string false "filters separated by ",""
+// @Param 		selects query string false "selects separated by ",""
+// @Param 		sorts query string false "sorts separated by ",""
+// @Success     200  {object} models.Response{data=model.QueryResult{records=response.Roles}} "{"data": {}}"
+// @Router 		/roles/trees [get]
+// @Security Bearer
 func (h RoleHandler) Query(c echox.Context) error {
 	query, err := h.RestQuery.Query(c.Request())
 

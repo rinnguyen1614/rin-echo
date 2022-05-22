@@ -113,3 +113,17 @@
           slug: admin/users:enable
           object: /api/v1/users/:id/enable
           action: PATH
+- name: Others
+  slug: others
+  children:
+    - name: Files
+      slug: others/files
+      children:
+        - name: Upload
+          slug: others/files:upload
+          object: /api/v1/files/upload
+          action: POST
+        - name: Download
+          slug: others/files:download
+          object: /api/v1/files/download
+          action: POST

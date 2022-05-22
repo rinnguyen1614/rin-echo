@@ -156,7 +156,7 @@ func definationsForApplication() []setting.SettingDefinition {
 		{
 			Name:             "files.upload.max_size",
 			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
-			DefaultValue:     utils.ToString(file.MB * 10),
+			DefaultValue:     utils.ToString(file.MB * 50),
 			VisibleToClients: true,
 		},
 		{

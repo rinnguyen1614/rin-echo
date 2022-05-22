@@ -7,7 +7,7 @@ import (
 )
 
 type Resource struct {
-	model.Model
+	model.FullAuditedEntityModel
 
 	Name               string               `json:"name"`
 	Slug               string               `json:"slug"`
@@ -20,13 +20,13 @@ type Resource struct {
 
 func NewResource(e domain.Resource) Resource {
 	return Resource{
-		Model:       model.NewModel(e.ID),
-		Name:        e.Name,
-		Slug:        e.Slug,
-		Object:      e.Object,
-		Action:      e.Action,
-		Description: e.Description,
-		ParentID:    utils.DefaultValue(e.ParentID, uint(0)).(uint),
+		FullAuditedEntityModel: model.NewFullAuditedModelWithEntity(e.FullAuditedEntity),
+		Name:                   e.Name,
+		Slug:                   e.Slug,
+		Object:                 e.Object,
+		Action:                 e.Action,
+		Description:            e.Description,
+		ParentID:               utils.DefaultValue(e.ParentID, uint(0)).(uint),
 	}
 }
 

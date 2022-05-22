@@ -15,6 +15,7 @@ import (
 	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
 
+	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
 )
 
@@ -28,6 +29,10 @@ type (
 		CreateDefault(cmd request.CreateUser) (uint, error)
 
 		Update(id uint, cmd request.UpdateUser) (err error)
+
+		Delete(id uint) (err error)
+
+		Get(id uint) (response.User, error)
 
 		Query(q *query.Query) (*model.QueryResult, error)
 
@@ -118,13 +123,6 @@ func (s userService) CreateDefault(cmd request.CreateUser) (uint, error) {
 	}
 	cmd.RoleIDs = roleIDs
 	return s.Create(cmd)
-}
-
-func (s userService) Get(id uint) (user *domain.User, err error) {
-	if err = s.repo.GetID(&user, id, map[string][]interface{}{"UserRoles": nil}); err != nil {
-		return nil, err
-	}
-	return user, nil
 }
 
 func (s userService) Update(id uint, cmd request.UpdateUser) (err error) {
@@ -250,6 +248,40 @@ func (s userService) ResetPassword(user *domain.User) error {
 	// send mail
 
 	return nil
+}
+
+func (s userService) Delete(id uint) (err error) {
+	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
+		var (
+			repo       = s.repo.WithTransaction(ux.DB())
+			hasRole, _ = uow.Contains(ux.DB().Table("user_roles").Where("user_id", id))
+		)
+
+		if hasRole {
+			return errors.ErrResourceReferencedRole
+		}
+
+		if err := repo.Delete(id); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (s userService) Get(id uint) (response.User, error) {
+	var (
+		user domain.User
+		res  response.User
+	)
+	if err := s.repo.GetID(&user, id, map[string][]interface{}{"UserRoles": nil, "UserRoles.Role": nil}); err != nil {
+		return response.User{}, err
+	}
+
+	if err := copier.CopyWithOption(&res, user, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		return response.User{}, err
+	}
+	return res, nil
 }
 
 func (s userService) Query(q *query.Query) (*model.QueryResult, error) {

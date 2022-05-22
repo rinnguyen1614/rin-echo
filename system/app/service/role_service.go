@@ -292,6 +292,7 @@ func (s roleService) Delete(id uint) (err error) {
 			repo           = s.repo.WithTransaction(ux.DB())
 			hasResource, _ = uow.Contains(ux.DB().Table("permissions").Where("role_id", id))
 			hasMenu, _     = uow.Contains(ux.DB().Table("menu_roles").Where("role_id", id))
+			hasUser, _     = uow.Contains(ux.DB().Table("user_roles").Where("role_id", id))
 		)
 
 		if hasResource {
@@ -300,6 +301,10 @@ func (s roleService) Delete(id uint) (err error) {
 
 		if hasMenu {
 			return errors.ErrRoleReferencedMenu
+		}
+
+		if hasUser {
+			return errors.ErrRoleReferencedUser
 		}
 
 		if err := repo.Delete(id); err != nil {

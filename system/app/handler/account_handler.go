@@ -1,16 +1,22 @@
 package handler
 
 import (
+	"rin-echo/common"
 	"rin-echo/common/auth/jwt"
 	echox "rin-echo/common/echo"
+	_ "rin-echo/common/echo/models"
 	rquery "rin-echo/common/echo/models/query/rest_query"
+	"rin-echo/common/model"
 	"rin-echo/common/setting"
 	iuow "rin-echo/common/uow/interfaces"
+	fileutil "rin-echo/common/utils/file"
 	"rin-echo/common/validation"
 	"rin-echo/system/app/model/request"
+	_ "rin-echo/system/app/model/response"
 	"rin-echo/system/app/service"
 	"rin-echo/system/domain"
 	"rin-echo/system/inject"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -36,6 +42,14 @@ func NewAccountHandler(uow iuow.UnitOfWork,
 	}
 }
 
+// @Summary      Login
+// @Description  Login
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.Login true "Login"
+// @Success      200  {object}  models.Response{data=jwt.Token} "{"data": {}}"
+// @Router       /account/login [post]
 func (h AccountHandler) Login(c echox.Context) error {
 	var cmd request.Login
 	if err := c.Bind(&cmd); err != nil {
@@ -99,6 +113,15 @@ func (h AccountHandler) Register(c echox.Context) error {
 	return nil
 }
 
+// @Summary      Change password
+// @Description  Change password
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.ChangePassword true "Change password"
+// @Success      200  {object}  models.Response{data=jwt.Token} "{"data": {}}"
+// @Router       /account/password [put]
+// @Security Bearer
 func (h AccountHandler) ChangePassword(c echox.Context) error {
 	var cmd request.ChangePassword
 	if err := c.Bind(&cmd); err != nil {
@@ -162,6 +185,13 @@ func (h AccountHandler) TokenInfo(c echox.Context) error {
 	return nil
 }
 
+// @Summary      Profile
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Success      200  {object}  models.Response{data=response.Profile} "{"data": {}}"
+// @Router       /account/profile [get]
+// @Security Bearer
 func (h AccountHandler) Profile(c echox.Context) error {
 	session := c.MustSession()
 	profile, err := h.service.WithContext(c).Profile(session.UserID())
@@ -173,22 +203,53 @@ func (h AccountHandler) Profile(c echox.Context) error {
 	return nil
 }
 
+// @Summary      Update Profile
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.UpdateProfile true "update profile"
+// @Success      200  {object}  models.Response{data=response.Profile} "{"data": {}}"
+// @Router       /account/profile [put]
+// @Security Bearer
 func (h AccountHandler) UpdateProfile(c echox.Context) error {
 	session := c.MustSession()
-	profile, err := h.service.WithContext(c).Profile(session.UserID())
+	var cmd request.UpdateProfile
+	if err := c.Bind(&cmd); err != nil {
+		return err
+	}
+
+	err := h.service.WithContext(c).UpdateProfile(session.UserID(), cmd)
 	if err != nil {
 		return err
 	}
 
-	echox.OKWithData(c, profile)
+	echox.OKWithData(c, model.NewModel(session.UserID()))
 	return nil
 }
 
+// @Summary      Change avatar
+// @Tags         account
+// @Accept       multipart/form-data
+// @Produce      application/json
+// @Param 		 file formData file true "File type is image type"
+// @Success      200  {object}  models.Response{data=response.Profile} "{"data": {}}"
+// @Router       /account/avatar [put]
+// @Security Bearer
 func (h AccountHandler) ChangeAvatar(c echox.Context) error {
 	session := c.MustSession()
 	file, err := c.FormFile("file")
 	if err != nil {
 		return err
+	}
+
+	// check file type is an image type
+	mimeType, err := fileutil.GetMimeTypeFromFileHeader(file)
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasPrefix(mimeType, "image") {
+		return common.NewRinError("avatar_invalid", "The profile picture must be an image.")
 	}
 
 	f, err := h.service.WithContext(c).ChangeAvatar(session.UserID(), file)
@@ -199,6 +260,13 @@ func (h AccountHandler) ChangeAvatar(c echox.Context) error {
 	return nil
 }
 
+// @Summary      Get menus
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Success      200  {object}  models.Response{data=response.UserMenus} "{"data": {}}"
+// @Router       /account/menus [get]
+// @Security Bearer
 func (h AccountHandler) Menus(c echox.Context) error {
 	session := c.MustSession()
 	result, err := h.service.WithContext(c).FindMenuTrees(session.UserID())
@@ -210,6 +278,13 @@ func (h AccountHandler) Menus(c echox.Context) error {
 	return nil
 }
 
+// @Summary      Get permissions
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Success      200  {object}  models.Response{data=response.UserPermissions} "{"data": {}}"
+// @Router       /account/permissions [get]
+// @Security Bearer
 func (h AccountHandler) Permissions(c echox.Context) error {
 	session := c.MustSession()
 	result, err := h.service.WithContext(c).FindPermissions(session.UserID())

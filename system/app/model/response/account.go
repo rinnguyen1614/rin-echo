@@ -4,24 +4,27 @@ import (
 	"rin-echo/common/model"
 	"rin-echo/common/utils"
 	"rin-echo/system/domain"
+	"time"
 )
 
 type Profile struct {
 	model.Model
 
-	UUID       utils.UUID
-	Email      string `json:"email"`
-	FullName   string `json:"full_name"`
-	AvatarPath string `json:"avatar_path"`
+	UUID        utils.UUID
+	Email       string     `json:"email"`
+	FullName    string     `json:"full_name"`
+	AvatarPath  string     `json:"avatar_path"`
+	DateOfBirth *time.Time `json:"date_of_birth"`
 }
 
 func NewProfile(user domain.User) Profile {
 	return Profile{
-		Model:      model.NewModel(user.ID),
-		UUID:       user.UUID,
-		Email:      user.Email,
-		FullName:   user.FullName,
-		AvatarPath: user.AvatarPath,
+		Model:       model.NewModel(user.ID),
+		UUID:        user.UUID,
+		Email:       user.Email,
+		FullName:    user.FullName,
+		AvatarPath:  user.AvatarPath,
+		DateOfBirth: user.DateOfBirth,
 	}
 }
 

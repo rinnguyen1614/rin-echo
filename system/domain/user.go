@@ -115,6 +115,8 @@ type UserRepository interface {
 
 	UpdateAvatar(id uint, path string) error
 
+	UpdateProfile(id uint, fullName, email string, dateOfBirth *time.Time) error
+
 	FirstByUsernameOrEmail(usernameOrEmail string, preloads map[string][]interface{}) (*User, error)
 
 	WithTransaction(db *gorm.DB) UserRepository

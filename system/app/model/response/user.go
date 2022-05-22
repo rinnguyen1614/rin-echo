@@ -1,6 +1,9 @@
 package response
 
-import "rin-echo/common/model"
+import (
+	"rin-echo/common/model"
+	"rin-echo/system/domain"
+)
 
 type User struct {
 	model.FullAuditedEntityModel
@@ -13,6 +16,8 @@ type User struct {
 	UserRoles []UserRole `json:"user_roles"`
 }
 
+type Users []*User
+
 type UserRole struct {
 	model.FullAuditedEntityModel
 	Role struct {
@@ -20,4 +25,14 @@ type UserRole struct {
 		Name string `json:"name"`
 		Slug string `json:"slug"`
 	} `json:"role"`
+}
+
+func NewUser(e domain.User) User {
+	return User{
+		FullAuditedEntityModel: model.NewFullAuditedModelWithEntity(e.FullAuditedEntity),
+		Username:               e.Username,
+		FullName:               e.FullName,
+		Email:                  e.Email,
+		AvatarPath:             e.AvatarPath,
+	}
 }

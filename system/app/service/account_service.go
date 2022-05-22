@@ -29,6 +29,8 @@ type (
 
 		Profile(id uint) (response.Profile, error)
 
+		UpdateProfile(id uint, cmd request.UpdateProfile) error
+
 		ChangeAvatar(id uint, file *multipart.FileHeader) (interface{}, error)
 
 		FindMenuTrees(userID uint) (response.UserMenus, error)
@@ -161,7 +163,8 @@ func (s accountService) UpdateProfile(id uint, cmd request.UpdateProfile) error 
 	defer func() {
 		s.createSecurityLog(user.Username, "update_profile")
 	}()
-	return nil
+
+	return s.repo.UpdateProfile(id, cmd.FullName, cmd.Email, cmd.DateOfBirth)
 }
 
 func (s accountService) ChangeAvatar(id uint, file *multipart.FileHeader) (interface{}, error) {

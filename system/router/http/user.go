@@ -9,15 +9,17 @@ import (
 
 func (h HttpServer) RegisterUserRouter(g *echo.Group) {
 
-	userRouter := g.Group("/users")
+	router := g.Group("/users")
 	{
 		operationName := "UserHandler"
-		middleware.AddRequestLoggerMiddleware(userRouter)
-		middleware.AddJWTMiddleware(userRouter)
-		middleware.AddCasbinMiddleware(userRouter)
+		middleware.AddRequestLoggerMiddleware(router)
+		middleware.AddJWTMiddleware(router)
+		middleware.AddCasbinMiddleware(router)
 
-		userRouter.POST("", echox.WrapHandler(h.app.UserHandler.Create))
-		userRouter.PUT("/:id", echox.WrapHandler(h.app.UserHandler.Update))
-		userRouter.GET("", echox.WrapHandlerWithOperation(h.app.UserHandler.Query, operationName, operationName+".Query"))
+		router.POST("", echox.WrapHandler(h.app.UserHandler.Create))
+		router.PUT("/:id", echox.WrapHandler(h.app.UserHandler.Update))
+		router.DELETE("/:id", echox.WrapHandler(h.app.UserHandler.Delete))
+		router.GET("/:id", echox.WrapHandler(h.app.UserHandler.Get))
+		router.GET("", echox.WrapHandlerWithOperation(h.app.UserHandler.Query, operationName, operationName+".Query"))
 	}
 }
