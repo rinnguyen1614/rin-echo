@@ -7,28 +7,37 @@ import (
 	"rin-echo/system/errors"
 	"time"
 
+	"github.com/thoas/go-funk"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+)
+
+var (
+	Genders       = []uint{1, 2, 3}
+	GenderDefault = Genders[0]
 )
 
 type User struct {
 	domain.FullAuditedEntity
 
-	UUID        utils.UUID
-	Username    string `gorm:"unique;<-:create"`
-	Password    string
-	FullName    string
-	AvatarPath  string
-	Email       string `gorm:"unique"`
-	DateOfBirth *time.Time
-	//PhoneNumber string
-	// PhotoURL    string
+	UUID                        utils.UUID
+	Username                    string `gorm:"unique;<-:create"`
+	Password                    string
+	FullName                    string
+	AvatarPath                  string
+	Email                       string `gorm:"unique"`
+	EmailVerified               bool
+	EmailVerificationCodeHashed string
+	DateOfBirth                 *time.Time
+	Phone                       string
+	PhoneVerified               bool
+	PhoneVerificationCodeHashed string
+	Gender                      uint `gorm:"column:gender;size:1;default:1"`
 	// ProviderId  string
-
 	// Disabled      bool
-	// EmailVerified bool
 
 	UserRoles UserRoles
+	Addresses Addresses
 }
 
 func NewUser(username string, password string, fullName string, email string, roleIDs []uint) (*User, error) {
@@ -44,7 +53,7 @@ func NewUser(username string, password string, fullName string, email string, ro
 	}
 
 	u.AssignToRoles(roleIDs)
-
+	u.SetGenderDefault()
 	return u, nil
 }
 
@@ -71,6 +80,18 @@ func (u *User) AssignToRoles(roleIDs []uint) {
 	for _, roleID := range roleIDs {
 		u.AssignToRole(roleID)
 	}
+}
+
+func (u *User) SetGenderDefault() {
+	u.Gender = GenderDefault
+}
+
+func (u *User) SetGender(gender uint) error {
+	if !funk.Contains(Genders, gender) {
+		return errors.ErrGenderNotFound
+	}
+	u.Gender = gender
+	return nil
 }
 
 func (u User) CompareUserRoles(newUserRoles UserRoles) (userRoleNews, userRoleDels UserRoles) {
@@ -115,7 +136,15 @@ type UserRepository interface {
 
 	UpdateAvatar(id uint, path string) error
 
-	UpdateProfile(id uint, fullName, email string, dateOfBirth *time.Time) error
+	UpdateProfile(id uint, fullName string, dateOfBirth *time.Time, gender uint) error
+
+	ChangePhone(id uint, phone string, phoneVerificationCodeHashed string) error
+
+	VerifyPhone(id uint) error
+
+	ChangeEmail(id uint, email string, emailVerificationCodeHashed string) error
+
+	VerifyEmail(id uint) error
 
 	FirstByUsernameOrEmail(usernameOrEmail string, preloads map[string][]interface{}) (*User, error)
 

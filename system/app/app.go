@@ -32,6 +32,7 @@ type Application struct {
 	MenuHandler     handler.MenuHandler
 	RoleHandler     handler.RoleHandler
 	UserHandler     handler.UserHandler
+	AuditLogHandler handler.AuditLogHandler
 
 	FileHandler handler.FileHandler
 }
@@ -67,6 +68,7 @@ func NewApplication(
 		MenuHandler:     handler.NewMenuHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 		RoleHandler:     handler.NewRoleHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 		UserHandler:     handler.NewUserHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
+		AuditLogHandler: handler.NewAuditLogHandler(uow, logger, restQuery, settingProvider, validator),
 
 		FileHandler: handler.NewFileHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 	}
@@ -138,6 +140,27 @@ func definationsForApplication() []setting.SettingDefinition {
 		},
 		{
 			Name:             "system.user.lockout.max_failed",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			VisibleToClients: true,
+		},
+		{
+			Name:             "system.user.verify_email.body",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			VisibleToClients: true,
+		},
+		{
+			Name:             "system.user.verify_email.subject",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			VisibleToClients: true,
+			DefaultValue:     "Rin verification code",
+		},
+		{
+			Name:             "system.user.verify_phone.body",
+			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
+			VisibleToClients: true,
+		},
+		{
+			Name:             "system.user.verify_phone.subject",
 			AllowedProviders: []string{setting_scope.GlobalSettingProviderName},
 			VisibleToClients: true,
 		},

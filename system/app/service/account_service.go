@@ -13,6 +13,7 @@ import (
 	"rin-echo/system/app/model/response"
 	"rin-echo/system/domain"
 	"rin-echo/system/errors"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/copier"
@@ -32,6 +33,14 @@ type (
 		UpdateProfile(id uint, cmd request.UpdateProfile) error
 
 		ChangeAvatar(id uint, file *multipart.FileHeader) (interface{}, error)
+
+		ChangeEmail(id uint, cmd request.ChangeEmail) error
+
+		VerifyEmail(id uint, cmd request.VerifyEmail) error
+
+		ChangePhone(id uint, cmd request.ChangePhone) error
+
+		VerifyPhone(id uint, cmd request.VerifyPhone) error
 
 		FindMenuTrees(userID uint) (response.UserMenus, error)
 
@@ -164,7 +173,7 @@ func (s accountService) UpdateProfile(id uint, cmd request.UpdateProfile) error 
 		s.createSecurityLog(user.Username, "update_profile")
 	}()
 
-	return s.repo.UpdateProfile(id, cmd.FullName, cmd.Email, cmd.DateOfBirth)
+	return s.repo.UpdateProfile(id, cmd.FullName, cmd.DateOfBirth, cmd.Gender)
 }
 
 func (s accountService) ChangeAvatar(id uint, file *multipart.FileHeader) (interface{}, error) {
@@ -187,7 +196,7 @@ func (s accountService) ChangeAvatar(id uint, file *multipart.FileHeader) (inter
 		return nil, err
 	}
 
-	if err := s.repo.UpdateAvatar(user.ID, path); err != nil {
+	if err := s.repo.UpdateAvatar(user.ID, strings.TrimPrefix(fileUploaded.Path(), "/static")); err != nil {
 		return nil, err
 	}
 
@@ -196,6 +205,114 @@ func (s accountService) ChangeAvatar(id uint, file *multipart.FileHeader) (inter
 	}()
 
 	return response.NewFile(*fileUploaded), nil
+}
+
+func (s accountService) ChangeEmail(id uint, cmd request.ChangeEmail) error {
+
+	var (
+		err  error
+		user domain.User
+		code = utils.RandomLetter(20)
+	)
+
+	if err = s.repo.GetID(&user, id, nil); err != nil {
+		return err
+	}
+
+	if err := s.repo.ChangeEmail(user.ID, cmd.Email, utils.Encrypt(user.Username, code)); err != nil {
+		return err
+	}
+
+	// send verification email via email_service
+	defer func() {
+		s.createSecurityLog(user.Username, "change_email")
+	}()
+
+	return nil
+}
+
+func (s accountService) VerifyEmail(id uint, cmd request.VerifyEmail) error {
+
+	var (
+		err  error
+		user domain.User
+	)
+
+	if err = s.repo.GetID(&user, id, nil); err != nil {
+		return err
+	}
+
+	if len(user.EmailVerificationCodeHashed) == 0 {
+		return errors.ErrVericationEmail
+	}
+
+	if utils.Decrypt(user.Username, user.EmailVerificationCodeHashed) != cmd.Code {
+		return errors.ErrVericationEmail
+	}
+
+	if err := s.repo.VerifyEmail(user.ID); err != nil {
+		return err
+	}
+
+	defer func() {
+		s.createSecurityLog(user.Username, "verify_email")
+	}()
+
+	return nil
+}
+
+func (s accountService) ChangePhone(id uint, cmd request.ChangePhone) error {
+
+	var (
+		err  error
+		user domain.User
+		code = utils.RandomNumeric(5)
+	)
+
+	if err = s.repo.GetID(&user, id, nil); err != nil {
+		return err
+	}
+
+	if err := s.repo.ChangePhone(user.ID, cmd.Phone, utils.Encrypt(user.Username, code)); err != nil {
+		return err
+	}
+
+	// send verification phone via phone_service
+	defer func() {
+		s.createSecurityLog(user.Username, "change_phone")
+	}()
+
+	return nil
+}
+
+func (s accountService) VerifyPhone(id uint, cmd request.VerifyPhone) error {
+
+	var (
+		err  error
+		user domain.User
+	)
+
+	if err = s.repo.GetID(&user, id, nil); err != nil {
+		return err
+	}
+
+	if len(user.PhoneVerificationCodeHashed) == 0 {
+		return errors.ErrVericationPhone
+	}
+
+	if utils.Decrypt(user.Username, user.PhoneVerificationCodeHashed) != cmd.Code {
+		return errors.ErrVericationPhone
+	}
+
+	if err := s.repo.VerifyPhone(user.ID); err != nil {
+		return err
+	}
+
+	defer func() {
+		s.createSecurityLog(user.Username, "verify_phone")
+	}()
+
+	return nil
 }
 
 func (s accountService) FindMenuTrees(userID uint) (response.UserMenus, error) {

@@ -10,4 +10,7 @@ var (
 	ErrUserNamePasswordNotMatch = common.NewRinError("username_password_not_match", "Your username and password didn't match.")
 	ErrPasswordRequired         = common.NewRinError("password_required", "Password is a required field")
 	ErrUserReferencedRole       = common.NewRinError("user_referenced_role", "This user is being referenced by a role")
+	ErrGenderNotFound           = common.NewRinError("gender_not_found", "Gender not found.")
+	ErrVericationEmail          = common.NewRinError("verification_email", "Verification email in error")
+	ErrVericationPhone          = common.NewRinError("verification_phone", "Verification phone in error")
 )

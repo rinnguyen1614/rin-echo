@@ -16,14 +16,14 @@ type Register struct {
 
 func (r Register) ToCreateUser() CreateUser {
 	return CreateUser{
-		Username:                        r.Username,
-		FullName:                        r.FullName,
-		Email:                           r.Email,
-		Password:                        r.Password,
-		SendActivationEmail:             true,
-		SetRandomPassword:               false,
-		ShouldChangePasswordOnNextLogin: false,
-		IsActive:                        false,
+		Username:                  r.Username,
+		FullName:                  r.FullName,
+		Email:                     r.Email,
+		Password:                  r.Password,
+		SendActivationEmail:       true,
+		RandomPassword:            false,
+		ChangePasswordOnNextLogin: false,
+		Active:                    false,
 	}
 }
 
@@ -37,7 +37,24 @@ type UpdateProfile struct {
 	FullName    string     `json:"full_name" validate:"required"`
 	Email       string     `json:"email" validate:"required,email"`
 	DateOfBirth *time.Time `json:"date_of_birth" validate:"datetime"`
+	Phone       string     `json:"phone"`
+	Username    string     `json:"username"`
+	AvatarPath  string     `json:"avatar_path"`
+	Gender      uint       `json:"gender"`
 }
 
-type UpdateAvatar struct {
+type ChangeEmail struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type VerifyEmail struct {
+	Code string `json:"code" validate:"required,len=20"`
+}
+
+type ChangePhone struct {
+	Phone string `json:"phone" validate:"required,min=10"`
+}
+
+type VerifyPhone struct {
+	Code string `json:"code" validate:"required,len=5"`
 }

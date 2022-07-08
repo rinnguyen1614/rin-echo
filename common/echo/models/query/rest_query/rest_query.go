@@ -32,13 +32,13 @@ var (
 			return page, pageSize
 		},
 		SortingRequestHandle: func(req *http.Request) string {
-			return req.URL.Query().Get("sorts")
+			return req.URL.Query().Get("sort")
 		},
 		SelectingRequestHandle: func(req *http.Request) string {
-			return req.URL.Query().Get("selects")
+			return req.URL.Query().Get("select")
 		},
 		FilteringRequestHandle: func(req *http.Request) string {
-			return req.URL.Query().Get("filters")
+			return req.URL.Query().Get("filter")
 		},
 		Config: query.Config{
 			MaxPageSize:       100,

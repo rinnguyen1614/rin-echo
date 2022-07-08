@@ -93,16 +93,16 @@ func (s userService) Create(cmd request.CreateUser) (uint, error) {
 		return 0, err
 	}
 
-	if cmd.SetRandomPassword || cmd.Password == "" {
-		cmd.Password = utils.RandomSymbol(16)
-	}
-
 	user, err := domain.NewUser(cmd.Username, cmd.Password, cmd.FullName, cmd.Email, cmd.RoleIDs)
 	if err != nil {
 		return 0, err
 	}
 
 	if err := s.repo.Create(user); err != nil {
+		return 0, err
+	}
+
+	if err := s.ResetPassword(user); err != nil {
 		return 0, err
 	}
 

@@ -123,7 +123,7 @@ func (s resourceService) Update(id uint, cmd request.UpdateResource) (err error)
 				return err
 			}
 		}
-		if !cmd.IsEqualObjectAndAction(resource.Object, resource.Action) {
+		if !cmd.IsEqualObjectAndAction(resource.Object, resource.Action) && !cmd.IsEmptyObjectAndAction() {
 			if err = s.CheckExistObjectAndAction(cmd.Object, cmd.Action); err != nil {
 				return err
 			}

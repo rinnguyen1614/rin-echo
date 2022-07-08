@@ -29,8 +29,50 @@ func (repo userRepository) UpdateAvatar(id uint, path string) error {
 	return repo.UpdateWithoutHooksWithPrimaryKey(id, map[string]interface{}{"avatar_path": path})
 }
 
-func (repo userRepository) UpdateProfile(id uint, fullName, email string, dateOfBirth *time.Time) error {
-	return repo.UpdateWithPrimaryKey(id, map[string]interface{}{"full_name": fullName, "email": email, "date_of_birth": dateOfBirth})
+func (repo userRepository) UpdateProfile(id uint, fullName string, dateOfBirth *time.Time, gender uint) error {
+	return repo.UpdateWithPrimaryKey(
+		id,
+		map[string]interface{}{
+			"full_name":     fullName,
+			"date_of_birth": dateOfBirth,
+			"gender":        gender,
+		})
+}
+
+func (repo userRepository) ChangePhone(id uint, phone string, phoneVerificationCodeHashed string) error {
+	return repo.UpdateWithPrimaryKey(
+		id,
+		map[string]interface{}{
+			"phone":                          phone,
+			"phone_verified":                 false,
+			"phone_verification_code_hashed": phoneVerificationCodeHashed,
+		})
+}
+
+func (repo userRepository) VerifyPhone(id uint) error {
+	return repo.UpdateWithPrimaryKey(
+		id,
+		map[string]interface{}{
+			"phone_verified": true,
+		})
+}
+
+func (repo userRepository) ChangeEmail(id uint, email string, emailVerificationCodeHashed string) error {
+	return repo.UpdateWithPrimaryKey(
+		id,
+		map[string]interface{}{
+			"email":                          email,
+			"email_verified":                 false,
+			"email_verification_code_hashed": emailVerificationCodeHashed,
+		})
+}
+
+func (repo userRepository) VerifyEmail(id uint) error {
+	return repo.UpdateWithPrimaryKey(
+		id,
+		map[string]interface{}{
+			"email_verified": true,
+		})
 }
 
 func (repo userRepository) FirstByUsernameOrEmail(usernameOrEmail string, preloads map[string][]interface{}) (*domain.User, error) {

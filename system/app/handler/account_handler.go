@@ -218,6 +218,10 @@ func (h AccountHandler) UpdateProfile(c echox.Context) error {
 		return err
 	}
 
+	if err := c.Validate(cmd); err != nil {
+		return err
+	}
+
 	err := h.service.WithContext(c).UpdateProfile(session.UserID(), cmd)
 	if err != nil {
 		return err
@@ -257,6 +261,118 @@ func (h AccountHandler) ChangeAvatar(c echox.Context) error {
 		return err
 	}
 	echox.OKWithData(c, f)
+	return nil
+}
+
+// @Summary      Change Email
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.ChangeEmail true "change email"
+// @Success      200  {object}
+// @Router       /account/profile [put]
+// @Security Bearer
+func (h AccountHandler) ChangeEmail(c echox.Context) error {
+	session := c.MustSession()
+	var cmd request.ChangeEmail
+	if err := c.Bind(&cmd); err != nil {
+		return err
+	}
+
+	if err := c.Validate(cmd); err != nil {
+		return err
+	}
+
+	err := h.service.WithContext(c).ChangeEmail(session.UserID(), cmd)
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, model.NewModel(session.UserID()))
+	return nil
+}
+
+// @Summary      Verify Email
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.VerifyEmail true "change email"
+// @Success      200  {object}
+// @Router       /account/profile [put]
+// @Security Bearer
+func (h AccountHandler) VerifyEmail(c echox.Context) error {
+	session := c.MustSession()
+	var cmd request.VerifyEmail
+	if err := c.Bind(&cmd); err != nil {
+		return err
+	}
+
+	if err := c.Validate(cmd); err != nil {
+		return err
+	}
+
+	err := h.service.WithContext(c).VerifyEmail(session.UserID(), cmd)
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, model.NewModel(session.UserID()))
+	return nil
+}
+
+// @Summary      Change Phone
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.ChangePhone true "change email"
+// @Success      200  {object}
+// @Router       /account/profile [put]
+// @Security Bearer
+func (h AccountHandler) ChangePhone(c echox.Context) error {
+	session := c.MustSession()
+	var cmd request.ChangePhone
+	if err := c.Bind(&cmd); err != nil {
+		return err
+	}
+
+	if err := c.Validate(cmd); err != nil {
+		return err
+	}
+
+	err := h.service.WithContext(c).ChangePhone(session.UserID(), cmd)
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, model.NewModel(session.UserID()))
+	return nil
+}
+
+// @Summary      Verify Phone
+// @Tags         account
+// @Accept       application/json
+// @Produce      application/json
+// @Param        data body request.VerifyPhone true "change email"
+// @Success      200  {object}
+// @Router       /account/profile [put]
+// @Security Bearer
+func (h AccountHandler) VerifyPhone(c echox.Context) error {
+	session := c.MustSession()
+	var cmd request.VerifyPhone
+	if err := c.Bind(&cmd); err != nil {
+		return err
+	}
+
+	if err := c.Validate(cmd); err != nil {
+		return err
+	}
+
+	err := h.service.WithContext(c).VerifyPhone(session.UserID(), cmd)
+	if err != nil {
+		return err
+	}
+
+	echox.OKWithData(c, model.NewModel(session.UserID()))
 	return nil
 }
 

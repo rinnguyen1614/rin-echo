@@ -10,21 +10,31 @@ import (
 type Profile struct {
 	model.Model
 
-	UUID        utils.UUID
-	Email       string     `json:"email"`
-	FullName    string     `json:"full_name"`
-	AvatarPath  string     `json:"avatar_path"`
-	DateOfBirth *time.Time `json:"date_of_birth"`
+	UUID          utils.UUID
+	Email         string     `json:"email"`
+	EmailVerified bool       `json:"email_verified"`
+	Phone         string     `json:"phone"`
+	PhoneVerified bool       `json:"phone_verified"`
+	Username      string     `json:"username"`
+	FullName      string     `json:"full_name"`
+	AvatarPath    string     `json:"avatar_path"`
+	DateOfBirth   *time.Time `json:"date_of_birth"`
+	Gender        uint       `json:"gender"`
 }
 
 func NewProfile(user domain.User) Profile {
 	return Profile{
-		Model:       model.NewModel(user.ID),
-		UUID:        user.UUID,
-		Email:       user.Email,
-		FullName:    user.FullName,
-		AvatarPath:  user.AvatarPath,
-		DateOfBirth: user.DateOfBirth,
+		Model:         model.NewModel(user.ID),
+		UUID:          user.UUID,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		Username:      user.Username,
+		FullName:      user.FullName,
+		AvatarPath:    user.AvatarPath,
+		DateOfBirth:   user.DateOfBirth,
+		Phone:         user.Phone,
+		PhoneVerified: user.PhoneVerified,
+		Gender:        user.Gender,
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
+	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
@@ -33,6 +34,7 @@ type Service struct {
 	i18n      *i18n.Bundle
 	query     rest_query.RestQuery
 	validator *validation.Validator
+	mail      *gomail.Dialer
 }
 
 func GetConfig() *config.Config {

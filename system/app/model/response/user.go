@@ -3,15 +3,21 @@ package response
 import (
 	"rin-echo/common/model"
 	"rin-echo/system/domain"
+	"time"
 )
 
 type User struct {
 	model.FullAuditedEntityModel
 
-	Username   string `json:"username"`
-	FullName   string `json:"full_name" `
-	Email      string `json:"email" `
-	AvatarPath string `json:"avatar_path"`
+	Email         string     `json:"email"`
+	EmailVerified bool       `json:"email_verified"`
+	Phone         string     `json:"phone"`
+	PhoneVerified bool       `json:"phone_verified"`
+	Username      string     `json:"username"`
+	FullName      string     `json:"full_name"`
+	AvatarPath    string     `json:"avatar_path"`
+	DateOfBirth   *time.Time `json:"date_of_birth"`
+	Gender        uint       `json:"gender"`
 
 	UserRoles []UserRole `json:"user_roles"`
 }

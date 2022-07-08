@@ -23,6 +23,7 @@ func (h HttpServer) RegisterRouter(g *echo.Group) {
 	h.RegisterAccountRouter(g)
 	h.RegisterRoleRouter(g)
 	h.RegisterUserRouter(g)
+	h.RegisterAuditLogRouter(g)
 
 	h.RegisterFileRouter(g)
 }

@@ -23,6 +23,7 @@ type (
 		Database Database `json:"database,omitempty" yaml:"database,omitempty" ini:"database,omitempty" `
 		JWT      JWT      `json:"jwt,omitempty" yaml:"jwt,omitempty" ini:"jwt,omitempty"`
 		Server   Server   `json:"server,omitempty" yaml:"server" ini:"server,omitempty"`
+		Mail     Mail     `json:"mail,omitempty" yaml:"mail" ini:"mail,omitempty"`
 	}
 
 	App struct {
@@ -79,6 +80,13 @@ type (
 		Level         string `json:"level,omitempty" yaml:"level,omitempty" ini:"level,omitempty"`
 		Prefix        string `json:"prefix,omitempty" yaml:"prefix,omitempty" ini:"prefix,omitempty"`
 		StacktraceKey string `json:"stack_strace_key,omitempty" yaml:"stack_strace_key,omitempty" ini:"stack_strace_key,omitempty"`
+	}
+
+	Mail struct {
+		Host string `json:"host,omitempty" yaml:"host,omitempty" ini:"host,omitempty"`
+		Port int    `json:"port,omitempty" yaml:"port,omitempty" ini:"port,omitempty"`
+		User string `json:"user,omitempty" yaml:"user,omitempty" ini:"user,omitempty"`
+		Pwd  string `json:"pwd,omitempty" yaml:"pwd,omitempty" ini:"pwd,omitempty"`
 	}
 )
 

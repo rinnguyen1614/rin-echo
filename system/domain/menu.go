@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	MenuTypes       = []string{"M", "A"} // M: Menu,A: Action
-	MenuTypeDefault = "M"
+	MenuTypes       = []string{"group", "item", "collapse", "divider"}
+	MenuTypeDefault = "item"
 )
 
 type Menu struct {
@@ -25,7 +25,7 @@ type Menu struct {
 	Component string `gorm:"column:component;size:255;"`
 	Sort      int    `gorm:"column:sort;index;size:4;default:0;"`
 	MenuLevel uint   `gorm:"column:menu_level;size:4;default:0;"`
-	Type      string `gorm:"column:type;size:2;index;"`
+	Type      string `gorm:"column:type;size:10;index;"`
 	Title     string `gorm:"column:title;size:255"`
 	Icon      string `gorm:"column:icon;size:128;"`
 

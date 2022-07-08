@@ -57,7 +57,7 @@ func Migrate(db *gorm.DB) {
 			},
 		},
 		{
-			ID: "202104050102",
+			ID: "202104050112",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(&domain.User{})
 			},
@@ -91,6 +91,24 @@ func Migrate(db *gorm.DB) {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Migrator().DropTable(&domain.Permission{})
+			},
+		},
+		{
+			ID: "202104050106",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&domain.Address{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&domain.Address{})
+			},
+		},
+		{
+			ID: "202104050107",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&domain.AddressLocation{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&domain.AddressLocation{})
 			},
 		},
 	})
