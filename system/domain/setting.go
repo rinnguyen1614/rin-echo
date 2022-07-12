@@ -1,7 +1,7 @@
 package domain
 
 import (
-	setting "rin-echo/common/setting/model"
+	setting "github.com/rinnguyen1614/rin-echo-core/setting/model"
 )
 
 type Setting struct {

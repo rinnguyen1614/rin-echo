@@ -4,10 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils/file"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/domain"
+
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils/file"
 
 	"gopkg.in/yaml.v3"
 )

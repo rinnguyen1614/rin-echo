@@ -1,8 +1,8 @@
 package inject
 
 import (
-	rquery "rin-echo/common/echo/models/query/rest_query"
-	query "rin-echo/common/query"
+	rquery "github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	query "github.com/rinnguyen1614/rin-echo-core/query"
 )
 
 func GetRestQuery() rquery.RestQuery {

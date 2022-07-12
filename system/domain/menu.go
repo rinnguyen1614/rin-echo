@@ -1,9 +1,10 @@
 package domain
 
 import (
-	"rin-echo/common/domain"
-	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/errors"
+
+	"github.com/rinnguyen1614/rin-echo-core/domain"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"

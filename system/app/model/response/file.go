@@ -1,6 +1,6 @@
 package response
 
-import "rin-echo/common/utils/upload"
+import "github.com/rinnguyen1614/rin-echo-core/utils/upload"
 
 type FileResponse struct {
 	Path     string `json:"path"`

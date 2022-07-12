@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"rin-echo/common/uow"
 	"rin-echo/system/domain"
+
+	"github.com/rinnguyen1614/rin-echo-core/uow"
 
 	"gorm.io/gorm"
 )

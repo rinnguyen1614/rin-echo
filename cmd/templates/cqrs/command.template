@@ -3,10 +3,10 @@ package {{.Package}}
 import (
 	"rin-echo/system/adapters"
 	"rin-echo/system/inject"
-	"rin-echo/common/cqrs"
-	echox "rin-echo/common/echo"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
+	"github.com/rinnguyen1614/rin-echo-core/cqrs"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
 )
 
 type {{.CommandName}} struct {

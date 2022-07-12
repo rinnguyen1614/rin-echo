@@ -1,15 +1,6 @@
 package service
 
 import (
-	"rin-echo/common"
-	echox "rin-echo/common/echo"
-	gormx "rin-echo/common/gorm"
-	"rin-echo/common/model"
-	"rin-echo/common/query"
-	"rin-echo/common/setting"
-	"rin-echo/common/uow"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
 	"rin-echo/system/app/model/response"
@@ -17,6 +8,17 @@ import (
 	"rin-echo/system/domain/query_builder"
 	querybuilder "rin-echo/system/domain/query_builder"
 	"rin-echo/system/errors"
+
+	core "github.com/rinnguyen1614/rin-echo-core"
+
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	gormx "github.com/rinnguyen1614/rin-echo-core/gorm"
+	"github.com/rinnguyen1614/rin-echo-core/model"
+	"github.com/rinnguyen1614/rin-echo-core/query"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	"github.com/rinnguyen1614/rin-echo-core/uow"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
 
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
@@ -208,8 +210,8 @@ func (s menuService) CheckForCreate(cmds request.CreateMenus, checkParent bool) 
 
 	for i, children := range childrenByIndex {
 		if _, err = s.CheckForCreate(children, false); err != nil {
-			if rErr, ok := err.(*common.RinErrors); ok {
-				err := common.NewRinErrors(rErr.Errors(), "children_error", "You have some errors for create menu")
+			if rErr, ok := err.(*core.RinErrors); ok {
+				err := core.NewRinErrors(rErr.Errors(), "children_error", "You have some errors for create menu")
 				errorsByIndex[i] = append(errorsByIndex[i], err)
 			} else {
 				return nil, err
@@ -218,7 +220,7 @@ func (s menuService) CheckForCreate(cmds request.CreateMenus, checkParent bool) 
 	}
 
 	if len(errorsByIndex) != 0 {
-		return nil, common.NewRinErrors(errorsByIndex, "create_menu_error", "You have some errors for create menu")
+		return nil, core.NewRinErrors(errorsByIndex, "create_menu_error", "You have some errors for create menu")
 	}
 
 	return parentsByIndex, nil

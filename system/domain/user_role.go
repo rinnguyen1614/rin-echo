@@ -1,9 +1,9 @@
 package domain
 
 import (
-	"rin-echo/common/domain"
+	"github.com/rinnguyen1614/rin-echo-core/domain"
 
-	iuow "rin-echo/common/uow/interfaces"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 
 	"gorm.io/gorm"
 )

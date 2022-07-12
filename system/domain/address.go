@@ -1,8 +1,8 @@
 package domain
 
 import (
-	"rin-echo/common/domain"
-	gormx "rin-echo/common/gorm/data_types"
+	"github.com/rinnguyen1614/rin-echo-core/domain"
+	gormx "github.com/rinnguyen1614/rin-echo-core/gorm/data_types"
 )
 
 type Address struct {

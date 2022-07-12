@@ -1,11 +1,11 @@
 package inject
 
 import (
-	"rin-echo/common/auth/jwt"
-	"rin-echo/common/cache"
-	"rin-echo/common/config"
-	"rin-echo/common/echo/models/query/rest_query"
-	"rin-echo/common/validation"
+	"github.com/rinnguyen1614/rin-echo-core/auth/jwt"
+	"github.com/rinnguyen1614/rin-echo-core/cache"
+	"github.com/rinnguyen1614/rin-echo-core/config"
+	"github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"

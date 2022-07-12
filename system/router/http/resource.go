@@ -1,8 +1,9 @@
 package http
 
 import (
-	echox "rin-echo/common/echo"
 	"rin-echo/system/router/middleware"
+
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
 
 	"github.com/labstack/echo/v4"
 )

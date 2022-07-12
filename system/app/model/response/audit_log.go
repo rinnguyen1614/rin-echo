@@ -1,9 +1,10 @@
 package response
 
 import (
-	"rin-echo/common/domain"
-	"rin-echo/common/model"
 	"time"
+
+	"github.com/rinnguyen1614/rin-echo-core/domain"
+	"github.com/rinnguyen1614/rin-echo-core/model"
 )
 
 type AuditLog struct {

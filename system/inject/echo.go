@@ -1,8 +1,8 @@
 package inject
 
 import (
-	echox "rin-echo/common/echo"
-	mwx "rin-echo/common/echo/middleware"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	mwx "github.com/rinnguyen1614/rin-echo-core/echo/middleware"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

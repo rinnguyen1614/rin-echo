@@ -1,8 +1,9 @@
 package manager
 
 import (
-	"rin-echo/common/utils"
 	"rin-echo/system/domain"
+
+	"github.com/rinnguyen1614/rin-echo-core/utils"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/util"

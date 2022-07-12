@@ -1,8 +1,8 @@
 package inject
 
 import (
-	"rin-echo/common/cache"
-	"rin-echo/common/cache/memory"
+	"github.com/rinnguyen1614/rin-echo-core/cache"
+	"github.com/rinnguyen1614/rin-echo-core/cache/memory"
 )
 
 var (

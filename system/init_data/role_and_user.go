@@ -1,11 +1,12 @@
 package initdata
 
 import (
-	"rin-echo/common/uow"
-	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/domain"
 	"strings"
+
+	"github.com/rinnguyen1614/rin-echo-core/uow"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 )
 
 func initRoleAndUser(uow iuow.UnitOfWork, permissionManager domain.PermissionManager) error {

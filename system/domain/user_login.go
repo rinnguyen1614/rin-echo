@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"rin-echo/common/domain"
+	"github.com/rinnguyen1614/rin-echo-core/domain"
 )
 
 var (

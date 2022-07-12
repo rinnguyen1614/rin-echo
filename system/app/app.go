@@ -1,20 +1,21 @@
 package app
 
 import (
-	"rin-echo/common/auth/jwt"
-	"rin-echo/common/cache"
-	"rin-echo/common/config"
-	"rin-echo/common/echo/models/query/rest_query"
-	"rin-echo/common/setting"
-	setting_adapter "rin-echo/common/setting/adapter"
-	setting_scope "rin-echo/common/setting/scope"
-	"rin-echo/common/utils"
-	"rin-echo/common/utils/file"
-	"rin-echo/common/validation"
 	"rin-echo/system/adapters"
 	"rin-echo/system/adapters/manager"
 	"rin-echo/system/app/handler"
 	"rin-echo/system/inject"
+
+	"github.com/rinnguyen1614/rin-echo-core/auth/jwt"
+	"github.com/rinnguyen1614/rin-echo-core/cache"
+	"github.com/rinnguyen1614/rin-echo-core/config"
+	"github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	setting_adapter "github.com/rinnguyen1614/rin-echo-core/setting/adapter"
+	setting_scope "github.com/rinnguyen1614/rin-echo-core/setting/scope"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
+	"github.com/rinnguyen1614/rin-echo-core/utils/file"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
 
 	"github.com/casbin/casbin/v2"
 	"go.uber.org/zap"

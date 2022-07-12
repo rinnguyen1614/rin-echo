@@ -1,8 +1,9 @@
 package response
 
 import (
-	"rin-echo/common/model"
 	"rin-echo/system/domain"
+
+	"github.com/rinnguyen1614/rin-echo-core/model"
 )
 
 type Role struct {

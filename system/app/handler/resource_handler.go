@@ -1,12 +1,12 @@
 package handler
 
 import (
-	echox "rin-echo/common/echo"
-	rquery "rin-echo/common/echo/models/query/rest_query"
-	"rin-echo/common/model"
-	"rin-echo/common/setting"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/validation"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	rquery "github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	"github.com/rinnguyen1614/rin-echo-core/model"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
 
 	"rin-echo/system/app/model/request"
 	"rin-echo/system/app/service"

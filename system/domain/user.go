@@ -1,11 +1,12 @@
 package domain
 
 import (
-	"rin-echo/common/domain"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
 	"rin-echo/system/errors"
 	"time"
+
+	"github.com/rinnguyen1614/rin-echo-core/domain"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
 
 	"github.com/thoas/go-funk"
 	"golang.org/x/crypto/bcrypt"

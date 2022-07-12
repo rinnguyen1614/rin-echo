@@ -1,9 +1,10 @@
 package domain
 
 import (
-	"rin-echo/common/domain"
-	iuow "rin-echo/common/uow/interfaces"
 	"time"
+
+	"github.com/rinnguyen1614/rin-echo-core/domain"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 
 	"github.com/mssola/user_agent"
 	"gorm.io/gorm"

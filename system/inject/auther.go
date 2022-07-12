@@ -1,6 +1,6 @@
 package inject
 
-import "rin-echo/common/auth/jwt"
+import "github.com/rinnguyen1614/rin-echo-core/auth/jwt"
 
 type Claims struct {
 	jwt.ClaimsSession

@@ -1,8 +1,8 @@
 package errors
 
-import "rin-echo/common"
+import core "github.com/rinnguyen1614/rin-echo-core"
 
 var (
-	ErrRequestIDRequired = common.NewRinError("request_id_required", "request_id_required")
-	ErrRequestIDInvalid  = common.NewRinError("request_id_invalid", "request_id_invalid")
+	ErrRequestIDRequired = core.NewRinError("request_id_required", "request_id_required")
+	ErrRequestIDInvalid  = core.NewRinError("request_id_invalid", "request_id_invalid")
 )

@@ -2,8 +2,9 @@ package inject
 
 import (
 	"regexp"
-	"rin-echo/common/utils"
-	"rin-echo/common/validation"
+
+	"github.com/rinnguyen1614/rin-echo-core/utils"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
 
 	"github.com/go-playground/validator/v10"
 )

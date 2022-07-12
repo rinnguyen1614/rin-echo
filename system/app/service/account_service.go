@@ -2,12 +2,6 @@ package service
 
 import (
 	"mime/multipart"
-	"rin-echo/common/auth/jwt"
-	echox "rin-echo/common/echo"
-	"rin-echo/common/setting"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
-	"rin-echo/common/utils/upload"
 	"rin-echo/system/adapters/repository"
 	"rin-echo/system/app/model/request"
 	"rin-echo/system/app/model/response"
@@ -15,6 +9,13 @@ import (
 	"rin-echo/system/errors"
 	"strings"
 	"time"
+
+	"github.com/rinnguyen1614/rin-echo-core/auth/jwt"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
+	"github.com/rinnguyen1614/rin-echo-core/utils/upload"
 
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"

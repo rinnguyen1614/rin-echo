@@ -1,8 +1,8 @@
 package adapters
 
 import (
-	"rin-echo/common/uow"
-	iuow "rin-echo/common/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/uow"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 
 	"gorm.io/gorm"
 )

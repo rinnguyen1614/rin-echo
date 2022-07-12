@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	cdm "rin-echo/common/domain"
-	echox "rin-echo/common/echo"
-	mwx "rin-echo/common/echo/middleware"
 	"rin-echo/system/domain"
 	"rin-echo/system/inject"
+
+	cdm "github.com/rinnguyen1614/rin-echo-core/domain"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	mwx "github.com/rinnguyen1614/rin-echo-core/echo/middleware"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"

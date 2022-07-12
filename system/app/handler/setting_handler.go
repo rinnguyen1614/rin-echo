@@ -1,14 +1,15 @@
 package handler
 
 import (
-	echox "rin-echo/common/echo"
-	rquery "rin-echo/common/echo/models/query/rest_query"
-	"rin-echo/common/setting"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
-	"rin-echo/common/validation"
 	"rin-echo/system/app/model/request"
 	"strconv"
+
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	rquery "github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
 
 	"go.uber.org/zap"
 )

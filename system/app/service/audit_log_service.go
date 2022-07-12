@@ -1,14 +1,15 @@
 package service
 
 import (
-	"rin-echo/common/domain"
-	echox "rin-echo/common/echo"
-	"rin-echo/common/model"
-	"rin-echo/common/query"
-	"rin-echo/common/setting"
-	uow "rin-echo/common/uow"
-	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/app/model/response"
+
+	"github.com/rinnguyen1614/rin-echo-core/domain"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	"github.com/rinnguyen1614/rin-echo-core/model"
+	"github.com/rinnguyen1614/rin-echo-core/query"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	uow "github.com/rinnguyen1614/rin-echo-core/uow"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 
 	"go.uber.org/zap"
 )

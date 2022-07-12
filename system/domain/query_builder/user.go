@@ -2,9 +2,10 @@ package query_builder
 
 import (
 	"fmt"
-	uow "rin-echo/common/uow"
-	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/domain"
+
+	uow "github.com/rinnguyen1614/rin-echo-core/uow"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 )
 
 type UserQueryBuilder struct {

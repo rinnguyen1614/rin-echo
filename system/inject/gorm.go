@@ -1,8 +1,8 @@
 package inject
 
 import (
-	gormx "rin-echo/common/gorm"
-	"rin-echo/common/log"
+	gormx "github.com/rinnguyen1614/rin-echo-core/gorm"
+	"github.com/rinnguyen1614/rin-echo-core/log"
 
 	"gorm.io/gorm"
 )

@@ -1,25 +1,26 @@
 package handler
 
 import (
-	"rin-echo/common"
-	echox "rin-echo/common/echo"
-	rquery "rin-echo/common/echo/models/query/rest_query"
-	"rin-echo/common/setting"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
-	"rin-echo/common/utils/upload"
-	"rin-echo/common/validation"
 	"rin-echo/system/app/model/response"
 	"rin-echo/system/domain"
 	"rin-echo/system/inject"
 	"strings"
 	"time"
 
+	core "github.com/rinnguyen1614/rin-echo-core"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	rquery "github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
+	"github.com/rinnguyen1614/rin-echo-core/utils/upload"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
+
 	"go.uber.org/zap"
 )
 
 var (
-	ErrPathParamRequired = common.NewRinError("path_param_required", "path_param_required")
+	ErrPathParamRequired = core.NewRinError("path_param_required", "path_param_required")
 )
 
 type FileHandler struct {

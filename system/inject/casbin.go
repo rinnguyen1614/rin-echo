@@ -1,8 +1,9 @@
 package inject
 
 import (
-	casbinx "rin-echo/common/casbin"
 	"time"
+
+	casbinx "github.com/rinnguyen1614/rin-echo-core/casbin"
 
 	"github.com/casbin/casbin/v2"
 	gormadapder "github.com/casbin/gorm-adapter/v3"

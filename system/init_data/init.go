@@ -1,11 +1,12 @@
 package initdata
 
 import (
-	"rin-echo/common/log"
-	iuow "rin-echo/common/uow/interfaces"
 	"rin-echo/system/adapters"
 	"rin-echo/system/adapters/manager"
 	"rin-echo/system/inject"
+
+	"github.com/rinnguyen1614/rin-echo-core/log"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 )
 
 func Init() {

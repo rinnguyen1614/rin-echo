@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"rin-echo/system/domain"
 
-	uow "rin-echo/common/uow"
+	uow "github.com/rinnguyen1614/rin-echo-core/uow"
 
-	iuow "rin-echo/common/uow/interfaces"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
 )
 
 type MenuQueryBuilder struct {

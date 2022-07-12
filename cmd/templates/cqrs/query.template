@@ -3,11 +3,11 @@ package {{.Package}}
 import (
 	"rin-echo/system/domain"
 	querybuilder "rin-echo/system/domain/query_builder"
-	echox "rin-echo/common/echo"
-	"rin-echo/common/model"
-	query "rin-echo/common/query"
-	iuow "rin-echo/common/uow/interfaces"
-	"rin-echo/common/utils"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	"github.com/rinnguyen1614/rin-echo-core/model"
+	query "github.com/rinnguyen1614/rin-echo-core/query"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
 
 	"github.com/jinzhu/copier"
 )

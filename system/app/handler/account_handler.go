@@ -1,22 +1,24 @@
 package handler
 
 import (
-	"rin-echo/common"
-	"rin-echo/common/auth/jwt"
-	echox "rin-echo/common/echo"
-	_ "rin-echo/common/echo/models"
-	rquery "rin-echo/common/echo/models/query/rest_query"
-	"rin-echo/common/model"
-	"rin-echo/common/setting"
-	iuow "rin-echo/common/uow/interfaces"
-	fileutil "rin-echo/common/utils/file"
-	"rin-echo/common/validation"
 	"rin-echo/system/app/model/request"
 	_ "rin-echo/system/app/model/response"
 	"rin-echo/system/app/service"
 	"rin-echo/system/domain"
 	"rin-echo/system/inject"
 	"strings"
+
+	core "github.com/rinnguyen1614/rin-echo-core"
+
+	"github.com/rinnguyen1614/rin-echo-core/auth/jwt"
+	echox "github.com/rinnguyen1614/rin-echo-core/echo"
+	_ "github.com/rinnguyen1614/rin-echo-core/echo/models"
+	rquery "github.com/rinnguyen1614/rin-echo-core/echo/models/query/rest_query"
+	"github.com/rinnguyen1614/rin-echo-core/model"
+	"github.com/rinnguyen1614/rin-echo-core/setting"
+	iuow "github.com/rinnguyen1614/rin-echo-core/uow/interfaces"
+	fileutil "github.com/rinnguyen1614/rin-echo-core/utils/file"
+	"github.com/rinnguyen1614/rin-echo-core/validation"
 
 	"go.uber.org/zap"
 )
@@ -253,7 +255,7 @@ func (h AccountHandler) ChangeAvatar(c echox.Context) error {
 	}
 
 	if !strings.HasPrefix(mimeType, "image") {
-		return common.NewRinError("avatar_invalid", "The profile picture must be an image.")
+		return core.NewRinError("avatar_invalid", "The profile picture must be an image.")
 	}
 
 	f, err := h.service.WithContext(c).ChangeAvatar(session.UserID(), file)

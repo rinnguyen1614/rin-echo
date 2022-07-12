@@ -1,10 +1,11 @@
 package response
 
 import (
-	"rin-echo/common/model"
-	"rin-echo/common/utils"
 	"rin-echo/system/domain"
 	"time"
+
+	"github.com/rinnguyen1614/rin-echo-core/model"
+	"github.com/rinnguyen1614/rin-echo-core/utils"
 )
 
 type Profile struct {

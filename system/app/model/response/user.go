@@ -1,9 +1,10 @@
 package response
 
 import (
-	"rin-echo/common/model"
 	"rin-echo/system/domain"
 	"time"
+
+	"github.com/rinnguyen1614/rin-echo-core/model"
 )
 
 type User struct {
