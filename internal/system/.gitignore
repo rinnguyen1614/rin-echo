@@ -1,0 +1,6 @@
+.vscode/
+system/static/*
+
+system/__debug_bin.exe
+
+deploy

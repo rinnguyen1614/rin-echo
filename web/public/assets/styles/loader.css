@@ -1,0 +1,105 @@
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.loader {
+  position: relative;
+  margin: 0 auto;
+  width: 80px;
+  height: 100vh;
+
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: -ms-flex;
+  display: flex;
+
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  -webkit-justify-content: center;
+  -ms-justify-content: center;
+  justify-content: center;
+}
+
+.site-logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.site-logo img {
+  width: 100%;
+}
+
+.loader-spin {
+  text-align: center;
+}
+
+.crema-dot {
+  position: relative;
+  display: inline-block;
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+}
+.crema-dot-spin {
+  transform: rotate(45deg);
+  animation: hipsterRotate 1.2s infinite linear;
+}
+.crema-dot i {
+  width: 9px;
+  height: 9px;
+  border-radius: 100%;
+  background-color: #1890ff;
+  transform: scale(0.75);
+  display: block;
+  position: absolute;
+  opacity: 0.5;
+  animation: hipsterSpinMove 1s infinite linear alternate;
+  transform-origin: 50% 50%;
+}
+.crema-dot i:nth-child(1) {
+  left: 10px;
+  background-color: #EC4133;
+  top: 0;
+}
+.crema-dot i:nth-child(2) {
+  right: 0;
+  top: 8px;
+  background-color: #31AA52;
+  animation-delay: 0.4s;
+}
+.crema-dot i:nth-child(3) {
+  right: 4px;
+  bottom: 0;
+  background-color: #E31F8D;
+  animation-delay: 0.8s;
+}
+.crema-dot i:nth-child(4) {
+  left: 4px;
+  bottom: 0;
+  background-color: #4087F5;
+  animation-delay: 1.2s;
+}
+.crema-dot i:nth-child(5) {
+  left: 0;
+  top: 8px;
+  background-color: #FABD01;
+  animation-delay: 1.2s;
+}
+@keyframes hipsterSpinMove {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes hipsterRotate {
+  to {
+    transform: rotate(405deg);
+  }
+}
+
+
+/*# sourceMappingURL=loader.css.map */

@@ -1,0 +1,35 @@
+package {{.Package}}
+
+import (
+	"github.com/rinnguyen1614/rin-echo/internal/system/adapters"
+	"github.com/rinnguyen1614/rin-echo/internal/system/inject"
+	"github.com/rinnguyen1614/rin-echo/internal/core/cqrs"
+	echox "github.com/rinnguyen1614/rin-echo/internal/core/echo"
+	iuow "github.com/rinnguyen1614/rin-echo/internal/core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo/internal/core/utils"
+)
+
+type {{.CommandName}} struct {
+}
+
+type {{.CommandName}}Handler struct {
+	uow  iuow.UnitOfWork
+}
+
+func New{{.CommandName}}Handler(uow iuow.UnitOfWork) {{.CommandName}}Handler {
+	if uow == nil {
+		panic("New"+{{.CommandName}} +"Handler requires uow")
+	}
+
+	return {{.CommandName}}Handler{uow}}
+}
+
+func (h {{.CommandName}}Handler) Handle(ctx echox.Context, cmd {{.CommandName}}) (err error) {
+	defer func() {
+		cqrs.LogCommandExecution(inject.GetLogger(), utils.GetTypeName(h), cmd, err)
+	}()
+
+	
+
+	return nil
+}

@@ -1,4 +1,8 @@
 .vscode/
-system/static/*
+**/static/
 
-system/__debug_bin.exe
+**/__debug_bin.exe
+
+**/node_modules
+.go/
+.go-cache/

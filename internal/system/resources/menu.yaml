@@ -1,0 +1,43 @@
+- name: Administration
+  slug: admin
+  path: /admin
+  title: Admin Management
+  type: group
+  icon: admin_panel_settings
+  children:
+    - name: Resources
+      slug: resources
+      title: Resource Management
+      path: /admin/resources
+      type: item
+      icon: source
+    - name: Menus
+      slug: menus
+      title: Menu Management
+      path: /admin/menus
+      type: item
+      icon: menu
+    - name: Roles
+      slug: roles
+      title: Role Management
+      path: /admin/roles
+      type: item
+      icon: business_center
+    - name: Users
+      slug: users
+      title: User Management
+      path: /admin/users
+      type: item
+      icon: group
+    - name: Audit Logs
+      slug: audit_logs
+      title: Audit Logs Management
+      path: /admin/audit_logs
+      type: item
+      icon: group
+    - name: Languages
+      slug: languages
+      title: Languages Management
+      path: /admin/languages
+      type: item
+      icon: group

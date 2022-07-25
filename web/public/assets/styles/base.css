@@ -1,0 +1,68 @@
+:root {
+  --light: 300;
+  --regular: 400;
+  --medium: 500;
+  --bold: 600;
+  --extra-bold: 700;
+  font-family: 'Poppins', serif;
+}
+
+body {
+  line-height: 1.35 !important;
+  font-family: 'Poppins', serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+h5 {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+h6 {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+p {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.pointer {
+  cursor: pointer;
+}

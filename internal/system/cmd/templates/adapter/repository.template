@@ -1,0 +1,19 @@
+package adapters
+
+import (
+	"github.com/rinnguyen1614/rin-echo/internal/system/domain"
+	"github.com/rinnguyen1614/rin-echo/internal/core/uow"
+	iuow "github.com/rinnguyen1614/rin-echo/internal/core/uow/interfaces"
+
+	"gorm.io/gorm"
+)
+
+type {{.RepoName}}Repository struct {
+	iuow.RepositoryOfEntity
+}
+
+func New{{.RepoName}}Repository(db *gorm.DB) *{{.RepoName}}Repository {
+	return &{{.RepoName}}Repository{
+		RepositoryOfEntity: uow.NewRepositoryOfEntity(db, &domain.{{.RepoName}}{}),
+	}
+}

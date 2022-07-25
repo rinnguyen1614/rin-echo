@@ -1,0 +1,62 @@
+package {{.Package}}
+
+import (
+	"github.com/rinnguyen1614/rin-echo/internal/system/domain"
+	querybuilder "github.com/rinnguyen1614/rin-echo/internal/system/domain/query_builder"
+	echox "github.com/rinnguyen1614/rin-echo/internal/core/echo"
+	"github.com/rinnguyen1614/rin-echo/internal/core/model"
+	query "github.com/rinnguyen1614/rin-echo/internal/core/query"
+	iuow "github.com/rinnguyen1614/rin-echo/internal/core/uow/interfaces"
+	"github.com/rinnguyen1614/rin-echo/internal/core/utils"
+
+	"github.com/jinzhu/copier"
+)
+
+type {{.QueryName}}Handler struct {
+	uow iuow.UnitOfWork
+}
+
+func New{{.QueryName}}Handler(uow iuow.UnitOfWork) {{.QueryName}}Handler {
+	if uow == nil {
+		panic("New" + {{.QueryName}} +"Handler requires uow")
+	}
+
+	return {{.QueryName}}Handler{uow}
+}
+
+func (h {{.QueryName}}Handler) Handle(c echox.Context, q *query.Query) (*model.QueryResult, error) {
+	var (
+		records []*domain.{{.DomainName}}
+	)
+
+	var (
+		dbContext       = h.uow.DB().WithContext(c.RequestContext())
+		queryBuilder    = querybuilder.New{{.DomainName}QueryBuilder(dbContext)
+		preloadBuilders = map[string]query.QueryBuilder{
+			// TODO: add preloads
+		}
+	)
+
+	err := q.Bind(queryBuilder, preloadBuilders, &{{.ResponseModelName}}{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = queryBuilder.Find(&records)
+	if err != nil {
+		return nil, err
+	}
+
+	prune, err := utils.NewSliceOfStructsByTag({{.ResponseModelName}}{}, q.FlatSelect(), "json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = copier.CopyWithOption(prune, records, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewQueryResult(prune, queryBuilder.Count(), q.Paging().Limit, q.Paging().Offset), nil
+}

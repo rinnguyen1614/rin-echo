@@ -1,0 +1,89 @@
+.app-loader {
+  height: 100%;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+}
+
+.loader-spin {
+  text-align: center;
+}
+
+.crema-dot {
+  position: relative;
+  display: inline-block;
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+}
+
+.crema-dot-spin {
+  transform: rotate(45deg);
+  animation: hipsterRotate 1.2s infinite linear;
+}
+
+.crema-dot i {
+  width: 9px;
+  height: 9px;
+  border-radius: 100%;
+  background-color: #1890ff;
+  transform: scale(0.75);
+  display: block;
+  position: absolute;
+  opacity: 0.5;
+  animation: hipsterSpinMove 1s infinite linear alternate;
+  transform-origin: 50% 50%;
+}
+
+.crema-dot i:nth-child(1) {
+  left: 10px;
+  background-color: #1890ff;
+  top: 0;
+}
+
+.crema-dot i:nth-child(2) {
+  right: 0;
+  top: 8px;
+  background-color: #1890ff;
+  animation-delay: 0.4s;
+}
+
+.crema-dot i:nth-child(3) {
+  right: 4px;
+  bottom: 0;
+  background-color: #1890ff;
+  animation-delay: 0.8s;
+}
+
+.crema-dot i:nth-child(4) {
+  left: 4px;
+  bottom: 0;
+  background-color: #1890ff;
+  animation-delay: 1.2s;
+}
+
+.crema-dot i:nth-child(5) {
+  left: 0;
+  top: 8px;
+  background-color: #1890ff;
+  animation-delay: 1.2s;
+}
+
+@keyframes hipsterSpinMove {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hipsterRotate {
+  to {
+    transform: rotate(405deg);
+  }
+}

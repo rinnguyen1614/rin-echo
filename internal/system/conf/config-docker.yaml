@@ -1,0 +1,29 @@
+app:
+  app_name: systemAplication
+  env: development
+  max_page_size: 1000
+  min_page_size: 10
+  encryption: "VjntyW4KhM"
+  resources:
+    resource: resources/resource.yaml
+    menu: resources/menu.yaml
+
+casbin:
+  model_path: conf/rbac_with_pattern_policy_model.conf
+  file_path: conf/rbac_with_pattern_policy.csv
+  auto_load: true
+  auto_load_internal: 86400
+
+database:
+  driver: postgresql
+  dns: host=postgresql user=postgres password=anhnguyen!@0809 dbname=rin_admin port=5432 sslmode=disable
+  batch_size: 1000
+
+jwt:
+  signing_key: 0966005780
+  expires_time: 86400
+  issuer: "rin-echo"
+
+server:
+  host: 0.0.0.0
+  port: 8090
