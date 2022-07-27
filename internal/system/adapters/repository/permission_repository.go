@@ -64,7 +64,7 @@ func (r permissionRepository) FindByMenus(menuIDs []uint, preloads map[string][]
 func (r permissionRepository) FindByUser(userID uint) ([]map[string]interface{}, error) {
 	var des = make([]map[string]interface{}, 0)
 
-	if err := uow.Find(r.Query(nil, nil).
+	if err := uow.Find(r.Query(map[string][]interface{}{"is_granted": {true}}, nil).
 		Joins("inner join resources on resources.id = permissions.resource_id").
 		Joins("inner join resources as parent_resources on parent_resources.id = resources.parent_id").
 		Joins("inner join user_roles on user_roles.role_id = permissions.role_id and user_roles.user_id = ?", userID).

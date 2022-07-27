@@ -35,6 +35,7 @@ type User struct {
 	PhoneVerified               bool
 	PhoneVerificationCodeHashed string
 	Gender                      uint `gorm:"column:gender;size:1;default:1"`
+	IsGlobalAdmin               bool
 	// ProviderId  string
 	// Disabled      bool
 
@@ -57,6 +58,12 @@ func NewUser(username string, password string, fullName string, email string, ro
 	u.AssignToRoles(roleIDs)
 	u.SetGenderDefault()
 	return u, nil
+}
+
+func NewUserIsGlobalAdmin(username string, password string, fullName string, email string, roleIDs []uint) (*User, error) {
+	u, err := NewUser(username, password, fullName, email, roleIDs)
+	u.IsGlobalAdmin = true
+	return u, err
 }
 
 func (u *User) SetPassword(pwd string) error {

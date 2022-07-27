@@ -169,16 +169,23 @@ func (s roleService) SetResources(role *domain.Role, resourceIDs []uint) (err er
 
 		newPermissions, _ = domain.NewPermissionsForRole(role.ID, resourceIDs)
 
-		permissionNews, permissionDels := role.ComparePermissions(newPermissions)
+		permissionNews, permissionGranteds, permissionUngranteds := role.ComparePermissions(newPermissions)
 
-		// remove from removed resources
-		if len(permissionDels) != 0 {
-			if err = s.removePermissionsFromRole(ux, role, permissionDels); err != nil {
+		// ungrant permission from removed resources
+		if len(permissionUngranteds) != 0 {
+			if err = s.ungrantPermissionsFromRole(ux, role, permissionUngranteds); err != nil {
 				return err
 			}
 		}
 
-		// add to added resources
+		// if permission is existed, grant permission
+		if len(permissionGranteds) != 0 {
+			if err = s.grantPermissionsFromRole(ux, role, permissionGranteds); err != nil {
+				return err
+			}
+		}
+
+		// add new permission.
 		if len(permissionNews) != 0 {
 			if err = s.assignPermissionsToRole(ux, role, permissionNews); err != nil {
 				return err
@@ -232,60 +239,6 @@ func (s roleService) SetMenus(role *domain.Role, menuIDs []uint) error {
 
 		return nil
 	})
-}
-
-func (s roleService) removePermissionsFromRole(ux iuow.UnitOfWork, role *domain.Role, permissionDels domain.Permissions) (err error) {
-	var (
-		repoResource = repository.NewResourceRepository(ux.DB())
-		resources    domain.Resources
-	)
-	if err = uow.Find(repoResource.
-		Query(map[string][]interface{}{"id": {permissionDels.ResourceIDs()}}, nil).
-		Select("resources.object, resources.action"), &resources); err != nil {
-		return err
-	}
-
-	if err = ux.Association(role, "Permissions").Delete(permissionDels); err != nil {
-		return err
-	}
-
-	if len(resources) != 0 {
-		if _, err = s.permissionManager.RemovePermissionsForRole(role.ID, resources); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (s roleService) assignPermissionsToRole(ux iuow.UnitOfWork, role *domain.Role, permissionNews domain.Permissions) (err error) {
-	var (
-		repoResource    = repository.NewResourceRepository(ux.DB())
-		resources       domain.Resources
-		resourcesForPer domain.Resources
-	)
-
-	if err = uow.Find(repoResource.
-		Query(map[string][]interface{}{"id": {permissionNews.ResourceIDs()}}, nil).
-		Select("resources.object, resources.action"), &resources); err != nil {
-		return err
-	}
-
-	if err = ux.Association(role, "Permissions").Append(permissionNews); err != nil {
-		return err
-	}
-
-	if len(resources) != 0 {
-		for _, re := range resources {
-			if !s.permissionManager.HasPermissionForRole(role.ID, *re) {
-				resourcesForPer = append(resourcesForPer, re)
-			}
-		}
-
-		if _, err = s.permissionManager.AddPermissionsForRole(role.ID, resourcesForPer); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (s roleService) Delete(id uint) (err error) {
@@ -343,7 +296,7 @@ func (s roleService) Get(id uint) (response.Role, error) {
 		role domain.Role
 		res  response.Role
 	)
-	if err := s.repo.GetID(&role, id, map[string][]interface{}{"Menus": nil, "Permissions": nil, "Permissions.Resource": nil}); err != nil {
+	if err := s.repo.GetID(&role, id, map[string][]interface{}{"Menus": nil, "Permissions": {"is_granted = ?", true}, "Permissions.Resource": nil}); err != nil {
 		return response.Role{}, err
 	}
 
@@ -351,4 +304,92 @@ func (s roleService) Get(id uint) (response.Role, error) {
 		return response.Role{}, err
 	}
 	return res, nil
+}
+
+func (s roleService) ungrantPermissionsFromRole(ux iuow.UnitOfWork, role *domain.Role, permissionUngranteds domain.Permissions) (err error) {
+	var (
+		repoPermission = repository.NewPermissionRepository(ux.DB())
+	)
+
+	if err = repoPermission.UpdateValues(
+		map[string][]interface{}{"id": {permissionUngranteds.IDs()}},
+		map[string]interface{}{
+			"is_granted": false,
+		}); err != nil {
+		return err
+	}
+
+	return s.removePermissionFromCasbin(ux, role, permissionUngranteds)
+}
+
+func (s roleService) grantPermissionsFromRole(ux iuow.UnitOfWork, role *domain.Role, permissionGranteds domain.Permissions) (err error) {
+	var (
+		repoPermission = repository.NewPermissionRepository(ux.DB())
+	)
+
+	if err = repoPermission.UpdateValues(
+		map[string][]interface{}{"id": {permissionGranteds.IDs()}},
+		map[string]interface{}{
+			"is_granted": true,
+		}); err != nil {
+		return err
+	}
+
+	return s.addPermissionToCasbin(ux, role, permissionGranteds)
+}
+
+func (s roleService) assignPermissionsToRole(ux iuow.UnitOfWork, role *domain.Role, permissionNews domain.Permissions) (err error) {
+
+	if err = ux.Association(role, "Permissions").Append(permissionNews); err != nil {
+		return err
+	}
+
+	return s.addPermissionToCasbin(ux, role, permissionNews)
+}
+
+func (s roleService) addPermissionToCasbin(ux iuow.UnitOfWork, role *domain.Role, permissionNews domain.Permissions) (err error) {
+	var (
+		repoResource    = repository.NewResourceRepository(ux.DB())
+		resources       domain.Resources
+		resourcesForPer domain.Resources
+	)
+
+	if err = uow.Find(repoResource.
+		Query(map[string][]interface{}{"id": {permissionNews.ResourceIDs()}}, nil).
+		Select("resources.object, resources.action"), &resources); err != nil {
+		return err
+	}
+
+	if len(resources) != 0 {
+		for _, re := range resources {
+			if !s.permissionManager.HasPermissionForRole(role.ID, *re) {
+				resourcesForPer = append(resourcesForPer, re)
+			}
+		}
+
+		if _, err = s.permissionManager.AddPermissionsForRole(role.ID, resourcesForPer); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s roleService) removePermissionFromCasbin(ux iuow.UnitOfWork, role *domain.Role, permissionDels domain.Permissions) (err error) {
+	var (
+		repoResource = repository.NewResourceRepository(ux.DB())
+		resources    domain.Resources
+	)
+	if err = uow.Find(repoResource.
+		Query(map[string][]interface{}{"id": {permissionDels.ResourceIDs()}}, nil).
+		Select("resources.object, resources.action"), &resources); err != nil {
+		return err
+	}
+
+	if len(resources) != 0 {
+		if _, err = s.permissionManager.RemovePermissionsForRole(role.ID, resources); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -34,10 +34,16 @@
       title: Audit Logs Management
       path: /admin/audit_logs
       type: item
-      icon: group
+      icon: auto_awesome_motion
     - name: Languages
       slug: languages
       title: Languages Management
       path: /admin/languages
       type: item
-      icon: group
+      icon: language
+    - name: Settings
+      slug: settings
+      title: Settings Management
+      path: /admin/settings
+      type: item
+      icon: settings

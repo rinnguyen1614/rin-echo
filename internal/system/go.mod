@@ -6,13 +6,14 @@ require (
 	github.com/casbin/casbin/v2 v2.44.1
 	github.com/casbin/gorm-adapter/v3 v3.4.4
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
-	github.com/go-playground/validator/v10 v10.9.0
+	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jinzhu/copier v0.3.2
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/labstack/gommon v0.3.1
 	github.com/mssola/user_agent v0.5.3
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
+	github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20220725052128-9601a929582c
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/echo-swagger v1.3.2
 	github.com/swaggo/swag v1.8.2

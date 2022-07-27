@@ -48,7 +48,7 @@ func createUserAdmin(uow iuow.UnitOfWork, permissionManager domain.PermissionMan
 	var repoUser = repository.NewUserRepository(uow.DB())
 	user, err := repoUser.FirstByUsernameOrEmail("admin", nil)
 	if user == nil {
-		user, _ := domain.NewUser("admin", "Admin@0809", "Admin", "admin@rin-echo.com", []uint{rAdmin.ID})
+		user, _ := domain.NewUserIsGlobalAdmin("admin", "Admin@0809", "Admin", "admin@rin-echo.com", []uint{rAdmin.ID})
 		if err = repoUser.Create(&user); err != nil {
 			return err
 		}

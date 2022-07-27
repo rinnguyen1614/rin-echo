@@ -16,14 +16,16 @@ type Register struct {
 
 func (r Register) ToCreateUser() CreateUser {
 	return CreateUser{
-		Username:                  r.Username,
-		FullName:                  r.FullName,
-		Email:                     r.Email,
-		Password:                  r.Password,
-		SendActivationEmail:       true,
-		RandomPassword:            false,
-		ChangePasswordOnNextLogin: false,
-		Active:                    false,
+		UserCommon: UserCommon{
+			Username:                  r.Username,
+			FullName:                  r.FullName,
+			Email:                     r.Email,
+			Password:                  r.Password,
+			SendActivationEmail:       true,
+			RandomPassword:            false,
+			ChangePasswordOnNextLogin: false,
+			Active:                    false,
+		},
 	}
 }
 

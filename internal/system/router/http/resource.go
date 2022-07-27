@@ -21,5 +21,6 @@ func (h HttpServer) RegisterResourceRouter(g *echo.Group) {
 		router.DELETE("/:id", echox.WrapHandler(h.app.ResourceHandler.Delete))
 		router.GET("/:id", echox.WrapHandler(h.app.ResourceHandler.Get))
 		router.GET("/trees", echox.WrapHandler(h.app.ResourceHandler.TreeQuery))
+		router.GET("", echox.WrapHandler(h.app.ResourceHandler.TreeQuery))
 	}
 }

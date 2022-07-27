@@ -44,7 +44,7 @@ func (r *Role) SetPermissions(permissions Permissions) {
 	r.Permissions = permissions
 }
 
-func (r *Role) ComparePermissions(newPermissions Permissions) (permissionsNews, permissionsDels Permissions) {
+func (r *Role) ComparePermissions(newPermissions Permissions) (permissionNews, permissionGranteds, permissionUngranteds Permissions) {
 	var (
 		oldByResourceID = r.Permissions.ToMapByResourceID()
 		newByResourceID = newPermissions.ToMapByResourceID()
@@ -52,19 +52,24 @@ func (r *Role) ComparePermissions(newPermissions Permissions) (permissionsNews, 
 
 	if len(newPermissions) != 0 {
 		for rID, ur := range newByResourceID {
-			_, ok := oldByResourceID[rID]
+			perOld, ok := oldByResourceID[rID]
 			if ok {
-				delete(oldByResourceID, rID)
+				if perOld.IsGranted {
+					delete(oldByResourceID, rID)
+				} else {
+					ur.ID = perOld.ID
+					permissionGranteds = append(permissionGranteds, ur)
+				}
 			} else {
-				permissionsNews = append(permissionsNews, ur)
+				permissionNews = append(permissionNews, ur)
 			}
 		}
 
 		for _, ur := range oldByResourceID {
-			permissionsDels = append(permissionsDels, ur)
+			permissionUngranteds = append(permissionUngranteds, ur)
 		}
 	} else {
-		permissionsDels = r.Permissions
+		permissionUngranteds = r.Permissions
 	}
 
 	return

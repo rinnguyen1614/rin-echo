@@ -19,6 +19,7 @@ type User struct {
 	AvatarPath    string     `json:"avatar_path"`
 	DateOfBirth   *time.Time `json:"date_of_birth"`
 	Gender        uint       `json:"gender"`
+	IsGlobalAdmin bool       `json:"is_global_admin"`
 
 	UserRoles []UserRole `json:"user_roles"`
 }

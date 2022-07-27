@@ -21,5 +21,6 @@ func (h HttpServer) RegisterMenuRouter(g *echo.Group) {
 		router.DELETE("/:id", echox.WrapHandler(h.app.MenuHandler.Delete))
 		router.GET("/:id", echox.WrapHandler(h.app.MenuHandler.Get))
 		router.GET("/trees", echox.WrapHandler(h.app.MenuHandler.TreeQuery))
+		router.GET("", echox.WrapHandler(h.app.MenuHandler.TreeQuery))
 	}
 }

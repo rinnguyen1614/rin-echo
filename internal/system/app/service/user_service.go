@@ -87,35 +87,44 @@ func (s *userService) WithContext(ctx echox.Context) UserService {
 }
 
 func (s userService) Create(cmd request.CreateUser) (uint, error) {
-	if err := s.CheckExistByUsername(cmd.Username); err != nil {
-		return 0, err
-	}
+	var id uint
+	if err := s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
+		var repo = s.repo.WithTransaction(ux.DB())
 
-	if err := s.CheckExistByEmail(cmd.Email); err != nil {
-		return 0, err
-	}
-
-	user, err := domain.NewUser(cmd.Username, cmd.Password, cmd.FullName, cmd.Email, cmd.RoleIDs)
-	if err != nil {
-		return 0, err
-	}
-
-	if err := s.repo.Create(user); err != nil {
-		return 0, err
-	}
-
-	if err := s.ResetPassword(user); err != nil {
-		return 0, err
-	}
-
-	for _, uR := range user.UserRoles {
-		if _, err := s.permissionManager.AddRoleForUser(user.ID, uR.RoleID); err != nil {
-			return 0, err
+		if err := s.CheckExistByUsername(cmd.Username); err != nil {
+			return err
 		}
 
+		if err := s.CheckExistByEmail(cmd.Email); err != nil {
+			return err
+		}
+
+		if cmd.IsRandomPassword() {
+			cmd.Password = generatePassword()
+		}
+
+		user, err := domain.NewUser(cmd.Username, cmd.Password, cmd.FullName, cmd.Email, cmd.RoleIDs)
+		if err != nil {
+			return err
+		}
+
+		if err := repo.Create(user); err != nil {
+			return err
+		}
+
+		for _, uR := range user.UserRoles {
+			if _, err := s.permissionManager.AddRoleForUser(user.ID, uR.RoleID); err != nil {
+				return err
+			}
+		}
+
+		id = user.ID
+		return nil
+	}); err != nil {
+		return 0, err
 	}
-	// send mail
-	return user.ID, nil
+
+	return id, nil
 }
 
 func (s userService) CreateDefault(cmd request.CreateUser) (uint, error) {
@@ -139,8 +148,27 @@ func (s userService) Update(id uint, cmd request.UpdateUser) (err error) {
 			return err
 		}
 
+		// if cmd.Username != user.Username {
+		// 	if user.IsGlobalAdmin {
+		// 		return errors.ErrCannotChangeUsernameOfAdmin
+		// 	}
+		// 	if err := s.CheckExistByUsername(cmd.Username); err != nil {
+		// 		return err
+		// 	}
+		// }
+
 		if cmd.Email != user.Email {
 			if err = s.CheckExistByEmail(cmd.Email); err != nil {
+				return err
+			}
+		}
+
+		if cmd.RandomPassword {
+			cmd.Password = generatePassword()
+		}
+
+		if cmd.Password != "" {
+			if err := repo.UpdatePassword(&user, cmd.Password); err != nil {
 				return err
 			}
 		}
@@ -223,7 +251,7 @@ func (s userService) SetRoles(user *domain.User, roleIDs []uint) (err error) {
 
 func (s userService) CheckExistByUsername(username string) error {
 	if ok, _ := s.repo.Contains(map[string][]interface{}{"username": {username}}); ok {
-		return errors.ErrUserNameExists
+		return errors.ErrUsernameExists
 	}
 
 	return nil
@@ -242,7 +270,7 @@ func (s userService) ResetPassword(user *domain.User) error {
 		panic("requires user")
 	}
 
-	newPassword := utils.RandomSymbol(16)
+	newPassword := generatePassword()
 	if err := s.repo.UpdatePassword(user, newPassword); err != nil {
 		return err
 	}
@@ -255,9 +283,14 @@ func (s userService) ResetPassword(user *domain.User) error {
 func (s userService) Delete(id uint) (err error) {
 	return s.Uow.TransactionUnitOfWork(func(ux iuow.UnitOfWork) error {
 		var (
-			repo       = s.repo.WithTransaction(ux.DB())
-			hasRole, _ = uow.Contains(ux.DB().Table("user_roles").Where("user_id", id))
+			repo             = s.repo.WithTransaction(ux.DB())
+			hasRole, _       = uow.Contains(ux.DB().Table("user_roles").Where("user_id", id))
+			isGlobalAdmin, _ = repo.Contains(map[string][]interface{}{"id": {id}, "is_global_admin": {true}})
 		)
+
+		if isGlobalAdmin {
+			return errors.ErrCannotDeleteAdmin
+		}
 
 		if hasRole {
 			return errors.ErrResourceReferencedRole
@@ -296,4 +329,8 @@ func (s userService) Query(q *query.Query) (*model.QueryResult, error) {
 	)
 
 	return q.QueryResult(s.repo, queryBuilder, preloadBuilders, domain.User{}, response.User{})
+}
+
+func generatePassword() string {
+	return utils.RandomSymbol(16)
 }
