@@ -1738,7 +1738,7 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
-                "changePasswordOnNextLogin": {
+                "change_password_on_next_login": {
                     "type": "boolean"
                 },
                 "email": {
@@ -1747,14 +1747,16 @@ const docTemplate = `{
                 "full_name": {
                     "type": "string"
                 },
-                "lockoutEnabled": {
+                "gender": {
+                    "type": "integer"
+                },
+                "lockout_enabled": {
                     "type": "boolean"
                 },
                 "password": {
-                    "type": "string",
-                    "minLength": 6
+                    "type": "string"
                 },
-                "randomPassword": {
+                "random_password": {
                     "type": "boolean"
                 },
                 "role_ids": {
@@ -1763,7 +1765,7 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
-                "sendActivationEmail": {
+                "send_activation_email": {
                     "type": "boolean"
                 },
                 "username": {
@@ -1927,20 +1929,46 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "full_name"
+                "full_name",
+                "username"
             ],
             "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "change_password_on_next_login": {
+                    "type": "boolean"
+                },
                 "email": {
                     "type": "string"
                 },
                 "full_name": {
                     "type": "string"
                 },
+                "gender": {
+                    "type": "integer"
+                },
+                "lockout_enabled": {
+                    "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "random_password": {
+                    "type": "boolean"
+                },
                 "role_ids": {
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
+                },
+                "send_activation_email": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 5
                 }
             }
         },
@@ -2495,6 +2523,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "is_global_admin": {
+                    "type": "boolean"
                 },
                 "modified_at": {
                     "type": "string"

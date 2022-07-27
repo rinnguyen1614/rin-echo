@@ -49,6 +49,12 @@ services:
     ports:
       - "16379:6379"
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
   
   postgresql:
     image: postgis/postgis:14-3.2-alpine
@@ -62,6 +68,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=anhnguyen!@0809
     restart: always
+    healthcheck:
+      test:  [ "CMD-SHELL", "pg_isready -d rin_admin -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 1
 
 volumes:
   redisdata:

@@ -16,8 +16,6 @@ casbin:
 
 database:
   driver: postgresql
-  # dns: host=127.0.0.1 user=admin password=anhnguyen!@0809 dbname=rin_admin port=5432 sslmode=disable
-  # dns: postgresql://postgres:anhnguyen!@080@127.0.0.1:5432/rin_admin?sslmode=disable
   dns: host=postgresql user=postgres password=anhnguyen!@0809 dbname=rin_admin port=5432 sslmode=disable
   batch_size: 1000
 
