@@ -8,3 +8,5 @@
 
 .go/
 .go-cache/
+
+**/go.sum

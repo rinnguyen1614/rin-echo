@@ -13,7 +13,7 @@ require (
 	github.com/labstack/gommon v0.3.1
 	github.com/mssola/user_agent v0.5.3
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
-	github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20220725052128-9601a929582c
+	github.com/rinnguyen1614/rin-echo/internal/core v0.0.0
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/echo-swagger v1.3.2
 	github.com/swaggo/swag v1.8.2
