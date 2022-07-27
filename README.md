@@ -10,55 +10,43 @@
 
 ### Features
 
-<ul>
-   
-<li> Dynamic paramaters including sorting, filtering, selecting and pagination in RESTful API</li>
+- Dynamic paramaters including sorting, filtering, selecting and pagination in RESTful API
 
-<li>Authority management: Authority management based on jwt and casbin.</li>
+- Authority management: Authority management based on jwt and casbin.
 
-<li>User management: The system administrator assigns user roles and role permissions.</li>
+- User management: The system administrator assigns user roles and role permissions.
 
-<li>Role management: Create the main object of permission control, and then assign different resource permissions and menu permissions to the role.</li>
+- Role management: Create the main object of permission control, and then assign different resource permissions and menu permissions to the role.
 
-<li>Menu management: User dynamic menu configuration implementation, assigning different menus to different roles.</li>
+- Menu management: User dynamic menu configuration implementation, assigning different menus to different roles.
 
-<li>Resource management: Different users can call different API permissions.</li>
+- Resource management: Different users can call different API permissions.
 
-<li>Setting management: dynamically configure settings (global and current user) for the system.</li>
+- Setting management: dynamically configure settings (global and current user) for the system.
 
-<li>Languages management: dynamically configure languages for the system.</li>
+- Languages management: dynamically configure languages for the system.
 
-<li>Audit log: system normal operation log record and query; system abnormal information log record and query.</li>
+- Audit log: system normal operation log record and query; system abnormal information log record and query.
 
-<li>Login log: The system login log record query contains login exceptions.</li>
+- Login log: The system login log record query contains login exceptions.
 
-<li>File: Upload & download files from the system</li>
+- File: Upload & download files from the system.
 
-</ul>
+### Dependent Library
 
-### Technical selection
+- Backend: using [echo](https://echo.labstack.com/) to quickly build basic RESTful API. Echo is high performance, extensible, minimalist Go web framework.
 
-<ul>
+- DB: [PostgreSQL](https://www.postgresql.org/)，using [gorm](https://gorm.io/) to implement data manipulation, added support for MSSQL, MySQL databases.
 
-<li>Frontend: using [react-admin](https://marmelab.com/react-admin//) based on [React](https://reactjs.org/)，to code the page.</li>
+- Cache: using [Redis](https://redis.io/) to implement the recording of the JWT token of the currently active user and implement the multi-login restriction.
 
-<li>Backend: using [echo](https://echo.labstack.com/) to quickly build basic RESTful API. Echo is high performance, extensible, minimalist Go web framework.</li>
+- API: using Swagger to auto generate APIs docs (based on [swaggo](github.com/swaggo/swag/)
 
-<li>DB: [PostgreSQL](https://www.postgresql.org/)，using [gorm](https://gorm.io/) to implement data manipulation, added support for MSSQL, MySQL databases.</li>
+- Job Scheduling: [gocron](https://github.com/jasonlvhit/gocron)
 
-<li>Cache: using [Redis](https://redis.io/) to implement the recording of the JWT token of the currently active user and implement the multi-login restriction.</li>
+- Log: using [zap](https://github.com/uber-go/zap) record logs
 
-<li>API: using Swagger to auto generate APIs docs  (based on [swaggo](github.com/swaggo/swag/)</li>
-
-<li>Config: using fsnotify and viper to implement yaml config file。</li>
-
-<li>Job Scheduling: [gocron](https://github.com/jasonlvhit/gocron)</li>
-
-<li>Log: using [zap](https://github.com/uber-go/zap) record logs</li>
-
-<li>WebSocket: [websocket](https://github.com/gorilla/websocket)</li>
-
-</ul>
+- WebSocket: [websocket](https://github.com/gorilla/websocket)
 
 ### Running locally
 
