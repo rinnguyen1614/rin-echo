@@ -1,0 +1,68 @@
+version: "3"
+
+services:
+  web:
+    container_name: rin-web
+    build:
+      context: ./deploy/dev/docker/web
+      dockerfile: ./Dockerfile
+    working_dir: /web
+    volumes:
+      - ./web:/web
+      - /web/node_modules/
+    ports:
+      - 3001:3000
+    depends_on:
+      - system-http
+    restart: always
+    environment:
+      - REACT_APP_API_ENDPOINT=http://localhost:8888/api/v1
+      - REACT_APP_FILE_ENDPOINT=http://localhost:8888 
+      - CHOKIDAR_USEPOLLING=true 
+        
+  system-http:
+    build:
+      context: ./deploy/dev/docker/app
+      dockerfile: ./Dockerfile
+    ports: 
+      - "8888:8090"
+    depends_on:
+      - postgresql
+      - redis
+    restart: always
+    volumes:
+      - ./internal:/internal
+      - ./.go/pkg:/go/pkg
+      - ./.go-cache:/go-cache
+    working_dir: /internal/system
+    env_file:
+      - .env
+    environment:
+      SERVER_TO_RUN: http
+      GOCACHE: /go-cache
+
+  redis:
+    image: redis:6.0.6
+    container_name: rin-redis
+    volumes:
+      - redisdata:/var/lib/redis
+    ports:
+      - "16379:6379"
+    restart: always
+  
+  postgresql:
+    image: postgis/postgis:14-3.2-alpine
+    container_name: rin-postgresql-postgis
+    volumes:
+      - postgresqldata:/var/lib/postgresql/data
+      - ./scripts/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+    ports: 
+      - "15432:5432"
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=anhnguyen!@0809
+    restart: always
+
+volumes:
+  redisdata:
+  postgresqldata:

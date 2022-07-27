@@ -1,0 +1,13 @@
+
+.dockerignore
+.env
+.git
+.gitignore
+.vs
+docker-compose*.yml
+docker-compose.dcproj
+**/.vscode
+**/node_modules
+**/build
+**/Dockerfile
+**/Dockerfile.prod
