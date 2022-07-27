@@ -193,21 +193,19 @@ export const defaultTheme: any = {
       },
       MuiFormControl: {
         defaultProps: {
-          variant: "outlined" as const,
+          //   variant: "outlined" as const,
           size: "medium" as const,
           margin: "none" as const,
         },
       },
       MuiTextField: {
         defaultProps: {
-          variant: "outlined" as const,
+          //   variant: "outlined" as const,
           size: "medium" as const,
           margin: "none" as const,
         },
       },
     },
-
-    //custom ra styles
   },
 };
 

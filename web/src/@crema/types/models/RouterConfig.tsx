@@ -13,3 +13,10 @@ export interface RouterConfig {
   exact?: boolean;
   count?: number;
 }
+
+export const GetMessageId = (
+  router: RouterConfig,
+  prefix: string = "menus"
+): string => {
+  return prefix + "." + router!.slug;
+};

@@ -28,7 +28,11 @@ export const TreeInputItem = (props: any) => {
     const choiceValue = getChoiceValue(choice);
 
     const checked = value
-      ? value.find((v) => v == choiceValue) !== undefined
+      ? choice.all_children_ids?.length
+        ? choice.all_children_ids.every(
+            (c) => value.find((v) => c == v) !== undefined
+          )
+        : value.find((v) => v == choiceValue) !== undefined
       : false;
 
     const indeterminate =

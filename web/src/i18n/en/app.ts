@@ -1,5 +1,17 @@
 export const app = {
   my_account: "My account",
+  auth: {
+    remember_me: "Remember Me",
+    forget_password: "Forget Password",
+    auth_check_error: "Please login to continue",
+    user_menu: "Profile",
+    username: "Username",
+    password: "Password",
+    sign_in: "Sign in",
+    sign_in_error: "Authentication failed, please retry",
+    logout: "Logout",
+    login: "Login",
+  },
   logout: "Logout",
   search: "Search",
   configuration: "Configuration",
@@ -18,6 +30,7 @@ export const app = {
   },
   tree: {
     new_node: "New Node",
+    create_node: "Create Node",
     actions: {
       add_child: "Add Child",
       add_root: "Add Root",
@@ -43,8 +56,15 @@ export const app = {
       remark: "Remark",
     },
   },
-  menu: {
-    admin: "Administrator",
+  menus: {
+    admin: "Administration",
+    menus: "Menus",
+    resources: "Resources",
+    audit_logs: "Audit Logs",
+    users: "Users",
+    roles: "Roles",
+    languages: "Languages",
+    settings: "Settings",
   },
   account: {
     tab: {

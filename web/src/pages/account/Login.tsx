@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import Card from "@mui/material/Card";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import FacebookIcon from "@mui/icons-material/Facebook";
 import Button from "@mui/material/Button";
 import { Checkbox, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import { grey } from "@mui/material/colors";
 import { Fonts } from "@crema/shared/constants/AppEnums";
@@ -55,10 +51,10 @@ const Login = () => {
   const validate = (values: FormValues) => {
     const errors: FormValues = {};
     if (!values.username) {
-      errors.username = translate("ra.validation.required");
+      errors.username = translate("validation.required");
     }
     if (!values.password) {
-      errors.password = translate("ra.validation.required");
+      errors.password = translate("validation.required");
     }
     console.log(errors);
 
@@ -123,25 +119,29 @@ const Login = () => {
                   fontSize: 20,
                 }}
               >
-                {translate("ra.auth.login")}
+                {translate("auth.login")}
               </Box>
 
               <Form onSubmit={handleSubmit}>
                 <Box sx={{ mb: { xs: 5, xl: 8 } }}>
                   <TextInput
                     source="username"
-                    label={translate("ra.auth.username")}
-                    variant="outlined"
+                    label={translate("auth.username")}
                     fullWidth
+                    size="medium"
+                    margin="none"
+                    helperText=""
                   />
                 </Box>
 
                 <Box sx={{ mb: { xs: 5, xl: 8 } }}>
                   <PasswordInput
                     source="password"
-                    label={translate("ra.auth.password")}
-                    variant="outlined"
+                    label={translate("auth.password")}
                     fullWidth
+                    size="medium"
+                    margin="none"
+                    helperText=""
                   />
                 </Box>
 
@@ -173,7 +173,7 @@ const Login = () => {
                         fontSize: 14,
                       }}
                     >
-                      {translate("ra.login.rememberMe")}
+                      {translate("auth.remember_me")}
                     </Box>
                   </Box>
                   <Box
@@ -187,7 +187,7 @@ const Login = () => {
                       fontSize: 14,
                     }}
                   >
-                    {translate("ra.login.forgetPassword")}
+                    {translate("auth.forget_password")}
                   </Box>
                 </Box>
                 <Button
@@ -200,67 +200,9 @@ const Login = () => {
                     height: 44,
                   }}
                 >
-                  {translate("ra.auth.sign_in")}
+                  {translate("auth.sign_in")}
                 </Button>
               </Form>
-              <Box
-                sx={{
-                  mt: { xs: 3, xl: 4 },
-                  mb: 3,
-                  display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  justifyContent: { sm: "center" },
-                  alignItems: { sm: "center" },
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    color: grey[600],
-                    fontSize: 14,
-                    mr: 4,
-                  }}
-                >
-                  {translate("ra.login.orLoginWith")}
-                </Box>
-                <Box display="inline-block">
-                  <IconButton>
-                    <FacebookIcon sx={{ color: "text.primary" }} />
-                  </IconButton>
-                  <IconButton>
-                    <GitHubIcon sx={{ color: "text.primary" }} />
-                  </IconButton>
-                  <IconButton>
-                    <TwitterIcon sx={{ color: "text.primary" }} />
-                  </IconButton>
-                </Box>
-              </Box>
-
-              <Box
-                sx={{
-                  color: "grey.700",
-                  fontSize: 14,
-                  fontWeight: Fonts.BOLD,
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    mr: 2,
-                  }}
-                >
-                  {translate("ra.auth.dontHaveAccount")}
-                </Box>
-                <Box
-                  component="span"
-                  sx={{
-                    color: "primary.main",
-                    cursor: "pointer",
-                  }}
-                >
-                  {translate("ra.auth.signup")}
-                </Box>
-              </Box>
             </Grid>
           </Grid>
         </Card>

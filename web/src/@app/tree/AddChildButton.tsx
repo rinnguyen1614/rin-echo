@@ -2,11 +2,12 @@ import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
 import { useMemo } from "react";
 import { useCreatePath, useTranslate } from "react-admin";
-import { createPath as routerCreatePath } from "react-router";
+import { createPath as routerCreatePath, useNavigate } from "react-router";
 
 export const AddChildButton = ({ id, resource }: any) => {
   const translate = useTranslate();
   const createPath = useCreatePath();
+  const navigate = useNavigate();
   const path = useMemo(
     () =>
       routerCreatePath({
@@ -17,8 +18,8 @@ export const AddChildButton = ({ id, resource }: any) => {
   );
 
   return (
-    <Button startIcon={<AddIcon />} href={path} size="small">
-      {translate("rin.tree.actions.add_child")}
+    <Button startIcon={<AddIcon />} onClick={() => navigate(path)} size="small">
+      {translate("tree.actions.add_child")}
     </Button>
   );
 };

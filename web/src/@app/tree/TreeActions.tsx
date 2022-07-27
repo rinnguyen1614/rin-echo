@@ -38,10 +38,7 @@ export const TreeActions = (props: TreeActionsProps) => {
               resource: valueOrDefault(addRootButton.props.resource, resource),
             })
           ) : (
-            <CreateButton
-              label={"rin.tree.actions.add_root"}
-              resource={resource}
-            />
+            <CreateButton label={"tree.actions.add_root"} resource={resource} />
           ))}
         {exporter !== false && (
           <ExportButton disabled={total === 0} resource={resource} />

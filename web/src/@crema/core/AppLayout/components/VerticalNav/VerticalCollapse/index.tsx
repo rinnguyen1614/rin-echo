@@ -5,12 +5,13 @@ import clsx from "clsx";
 import VerticalItem from "../VerticalItem";
 import Box from "@mui/material/Box";
 import FormattedMessage from "../../../../../utility/FormattedMessage";
-import { checkPermission } from "../../../../../utility/helper/RouteHelper";
-import { useAuthUser } from "../../../../../utility/AuthHooks";
 import { useThemeContext } from "../../../../../utility/AppContextProvider/ThemeContextProvider";
 import { useSidebarContext } from "../../../../../utility/AppContextProvider/SidebarContextProvider";
 import VerticalCollapseItem from "./VerticalCollapseItem";
-import { RouterConfig } from "../../../../../types/models/RouterConfig";
+import {
+  RouterConfig,
+  GetMessageId,
+} from "../../../../../types/models/RouterConfig";
 
 const needsToBeOpened = (pathname: string, item: RouterConfig): boolean => {
   return !!(pathname && isPathInChildren(item, pathname));
@@ -102,7 +103,7 @@ const VerticalCollapse: React.FC<VerticalCollapseProps> = ({ item, level }) => {
           }}
           className="nav-item-content"
           classes={{ primary: clsx("nav-item-text") }}
-          primary={<FormattedMessage id={item.slug} />}
+          primary={<FormattedMessage id={GetMessageId(item)} />}
         />
         <IconButton
           className="nav-item-icon-arrow-btn"

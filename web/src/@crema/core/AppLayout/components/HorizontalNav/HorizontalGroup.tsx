@@ -17,7 +17,10 @@ import FormattedMessage from "../../../../utility/FormattedMessage";
 import { Fonts } from "../../../../shared/constants/AppEnums";
 import ClientOnlyPortal from "./ClientPortal";
 import { useLocation } from "react-router-dom";
-import { RouterConfig } from "../../../../types/models/RouterConfig";
+import {
+  GetMessageId,
+  RouterConfig,
+} from "../../../../types/models/RouterConfig";
 
 interface HorizontalCollapseProps {
   item: RouterConfig;
@@ -76,7 +79,7 @@ const HorizontalGroup: React.FC<HorizontalCollapseProps> = (props) => {
               </Icon>
             )}
             <ListItemText
-              primary={<FormattedMessage id={item.slug} />}
+              primary={<FormattedMessage id={GetMessageId(item)} />}
               sx={{
                 fontWeight: Fonts.MEDIUM,
               }}

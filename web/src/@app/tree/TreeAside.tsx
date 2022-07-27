@@ -1,3 +1,5 @@
+import { Fonts } from "@crema/shared/constants/AppEnums";
+import FormattedMessage from "@crema/utility/FormattedMessage";
 import {
   Box,
   Card,
@@ -5,6 +7,7 @@ import {
   Stack,
   styled,
   Theme,
+  Typography,
   useMediaQuery,
 } from "@mui/material";
 import { useBasename, useResourceDefinitions } from "ra-core";
@@ -70,6 +73,7 @@ export const TreeAside = (props) => {
               alignItems="center"
               spacing={2}
               width="100%"
+              minHeight={64}
             >
               {matchEdit.params.id && (
                 <AddChildButton id={matchEdit.params.id} resource={resource} />
@@ -95,6 +99,15 @@ export const TreeAside = (props) => {
 
       {!!matchCreate && (
         <Card>
+          <Box
+            component="h4"
+            sx={{
+              m: 4,
+              fontWeight: Fonts.SEMI_BOLD,
+            }}
+          >
+            <FormattedMessage id="tree.create_node" />
+          </Box>
           {cloneElement(create, {
             resource: valueOrDefault(create.props.resource, resource),
           })}
@@ -135,7 +148,12 @@ const Root = styled("div", {
   overridesResolver: (props, styles) => styles.root,
 })(({ theme }) => ({
   [`& .${TreeAsideClasses.main}`]: {
-    marginTop: 20,
+    display: "flex",
+    flexDirection: "column",
+    pl: {
+      lg: 8,
+    },
+
     [theme.breakpoints.up("md")]: {
       width: 450,
     },

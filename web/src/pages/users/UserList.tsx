@@ -12,11 +12,12 @@ import {
   TextInput,
   useTranslate,
 } from "react-admin";
-import ListBase from "@app/auth/ListBase";
+import List from "@app/auth/List";
 import ListActions from "@app/ListActions";
 import UsernameField from "./components/UsernameField";
 import { GenderField } from "components/genders/GenderField";
-import { AppAnimate } from "@crema";
+import AppsContainer from "@crema/core/AppsContainer";
+import AppAnimate from "@crema/core/AppAnimate";
 
 const userFilters = [
   <TextInput
@@ -37,30 +38,32 @@ const UserList = (props: ListProps): ReactElement => {
 
   return (
     <AppAnimate animation="transition.slideUpIn" delay={200}>
-      <ListBase
-        {...props}
-        actions={<ListActions />}
-        filters={userFilters}
-        filter={{
-          select:
-            "id,avatar_path, username,full_name, email, phone, email_verified, phone_verified, gender, created_at",
-        }}
-      >
-        <Datagrid optimized rowClick="edit" size="medium">
-          <UsernameField />
-          <TextField source="email" />
-          <BooleanField source="email_verified" />
-          <TextField source="phone" />
-          <BooleanField source="phone_verified" />
-          <GenderField source="gender" />
-          <DateField
-            source="created_at"
-            locales="us-US"
-            showTime={true}
-            label={translate("model.created_at")}
-          />
-        </Datagrid>
-      </ListBase>
+      <AppsContainer title="Users" fullView>
+        <List
+          {...props}
+          actions={<ListActions />}
+          filters={userFilters}
+          filter={{
+            select:
+              "id,avatar_path, username,full_name, email, phone, email_verified, phone_verified, gender, created_at",
+          }}
+        >
+          <Datagrid optimized rowClick="edit" size="medium">
+            <UsernameField />
+            <TextField source="email" />
+            <BooleanField source="email_verified" />
+            <TextField source="phone" />
+            <BooleanField source="phone_verified" />
+            <GenderField source="gender" />
+            <DateField
+              source="created_at"
+              locales="us-US"
+              showTime={true}
+              label={translate("model.created_at")}
+            />
+          </Datagrid>
+        </List>
+      </AppsContainer>
     </AppAnimate>
   );
 };

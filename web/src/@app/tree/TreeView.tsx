@@ -7,7 +7,7 @@ import {
   TreeView as MuiTreeView,
   TreeViewPropsBase,
 } from "@mui/lab";
-import { Box, Card, styled } from "@mui/material";
+import { Box, Card, Paper, styled } from "@mui/material";
 import { union } from "lodash";
 import PropTypes from "prop-types";
 import { parse } from "query-string";
@@ -112,13 +112,17 @@ export const TreeView = <RecordType extends Record = any>(
 
   const expandAllOfNode = useCallback(
     (id, include?: boolean) => {
-      const newExpand = tree.data[id]?.all_parent_ids || [];
-      if (include) {
-        newExpand.push(id);
+      if (tree?.data) {
+        const newExpand = tree.data[id]?.all_parent_ids || [];
+        if (include) {
+          newExpand.push(id);
+        }
+
+        newExpand.length &&
+          expand(union(newExpand.map(String), lastExpanded.current));
       }
-      newExpand.length &&
-        expand(union(newExpand.map(String), lastExpanded.current));
     },
+
     [tree.data, expand]
   );
 
@@ -160,7 +164,7 @@ export const TreeView = <RecordType extends Record = any>(
     if (!!matchCreate) {
       addNode({
         id: -1,
-        name: translate("rin.tree.new_node"),
+        name: translate("tree.new_node"),
         parent_id: parentIdParam,
       });
       expandAllOfNode(parentIdParam, true);
@@ -212,7 +216,8 @@ export const TreeView = <RecordType extends Record = any>(
   }
 
   const renderTreeItem = (node, rowIndex) => {
-    const id = node["id"];
+    if (!node) return null;
+    const id = node[fieldId];
     return (
       <RecordContextProvider key={id} value={node}>
         <MuiTreeItem
@@ -235,34 +240,37 @@ export const TreeView = <RecordType extends Record = any>(
   };
 
   const renderTree = () =>
-    tree && (
+    tree &&
+    tree.data && (
       <div className={TreeViewClasses.main}>
-        {actions && (
-          <ListToolbar
-            actions={cloneElement(actions, {
-              addRootButton: valueOrDefault(
-                actions.props.addRootButton,
-                addRootButton
-              ),
-              resource: valueOrDefault(actions.props.resource, resource),
-            })}
-          />
-        )}
-        <Content className={TreeViewClasses.content}>
-          <MuiTreeView
-            {...sanitizeListRestProps(rest)}
-            expanded={expanded.map(String)}
-            selected={selected.map(String)}
-            onNodeToggle={handleNodeToggle}
-            onNodeSelect={handleNodeSelect}
-            onNodeFocus={handleNodeFocus}
-            defaultExpanded={defaultExpanded}
-          >
-            {tree.rootIds?.map((key, rowIndex) =>
-              renderTreeItem(tree.data[key], rowIndex)
-            )}
-          </MuiTreeView>
-        </Content>
+        <Card>
+          {actions && (
+            <ListToolbar
+              actions={cloneElement(actions, {
+                addRootButton: valueOrDefault(
+                  actions.props.addRootButton,
+                  addRootButton
+                ),
+                resource: valueOrDefault(actions.props.resource, resource),
+              })}
+            />
+          )}
+          <Content className={TreeViewClasses.content}>
+            <MuiTreeView
+              {...sanitizeListRestProps(rest)}
+              expanded={expanded.map(String)}
+              selected={selected.map(String)}
+              onNodeToggle={handleNodeToggle}
+              onNodeSelect={handleNodeSelect}
+              onNodeFocus={handleNodeFocus}
+              defaultExpanded={defaultExpanded}
+            >
+              {tree.rootIds?.map((key, rowIndex) =>
+                renderTreeItem(tree.data[key], rowIndex)
+              )}
+            </MuiTreeView>
+          </Content>
+        </Card>
       </div>
     );
 
@@ -275,7 +283,6 @@ export const TreeView = <RecordType extends Record = any>(
   return (
     <ResourceContextProvider value={resource}>
       <Root className={className}>
-        <Title title={title} defaultTitle={defaultTitle} />
         {shouldRenderEmptyPage ? renderEmpty() : renderTree()}
         <TreeAside
           edit={edit}

@@ -26,9 +26,10 @@ import {
   LinearProgress,
   sanitizeInputRestProps,
 } from "ra-ui-materialui";
-import { FC, useCallback, useEffect, useMemo, useRef } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTree } from "./useTree";
 import { TreeInputItem } from "./TreeInputItem";
+import { useRecordExpand } from "@app/useRecordExpand";
 
 const TreeInput: FC<TreeInputPros> = (props) => {
   const {
@@ -50,7 +51,8 @@ const TreeInput: FC<TreeInputPros> = (props) => {
     source: sourceProp,
     translateChoice = true,
     validate,
-    defaultExpanded: customDefaultExpanded,
+    defaultExpanded,
+    autoExpandAll,
     fullWidth,
     onSelect,
     ...rest
@@ -92,13 +94,24 @@ const TreeInput: FC<TreeInputPros> = (props) => {
 
   const [tree, { set }] = useTree(resource, optionValue, optionParent);
 
-  const defaultExpanded = useMemo(() => {
-    return customDefaultExpanded ?? Object.keys(tree.data);
-  }, [customDefaultExpanded, tree]);
+  const [expanded, { expand, clear: clearExpand }] = useRecordExpand(resource);
 
   useEffect(() => {
     set(allChoices);
-  }, [set, allChoices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [set]);
+
+  useEffect(() => {
+    if (autoExpandAll) {
+      expand(
+        Object.keys(tree.data).filter(
+          (id) => tree.data[id].all_children_ids.length
+        )
+      );
+    } else if (defaultExpanded?.length) {
+      expand(defaultExpanded);
+    }
+  }, [defaultExpanded, expand, autoExpandAll, tree.data]);
 
   const handleCheck = useCallback(
     (event, isChecked) => {
@@ -147,7 +160,7 @@ const TreeInput: FC<TreeInputPros> = (props) => {
       }
       formOnBlur(); // Ensure field is flagged as touched
     },
-    [formOnBlur, optionParent, formOnChange, value, tree, optionValue]
+    [formOnBlur, optionParent, formOnChange, value, tree.data, optionValue]
   );
 
   const handleSelect = useCallback(
@@ -156,6 +169,13 @@ const TreeInput: FC<TreeInputPros> = (props) => {
       event.stopPropagation();
     },
     [onSelect]
+  );
+
+  const handleNodeToggle = useCallback(
+    (event, nodeIds: any[]) => {
+      expand(nodeIds);
+    },
+    [expand]
   );
 
   if (isLoading && allChoices?.length === 0) {
@@ -182,7 +202,9 @@ const TreeInput: FC<TreeInputPros> = (props) => {
     >
       <MuiTreeView
         //defaultSelected
+        expanded={expanded.map(String)}
         defaultExpanded={defaultExpanded}
+        onNodeToggle={handleNodeToggle}
         {...sanitizeInputRestProps(rest)}
       >
         <FormLabel component="legend" className={TreeInputClasses.label}>
@@ -232,6 +254,7 @@ export type TreeInputPros = Omit<CommonInputProps, "source" | "resource"> &
     validate?: Validator | Validator[];
     optionParent?: string;
     onSelect?: (event: React.ChangeEvent<{}>, node: any) => void;
+    autoExpandAll?: boolean;
   };
 
 const sanitizeRestProps = ({
@@ -276,6 +299,7 @@ TreeInput.propTypes = {
   defaultEndIcon: PropTypes.node,
   defaultExpanded: PropTypes.array,
   defaultExpandIcon: PropTypes.node,
+  autoExpandAll: PropTypes.bool,
 };
 
 TreeInput.defaultProps = {
@@ -283,6 +307,7 @@ TreeInput.defaultProps = {
   defaultExpandIcon: <ChevronRightIcon />,
   optionValue: "id",
   optionParent: "parent_id",
+  autoExpandAll: true,
 };
 
 export default TreeInput;

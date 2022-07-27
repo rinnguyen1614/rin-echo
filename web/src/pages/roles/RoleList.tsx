@@ -13,7 +13,7 @@ import {
   useRecordContext,
   useTranslate,
 } from "react-admin";
-import ListBase from "@app/auth/ListBase";
+import List from "@app/auth/List";
 import ListActions from "@app/ListActions";
 import AppAnimate from "@crema/core/AppAnimate";
 import AppsContainer from "@crema/core/AppsContainer";
@@ -53,17 +53,8 @@ const RoleOptions: FC<ChipFieldProps> = memo<ChipFieldProps>((props) => {
 });
 
 const roleFilters = [
-  <TextInput
-    label="Search"
-    source="q=name:like,slug:like"
-    alwaysOn
-    variant="outlined"
-  />,
-  <NullableBooleanInput
-    label="Default"
-    source="is_default"
-    variant="outlined"
-  />,
+  <TextInput label="Search" source="q=name:like,slug:like" alwaysOn />,
+  <NullableBooleanInput label="Default" source="is_default" />,
 ];
 
 const RoleList = (props: ListProps): ReactElement => {
@@ -73,7 +64,7 @@ const RoleList = (props: ListProps): ReactElement => {
     <AppAnimate animation="transition.slideUpIn" delay={200}>
       <AppsContainer title="Roles" fullView>
         <AppsContent>
-          <ListBase
+          <List
             {...props}
             actions={<ListActions />}
             filters={roleFilters}
@@ -87,10 +78,10 @@ const RoleList = (props: ListProps): ReactElement => {
                 source="created_at"
                 locales="us-US"
                 showTime={true}
-                label={translate("rin.model.created_at")}
+                label={translate("model.created_at")}
               />
             </Datagrid>
-          </ListBase>
+          </List>
         </AppsContent>
       </AppsContainer>
     </AppAnimate>

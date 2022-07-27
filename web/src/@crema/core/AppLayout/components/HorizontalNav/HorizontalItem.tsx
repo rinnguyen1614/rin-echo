@@ -6,7 +6,10 @@ import FormattedMessage from "../../../../utility/FormattedMessage";
 import Box from "@mui/material/Box";
 import AppNavLink from "../../../AppNavLink";
 import Badge from "@mui/material/Badge";
-import { RouterConfig } from "../../../../types/models/RouterConfig";
+import {
+  GetMessageId,
+  RouterConfig,
+} from "../../../../types/models/RouterConfig";
 import { useSidebarContext } from "../../../../utility/AppContextProvider/SidebarContextProvider";
 
 interface HorizontalItemProps {
@@ -95,7 +98,7 @@ const HorizontalItem: React.FC<HorizontalItemProps> = (props) => {
       )}
       <ListItemText
         className="AppNavLinkTextSubmenu"
-        primary={<FormattedMessage id={item.slug} />}
+        primary={<FormattedMessage id={GetMessageId(item)} />}
       />
       {item.count && (
         <Box ml={4}>

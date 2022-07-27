@@ -7,7 +7,6 @@ import {
   TabbedForm,
   TextInput,
   useRecordContext,
-  useSaveContext,
 } from "react-admin";
 import MenuTreeInput from "../../menus/components/MenuTreeInput";
 import ResourceTreeInput from "../../resources/components/ResourceTreeInput";
@@ -25,15 +24,9 @@ const RoleForm = (props) => {
     }
     return v;
   }, [record]);
-  const { saving } = useSaveContext();
 
   return (
-    <TabbedForm
-      resource="roles"
-      syncWithLocation={false}
-      record={value}
-      saving={saving}
-    >
+    <TabbedForm resource="roles" syncWithLocation={false} record={value}>
       <FormTab label={"resources.roles.tabs.general"}>
         <TextInput
           autoFocus

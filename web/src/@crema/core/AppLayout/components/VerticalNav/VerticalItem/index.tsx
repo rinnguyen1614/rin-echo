@@ -8,7 +8,10 @@ import FormattedMessage from "../../../../../utility/FormattedMessage";
 import { checkPermission } from "../../../../../utility/helper/RouteHelper";
 import { useAuthUser } from "../../../../../utility/AuthHooks";
 import VerticalNavItem from "./VerticalNavItem";
-import { RouterConfig } from "../../../../../types/models/RouterConfig";
+import {
+  GetMessageId,
+  RouterConfig,
+} from "../../../../../types/models/RouterConfig";
 
 interface VerticalItemProps {
   item: RouterConfig;
@@ -51,7 +54,7 @@ const VerticalItem: React.FC<VerticalItemProps> = ({ level, item }) => {
       )}
       <ListItemText
         className="nav-item-content"
-        primary={<FormattedMessage id={item.slug} />}
+        primary={<FormattedMessage id={GetMessageId(item)} />}
         classes={{ primary: "nav-item-text" }}
       />
       {item.count && (

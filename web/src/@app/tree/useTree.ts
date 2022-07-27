@@ -18,7 +18,7 @@ export const useTree = (
   }
 ] => {
   const storeKey = `tree.${resource}`;
-  const [nodes, setNodes] = useStore(storeKey, defaultTree);
+  const [tree, setNodes] = useStore(storeKey, defaultTree);
   const reset = useRemoveFromStore(storeKey);
 
   const set = useCallback(
@@ -43,17 +43,25 @@ export const useTree = (
   const getNode = useCallback(
     (id: Identifier) => {
       if (typeof id === "undefined") return;
-      return nodes.data[id];
+      return tree.data[id];
     },
-    [nodes]
+    [tree]
   );
 
   const addNode = useCallback(
     (newNode: Record) => {
       if (typeof newNode === "undefined") return;
-      setNodes((nodes) => {
-        addNodeAndRoot(nodes, newNode, fieldId, parentIdField);
-        return { ...nodes };
+      setNodes((tree) => {
+        let rootIds = [...tree.rootIds];
+        const isRoot = !newNode[parentIdField];
+        const id = newNode[fieldId];
+        if (isRoot && !rootIds.includes(id)) {
+          rootIds.push(id);
+        }
+        return {
+          rootIds: rootIds,
+          data: util.addNode(tree.data, newNode, fieldId, parentIdField),
+        };
       });
     },
     [setNodes, fieldId, parentIdField]
@@ -62,17 +70,17 @@ export const useTree = (
   const removeNode = useCallback(
     (id: Identifier) => {
       if (typeof id === "undefined") return;
-      setNodes((nodes) => {
-        const iRoot = nodes.rootIds.findIndex((el) => el == id); // eslint-disable-line eqeqeq
+      setNodes((tree) => {
+        let rootIds = [...tree.rootIds];
+        const iRoot = rootIds.findIndex((el) => el == id); // eslint-disable-line eqeqeq
         if (iRoot !== -1) {
-          nodes.rootIds = [
-            ...nodes.rootIds.slice(0, iRoot),
-            ...nodes.rootIds.slice(iRoot + 1),
-          ];
+          rootIds = [...rootIds.slice(0, iRoot), ...rootIds.slice(iRoot + 1)];
         }
-        util.removeNode(nodes.data, id, fieldId, parentIdField);
 
-        return { ...nodes };
+        return {
+          rootIds: rootIds,
+          data: util.removeNode(tree.data, id, fieldId, parentIdField),
+        };
       });
     },
     [setNodes, fieldId, parentIdField]
@@ -81,7 +89,7 @@ export const useTree = (
   const clear = useCallback(() => reset(), [reset]);
 
   return [
-    nodes,
+    tree,
     {
       set,
       getNode,
@@ -100,19 +108,4 @@ type Tree = {
 const defaultTree: Tree = {
   data: {},
   rootIds: [],
-};
-
-const addNodeAndRoot = (
-  nodes: Tree,
-  newNode: any,
-  fieldId: string,
-  parentIdField: string
-) => {
-  util.addNode(nodes.data, newNode, fieldId, parentIdField);
-  const isRoot = !newNode[parentIdField];
-  const id = newNode[fieldId];
-  if (isRoot && !nodes.rootIds.includes(id)) {
-    nodes.rootIds.push(id);
-  }
-  return nodes;
 };

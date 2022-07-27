@@ -3,11 +3,12 @@ import clsx from "clsx";
 import VerticalCollapse from "../VerticalCollapse";
 import VerticalItem from "../VerticalItem";
 import FormattedMessage from "../../../../../utility/FormattedMessage";
-import { checkPermission } from "../../../../../utility/helper/RouteHelper";
-import { useAuthUser } from "../../../../../utility/AuthHooks";
 import { useSidebarContext } from "../../../../../utility/AppContextProvider/SidebarContextProvider";
 import VerticalNavGroupItem from "./VerticalNavGroupItem";
-import { RouterConfig } from "../../../../../types/models/RouterConfig";
+import {
+  GetMessageId,
+  RouterConfig,
+} from "../../../../../types/models/RouterConfig";
 
 interface VerticalNavGroupProps {
   item?: RouterConfig;
@@ -32,7 +33,7 @@ const VerticalNavGroup: React.FC<VerticalNavGroupProps> = ({ item, level }) => {
         component="div"
         className={clsx("nav-item nav-item-header")}
       >
-        {<FormattedMessage id={item!.slug} />}
+        {<FormattedMessage id={GetMessageId(item)} />}
       </VerticalNavGroupItem>
 
       {item!.children && (

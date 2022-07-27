@@ -16,9 +16,13 @@ import HorizontalItem from "./HorizontalItem";
 import HorizontalGroup from "./HorizontalGroup";
 import FormattedMessage from "../../../../utility/FormattedMessage";
 import { useThemeContext } from "../../../../utility/AppContextProvider/ThemeContextProvider";
-import { RouterConfig } from "../../../../types/models/RouterConfig";
+import {
+  GetMessageId,
+  RouterConfig,
+} from "../../../../types/models/RouterConfig";
 import ClientOnlyPortal from "./ClientPortal";
 import { useSidebarContext } from "../../../../utility/AppContextProvider/SidebarContextProvider";
+import { AddItemButton } from "ra-ui-materialui";
 
 interface HorizontalCollapseProps {
   item: RouterConfig;
@@ -116,7 +120,7 @@ const HorizontalCollapse: React.FC<HorizontalCollapseProps> = (props) => {
               )}
               <ListItemText
                 className="navLinkTextSubmenu"
-                primary={<FormattedMessage id={item.slug} />}
+                primary={<FormattedMessage id={GetMessageId(item)} />}
               />
               <Box p={0}>
                 <IconButton disableRipple>
