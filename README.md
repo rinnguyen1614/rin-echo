@@ -40,7 +40,7 @@
 
 - Cache: using [Redis](https://redis.io/) to implement the recording of the JWT token of the currently active user and implement the multi-login restriction.
 
-- API: using Swagger to auto generate APIs docs (based on [swaggo](github.com/swaggo/swag/)
+- API: using Swagger to auto generate APIs docs (based on [swaggo](github.com/swaggo/swag/))
 
 - Job Scheduling: [gocron](https://github.com/jasonlvhit/gocron)
 
@@ -54,3 +54,9 @@
 > docker-compose up
 
 ```
+
+### Screenshots
+
+![screenshot_ui](./docs/assets/screenshot_1.gif)
+
+![screenshot_ter](./docs/assets/screenshot_2.gif)
