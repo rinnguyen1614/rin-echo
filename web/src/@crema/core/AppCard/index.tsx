@@ -5,14 +5,13 @@ import { Fonts } from "../../shared/constants/AppEnums";
 import Link from "@mui/material/Link";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
-import { MessageFormatElement } from "react-intl";
 
 interface AppCardProps {
-  title?: string | MessageFormatElement[] | ReactNode;
+  title?: string | ReactNode;
   titleStyle?: any;
   contentStyle?: any;
   headerStyle?: any;
-  action?: ReactNode | string | MessageFormatElement[];
+  action?: ReactNode | string;
   actionStyle?: any;
   footer?: any;
   footerPosition?: string;

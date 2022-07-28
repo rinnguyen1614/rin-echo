@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import defaultConfig from "./defaultConfig";
 import PropTypes from "prop-types";
 import {
@@ -29,7 +35,7 @@ export const useLocaleContext = () => useContext(LocaleContext);
 
 export const useLocaleActionsContext = () => useContext(LocaleActionsContext);
 
-const LocaleContextProvider: React.FC<React.ReactNode> = ({ children }) => {
+const LocaleContextProvider = ({ children }) => {
   const [locale, updateLocale] = useState<LanguageProps>(defaultConfig.locale);
   const { theme } = useThemeContext();
   const { updateTheme } = useThemeActionsContext();

@@ -7,8 +7,8 @@ import {
 import AppLocale from "../../shared/localization";
 import { useThemeContext } from "../AppContextProvider/ThemeContextProvider";
 import { useLocaleContext } from "../AppContextProvider/LocaleContextProvide";
-import AdapterDateFns from "@mui/lab/AdapterDateFns";
-import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 interface AppThemeProviderProps {
   children: ReactElement;

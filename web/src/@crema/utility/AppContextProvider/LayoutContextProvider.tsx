@@ -1,6 +1,13 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import defaultConfig from "./defaultConfig";
 import PropTypes from "prop-types";
+import { AdminChildren } from "react-admin";
 
 export interface LayoutData {
   layoutType: string;
@@ -38,13 +45,13 @@ export const useLayoutContext = () => useContext(LayoutContext);
 
 export const useLayoutActionsContext = () => useContext(LayoutActionsContext);
 
-const LayoutContextProvider: React.FC<React.ReactNode> = ({ children }) => {
+const LayoutContextProvider = ({ children }) => {
   const [layoutType, updateLayoutType] = useState<string>(
     defaultConfig.layoutType
   );
   const [navStyle, setNavStyle] = useState<string>(defaultConfig.navStyle);
 
-  const updateNavStyle = useCallback((navStyle) => {
+  const updateNavStyle = useCallback((navStyle: string) => {
     setNavStyle(navStyle);
   }, []);
 

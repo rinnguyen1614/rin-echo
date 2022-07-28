@@ -4,13 +4,7 @@ import LocaleContextProvider from "./LocaleContextProvide";
 import LayoutContextProvider from "./LayoutContextProvider";
 import SidebarContextProvider from "./SidebarContextProvider";
 
-interface AppContextProviderProps {
-  children: ReactNode;
-}
-
-const AppContextProvider: React.FC<AppContextProviderProps> = ({
-  children,
-}) => {
+const AppContextProvider = ({ children }) => {
   return (
     <ThemeContextProvider>
       <LocaleContextProvider>

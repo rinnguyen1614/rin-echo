@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -14,6 +15,8 @@ import defaultConfig, {
 } from "./defaultConfig";
 import PropTypes from "prop-types";
 import { LayoutDirection, ThemeMode } from "../../shared/constants/AppEnums";
+import { CremaTheme } from "../../types/AppContextPropsType";
+import { AdminChildren } from "react-admin";
 
 export interface ThemeData {
   theme: any;
@@ -43,7 +46,7 @@ export const useThemeContext = () => useContext(ThemeContext);
 
 export const useThemeActionsContext = () => useContext(ThemeActionsContext);
 
-const ThemeContextProvider: React.FC<React.ReactNode> = ({ children }) => {
+const ThemeContextProvider = ({ children }) => {
   const [theme, setTheme] = useState<any>(defaultTheme.theme);
   const [themeMode, updateThemeMode] = useState<string>(
     defaultConfig.themeMode
@@ -52,7 +55,7 @@ const ThemeContextProvider: React.FC<React.ReactNode> = ({ children }) => {
     defaultConfig.themeStyle
   );
 
-  const updateTheme = useCallback((theme) => {
+  const updateTheme = useCallback((theme: CremaTheme) => {
     setTheme(theme);
   }, []);
 
@@ -98,7 +101,3 @@ const ThemeContextProvider: React.FC<React.ReactNode> = ({ children }) => {
 };
 
 export default ThemeContextProvider;
-
-ThemeContextProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};

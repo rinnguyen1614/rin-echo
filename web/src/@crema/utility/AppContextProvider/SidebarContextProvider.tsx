@@ -1,6 +1,13 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
 import defaultConfig, { SidebarData } from "./defaultConfig";
+import { AdminChildren } from "react-admin";
 
 export interface SidebarContextData {
   menuStyle: string;
@@ -41,7 +48,7 @@ export const useSidebarContext = () => useContext(SidebarContext);
 
 export const useSidebarActionsContext = () => useContext(SidebarActionsContext);
 
-const SidebarContextProvider: React.FC<React.ReactNode> = ({ children }) => {
+const SidebarContextProvider = ({ children }) => {
   const [menuStyle, updateMenuStyle] = useState<string>(
     defaultConfig.sidebar.menuStyle
   );
@@ -55,13 +62,16 @@ const SidebarContextProvider: React.FC<React.ReactNode> = ({ children }) => {
     defaultConfig.sidebar.sidebarBgImage
   );
 
-  const setSidebarBgImage = useCallback((isSidebarBgImage) => {
+  const setSidebarBgImage = useCallback((isSidebarBgImage: boolean) => {
     updateImage(isSidebarBgImage);
   }, []);
 
-  const updateSidebarBgImage = useCallback((sidebarBgImage) => {
-    setSidebarImage(sidebarBgImage);
-  }, []);
+  const updateSidebarBgImage = useCallback(
+    (sidebarBgImage: string | number) => {
+      setSidebarImage(sidebarBgImage);
+    },
+    []
+  );
 
   return (
     <SidebarContext.Provider

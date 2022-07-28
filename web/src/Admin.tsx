@@ -1,7 +1,11 @@
+import { AppStyleProvider, AppThemeProvider } from "@crema";
+import configureStore from "@crema/redux/store";
+import AppContextProvider from "@crema/utility/AppContextProvider";
 import LayoutContextProvider from "@crema/utility/AppContextProvider/LayoutContextProvider";
 import LocaleContextProvider from "@crema/utility/AppContextProvider/LocaleContextProvide";
 import SidebarContextProvider from "@crema/utility/AppContextProvider/SidebarContextProvider";
 import ThemeContextProvider from "@crema/utility/AppContextProvider/ThemeContextProvider";
+import { CssBaseline } from "@mui/material";
 import Error404 from "pages/errors/Error404";
 import { createElement } from "react";
 import {
@@ -13,6 +17,7 @@ import {
   Notification,
   LoadingPage,
 } from "react-admin";
+import { Provider } from "react-redux";
 
 export const Admin = (props: AdminProps) => {
   const {
@@ -87,13 +92,22 @@ AdminUI.defaultProps = {
 
 export const AdminContext = (props: CoreAdminContextProps) => {
   const { children, ...rest } = props;
+  const store = configureStore();
+
   return (
     <CoreAdminContext {...rest}>
-      <ThemeContextProvider>
-        <LayoutContextProvider>
-          <SidebarContextProvider>{children}</SidebarContextProvider>
-        </LayoutContextProvider>
-      </ThemeContextProvider>
+      <AppContextProvider>
+        <Provider store={store}>
+          <AppThemeProvider>
+            <AppStyleProvider>
+              <>
+                <CssBaseline />
+                {children}
+              </>
+            </AppStyleProvider>
+          </AppThemeProvider>
+        </Provider>
+      </AppContextProvider>
     </CoreAdminContext>
   );
 };

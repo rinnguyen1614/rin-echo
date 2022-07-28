@@ -1,6 +1,6 @@
 import { Admin } from "Admin";
 import { CustomRoutes, Resource } from "react-admin";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import authProvider from "./providers/authProvider";
 import dataProviderFactory from "./providers/dataProvider";
 import { AppContextProvider, AppStyleProvider, AppThemeProvider } from "@crema";
@@ -21,39 +21,28 @@ const store = configureStore();
 
 const App = () => {
   return (
-    <AppContextProvider>
-      <Provider store={store}>
-        <AppThemeProvider>
-          <AppStyleProvider>
-            <>
-              <CssBaseline />
-              <BrowserRouter>
-                <Admin
-                  title="Rin"
-                  dataProvider={dataProviderFactory(
-                    process.env.REACT_APP_DATA_PROVIDER || ""
-                  )}
-                  authProvider={authProvider}
-                  layout={Layout}
-                  i18nProvider={i18nProvider}
-                  loginPage={Login}
-                  disableTelemetry
-                >
-                  <CustomRoutes>
-                    <Route path="/account" element={<UserProfile />} />
-                  </CustomRoutes>
-                  <Resource name="admin/resources" {...resources} />
-                  <Resource name="admin/menus" {...menus} />
-                  <Resource name="admin/roles" {...roles} />
-                  <Resource name="admin/users" {...users} />
-                  <Resource name="admin/audit_logs" {...audit_logs} />
-                </Admin>
-              </BrowserRouter>
-            </>
-          </AppStyleProvider>
-        </AppThemeProvider>
-      </Provider>
-    </AppContextProvider>
+    <BrowserRouter>
+      <Admin
+        title="Rin"
+        dataProvider={dataProviderFactory(
+          process.env.REACT_APP_DATA_PROVIDER || ""
+        )}
+        authProvider={authProvider}
+        layout={Layout}
+        i18nProvider={i18nProvider}
+        loginPage={Login}
+        disableTelemetry
+      >
+        <CustomRoutes>
+          <Route path="/account" element={<UserProfile />} />
+        </CustomRoutes>
+        <Resource name="admin/resources" {...resources} />
+        <Resource name="admin/menus" {...menus} />
+        <Resource name="admin/roles" {...roles} />
+        <Resource name="admin/users" {...users} />
+        <Resource name="admin/audit_logs" {...audit_logs} />
+      </Admin>
+    </BrowserRouter>
   );
 };
 
