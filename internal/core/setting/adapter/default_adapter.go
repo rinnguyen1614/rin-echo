@@ -88,7 +88,7 @@ func (a *DefaultAdapter) Set(name, value, providerName, providerKey string) erro
 		}
 
 		if !update {
-			err = a.uow.DB().Create(model.Setting{
+			err = a.uow.DB().Create(&model.Setting{
 				Name:         name,
 				Value:        value,
 				ProviderKey:  providerKey,

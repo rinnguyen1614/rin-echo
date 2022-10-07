@@ -13,7 +13,11 @@ import (
 
 func TestAuth_JWT_TokenWithMapClaims(t *testing.T) {
 
-	j := NewJWT("secret")
+	j := NewJWTWithConfig(JWTConfig{
+		Claims:     jwt.MapClaims{},
+		SigningKey: []byte("secret"),
+	})
+
 	mapClaims := jwt.MapClaims{
 		"Username": "anhnguyen",
 		"FullName": "Anh Nguyen",

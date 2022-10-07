@@ -9,12 +9,13 @@ import (
 )
 
 var (
-	ctx = context.Background()
-	rc  *RedisCache
+	ctx        = context.Background()
+	expiration = 5 * time.Second
+	rc         *RedisCache
 )
 
 func init() {
-	c, err := NewRedisCache("redis://admin:admin0809@localhost:6379/3?dial_timeout=3&db=1&read_timeout=6s&max_retries=2")
+	c, err := NewRedisCache("redis://localhost/")
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +23,6 @@ func init() {
 }
 
 func TestRedisCache(t *testing.T) {
-	expiration := 5 * time.Second
 
 	assert.Nil(t, rc.Set(ctx, "key", 1, expiration))
 
@@ -31,13 +31,13 @@ func TestRedisCache(t *testing.T) {
 
 	time.Sleep(5 * time.Second)
 
-	res, _ = rc.IsExist(ctx, "key")
+	res, _ = rc.IsExist(ctx, "key-2")
 	assert.False(t, res)
 
 	assert.Nil(t, rc.Set(ctx, "key", 1, expiration))
 
 	val, _ := rc.Get(ctx, "key")
-	assert.Equal(t, 1, val)
+	assert.Equal(t, float64(1), val)
 
 	// test incr
 	incr, err := rc.Incr(ctx, "key")
@@ -80,4 +80,32 @@ func TestRedisCache(t *testing.T) {
 
 	// test clear all
 	assert.Nil(t, rc.ClearAll(ctx))
+}
+
+func TestRedisCache_ExplicitType(t *testing.T) {
+
+	// struct type
+	type testType struct {
+		Field1 string
+		Field2 int
+	}
+	structExpected := testType{
+		Field1: "value1",
+		Field2: 2,
+	}
+
+	var valStruct testType
+	assert.Nil(t, rc.Set(ctx, "key", structExpected, expiration))
+	assert.Nil(t, rc.GetParse(ctx, "key", &valStruct))
+	assert.Equal(t, structExpected, valStruct)
+
+	var valInt int
+	assert.Nil(t, rc.Set(ctx, "key", 1, expiration))
+	assert.Nil(t, rc.GetParse(ctx, "key", &valInt))
+	assert.Equal(t, 1, valInt)
+
+	var valSliceInt []int
+	assert.Nil(t, rc.Set(ctx, "key", []int{1, 2, 3}, expiration))
+	assert.Nil(t, rc.GetParse(ctx, "key", &valSliceInt))
+	assert.Equal(t, []int{1, 2, 3}, valSliceInt)
 }

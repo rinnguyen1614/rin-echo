@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -14,12 +15,29 @@ import (
 var DefaultKey = "rin-echo-redis"
 
 type (
+	MarshalFunc   func(any) ([]byte, error)
+	UnmarshalFunc func([]byte, any) error
+
 	RedisCache struct {
-		rdb    *redis.Client
-		prefix string
+		rdb       *redis.Client
+		prefix    string
+		marshal   MarshalFunc
+		unmarshal UnmarshalFunc
 	}
+
 	Config struct {
-		Key string
+		Key          string
+		Marshal      MarshalFunc
+		Unmarshal    UnmarshalFunc
+		RedisOptions *redis.Options
+	}
+)
+
+var (
+	DefaultConfig = Config{
+		Key:       DefaultKey,
+		Marshal:   json.Marshal,
+		Unmarshal: json.Unmarshal,
 	}
 )
 
@@ -27,21 +45,35 @@ type (
 // Examples:
 //		redis://user:password@localhost:6789/3?dial_timeout=3&db=1&read_timeout=6s&max_retries=2
 func NewRedisCache(conninfo string) (cache.Cache, error) {
-	return NewRedisCacheWithPrefix(DefaultKey, conninfo)
-}
-
-func NewRedisCacheWithPrefix(prefix, conninfo string) (cache.Cache, error) {
 	opt, err := redis.ParseURL(conninfo)
 	if err != nil {
 		return nil, err
 	}
-	return NewRedisCacheWithOption(prefix, opt)
+
+	return NewRedisCacheWithConfig(Config{
+		RedisOptions: opt,
+	})
 }
 
-func NewRedisCacheWithOption(prefix string, opt *redis.Options) (cache.Cache, error) {
+func NewRedisCacheWithConfig(config Config) (cache.Cache, error) {
+	if config.RedisOptions == nil {
+		panic("redis cache requires RedisOptions")
+	}
+	if config.Key == "" {
+		config.Key = DefaultConfig.Key
+	}
+	if config.Marshal == nil {
+		config.Marshal = DefaultConfig.Marshal
+	}
+	if config.Unmarshal == nil {
+		config.Unmarshal = DefaultConfig.Unmarshal
+	}
+
 	rc := &RedisCache{
-		prefix: prefix,
-		rdb:    redis.NewClient(opt),
+		prefix:    config.Key,
+		marshal:   config.Marshal,
+		unmarshal: config.Unmarshal,
+		rdb:       redis.NewClient(config.RedisOptions),
 	}
 	_, err := rc.rdb.Ping(context.Background()).Result()
 	if err != nil {
@@ -57,12 +89,28 @@ func (c *RedisCache) associate(key interface{}) string {
 }
 
 func (c *RedisCache) Get(ctx context.Context, key string) (interface{}, error) {
-	val, err := c.rdb.Get(ctx, c.associate(key)).Result()
+	b, err := c.rdb.Get(ctx, c.associate(key)).Bytes()
 	if err != nil {
 		return nil, redisError(err)
 	}
 
-	return val, nil
+	var v interface{}
+	if err = c.unmarshal(b, &v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (c *RedisCache) GetParse(ctx context.Context, key string, v interface{}) error {
+	b, err := c.rdb.Get(ctx, c.associate(key)).Bytes()
+	if err != nil {
+		return redisError(err)
+	}
+
+	if err = c.unmarshal(b, &v); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *RedisCache) GetMulti(ctx context.Context, keys ...string) ([]interface{}, error) {
@@ -71,16 +119,37 @@ func (c *RedisCache) GetMulti(ctx context.Context, keys ...string) ([]interface{
 		args = append(args, c.associate(key))
 	}
 
-	vals, err := c.rdb.MGet(ctx, args...).Result()
+	strs, err := c.rdb.MGet(ctx, args...).Result()
 	if err != nil {
 		return nil, redisError(err)
 	}
 
+	var (
+		vals = make([]interface{}, len(strs))
+		v    interface{}
+	)
+	for i, str := range strs {
+		s, ok := str.(string)
+		if !ok {
+			continue
+		}
+
+		if err = c.unmarshal([]byte(s), &v); err != nil {
+			return nil, err
+		}
+
+		vals[i] = v
+	}
 	return vals, nil
 }
 
 func (c *RedisCache) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	if err := c.rdb.Set(ctx, c.associate(key), value, expiration).Err(); err != nil {
+	v, err := c.marshal(value)
+	if err != nil {
+		return err
+	}
+
+	if err = c.rdb.Set(ctx, c.associate(key), v, expiration).Err(); err != nil {
 		return err
 	}
 	return nil

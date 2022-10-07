@@ -3,6 +3,8 @@ package setting
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/rinnguyen1614/rin-echo/internal/core/cache/memory"
@@ -39,6 +41,20 @@ var (
 	settingProvider     Provider
 	encryption          = utils.NewEncryption("test")
 	settingDefinitions  []SettingDefinition
+	sqlStmt             = `CREATE TABLE settings 
+	(
+		id integer NOT NULL PRIMARY KEY,
+		created_at timestamp,
+		creator_user_id bigint,
+		modified_at timestamp,
+		modifier_user_id bigint,
+		deleted_at timestamp,
+		deleter_user_id bigint,
+		name VARCHAR(256) NOT NULL DEFAULT '',
+		value TEXT,
+		provider_key VARCHAR(4) NOT NULL DEFAULT '',
+		provider_name VARCHAR(256) NOT NULL	DEFAULT ''
+	)`
 )
 
 func init() {
@@ -52,16 +68,25 @@ func init() {
 }
 
 func initAdapter() {
+	os.Remove("./setting.db")
+
 	db, err := gormx.OpenWithConfig(gormx.Database{
-		Driver: "postgresql",
-		DNS:    "host=localhost user=admin password=anhnguyen0809 dbname=rin_admin port=5432 sslmode=disable",
+		Driver: "sqlite",
+		DNS:    "./setting.db?cache=shared&mode=memory",
 	})
 
 	if err != nil {
 		panic(err)
 	}
 
+	err = db.Exec(sqlStmt).Error
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
+
 	gormAdapter = adapter.NewDefaultAdapter(uow.NewUnitOfWork(db), memory.NewMemoryCache(0))
+
 }
 
 func initSettingDefinations() {
@@ -98,6 +123,7 @@ func TestProvider_Get(t *testing.T) {
 	assert.Nil(t, err)
 
 	err = settingProvider.Set("email:username", "admin@rin-echo.com")
+	log.Println(err)
 	assert.Nil(t, err)
 	value, err = settingProvider.Get("email:username")
 	assert.Nil(t, err)
@@ -162,7 +188,7 @@ func TestProvider_For_CurrentUser(t *testing.T) {
 
 	valueOfGlobal := globalScopeProvider.GetOrInit(name)
 	assert.NotEqual(t, valueOfGlobal, value)
-	assert.Equal(t, "", valueOfGlobal)
+	assert.Equal(t, valueOfGlobal, "")
 }
 
 func TestProvider_For_Global(t *testing.T) {
@@ -183,5 +209,5 @@ func TestProvider_For_Global(t *testing.T) {
 
 	valueOfUser := userScopeProvider.GetOrInit(name)
 	assert.NotEqual(t, valueOfUser, value)
-	assert.Equal(t, "", valueOfUser)
+	assert.Equal(t, valueOfUser, "")
 }
