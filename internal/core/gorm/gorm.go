@@ -5,8 +5,8 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 
-	//"gorm.io/driver/sqlite"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 )
@@ -32,7 +32,7 @@ func Open(dialect string, dns string, options ...gorm.Option) (*gorm.DB, error) 
 	} else if dialect == DriverMssql {
 		db, err = gorm.Open(sqlserver.Open(dns), options...)
 	} else if dialect == DriverSqlite {
-		//db, err = gorm.Open(sqlite.Open(dns), options...)
+		db, err = gorm.Open(sqlite.Open(dns), options...)
 	} else {
 		return nil, errors.New("database dialect is not supported")
 	}

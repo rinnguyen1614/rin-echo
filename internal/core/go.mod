@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/casbin/casbin/v2 v2.44.1
-	github.com/go-playground/validator/v10 v10.9.0
+	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
