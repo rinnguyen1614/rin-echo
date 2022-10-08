@@ -11,7 +11,7 @@ import (
 
 	core "github.com/rinnguyen1614/rin-echo/internal/core"
 
-	"github.com/rinnguyen1614/rin-echo/internal/core/auth/jwt"
+	"github.com/rinnguyen1614/rin-echo/internal/core/auth"
 	echox "github.com/rinnguyen1614/rin-echo/internal/core/echo"
 	_ "github.com/rinnguyen1614/rin-echo/internal/core/echo/models"
 	rquery "github.com/rinnguyen1614/rin-echo/internal/core/echo/models/query/rest_query"
@@ -36,7 +36,7 @@ func NewAccountHandler(uow iuow.UnitOfWork,
 	restQuery rquery.RestQuery,
 	settingProvider setting.Provider,
 	validator *validation.Validator,
-	auther *jwt.JWT) AccountHandler {
+	auther auth.Auther) AccountHandler {
 
 	return AccountHandler{
 		Handler:     echox.NewHandler(logger, restQuery, settingProvider, validator),
