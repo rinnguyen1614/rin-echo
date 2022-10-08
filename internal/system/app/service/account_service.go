@@ -9,7 +9,7 @@ import (
 	"github.com/rinnguyen1614/rin-echo/internal/system/app/model/request"
 	"github.com/rinnguyen1614/rin-echo/internal/system/app/model/response"
 
-	"github.com/rinnguyen1614/rin-echo/internal/core/auth/jwt"
+	"github.com/rinnguyen1614/rin-echo/internal/core/auth"
 	echox "github.com/rinnguyen1614/rin-echo/internal/core/echo"
 	"github.com/rinnguyen1614/rin-echo/internal/core/setting"
 	iuow "github.com/rinnguyen1614/rin-echo/internal/core/uow/interfaces"
@@ -55,14 +55,14 @@ type (
 	accountService struct {
 		*echox.Service
 
-		auther       *jwt.JWT
+		auther       auth.Auther
 		repo         domain.UserRepository
 		repoSecurity domain.SecurityLogRepository
 		upload       upload.Upload
 	}
 )
 
-func NewAccountService(uow iuow.UnitOfWork, settingProvider setting.Provider, logger *zap.Logger, auther *jwt.JWT) AccountService {
+func NewAccountService(uow iuow.UnitOfWork, settingProvider setting.Provider, logger *zap.Logger, auther auth.Auther) AccountService {
 	uploadMaxSize := setting.MustGet[int64](settingProvider, "files.upload.max_size")
 	return &accountService{
 		Service:      echox.NewService(uow, settingProvider, logger),

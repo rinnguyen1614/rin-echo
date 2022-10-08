@@ -9,18 +9,19 @@ app:
     menu: resources/menu.yaml
 
 casbin:
-  model_path: conf/rbac_with_pattern_policy_model.conf
-  file_path: conf/rbac_with_pattern_policy.csv
+  model_path: config/rbac_with_pattern_policy_model.conf
   auto_load: true
   auto_load_internal: 86400
 
 database:
   driver: postgresql
-  dns: host=postgresql user=postgres password=anhnguyen!@0809 dbname=rin_admin port=5432 sslmode=disable
+  url: postgresql://root:secret@localhost:15432/rin-echo?sslmode=disable
   batch_size: 1000
+  migration_url: file://db/migration
+  init_data: false
 
 jwt:
-  signing_key: 0966005780
+  signing_key: v4EW23stY
   expires_time: 86400
   issuer: "rin-echo"
 

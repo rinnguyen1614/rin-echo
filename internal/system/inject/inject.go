@@ -3,9 +3,9 @@ package inject
 import (
 	"github.com/rinnguyen1614/rin-echo/internal/core/auth/jwt"
 	"github.com/rinnguyen1614/rin-echo/internal/core/cache"
-	"github.com/rinnguyen1614/rin-echo/internal/core/config"
 	"github.com/rinnguyen1614/rin-echo/internal/core/echo/models/query/rest_query"
 	"github.com/rinnguyen1614/rin-echo/internal/core/validation"
+	"github.com/rinnguyen1614/rin-echo/internal/system/config"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
@@ -39,8 +39,11 @@ type Service struct {
 
 func GetConfig() *config.Config {
 	if service.cfg == nil {
-		c := config.ReadFromYaml("conf/config.yaml")
-		service.cfg = &c
+		c, err := config.LoadConfig("./config")
+		if err != nil {
+			panic(err)
+		}
+		service.cfg = c
 	}
 	return service.cfg
 }

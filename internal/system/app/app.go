@@ -5,9 +5,8 @@ import (
 	"github.com/rinnguyen1614/rin-echo/internal/system/app/handler"
 
 	"github.com/casbin/casbin/v2"
-	"github.com/rinnguyen1614/rin-echo/internal/core/auth/jwt"
+	"github.com/rinnguyen1614/rin-echo/internal/core/auth"
 	"github.com/rinnguyen1614/rin-echo/internal/core/cache"
-	"github.com/rinnguyen1614/rin-echo/internal/core/config"
 	"github.com/rinnguyen1614/rin-echo/internal/core/echo/models/query/rest_query"
 	"github.com/rinnguyen1614/rin-echo/internal/core/setting"
 	setting_adapter "github.com/rinnguyen1614/rin-echo/internal/core/setting/adapter"
@@ -16,6 +15,7 @@ import (
 	"github.com/rinnguyen1614/rin-echo/internal/core/utils/file"
 	"github.com/rinnguyen1614/rin-echo/internal/core/validation"
 	"github.com/rinnguyen1614/rin-echo/internal/system/adapters"
+	"github.com/rinnguyen1614/rin-echo/internal/system/config"
 	"github.com/rinnguyen1614/rin-echo/internal/system/inject"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -44,7 +44,7 @@ func NewApplication(
 	casbin *casbin.SyncedEnforcer,
 	logger *zap.Logger,
 	restQuery rest_query.RestQuery,
-	auther *jwt.JWT,
+	auther auth.Auther,
 	validator *validation.Validator,
 ) Application {
 
