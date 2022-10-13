@@ -1,3 +1,4 @@
+
 APP_PREFIX=rin
 DB_URL=postgresql://root:secret@localhost:15432/rin-echo?sslmode=disable
 DB_PORT=15432
@@ -5,6 +6,8 @@ DB_NAME=rin-echo
 DB_USER=root
 DB_PASSWORD=secret
 DIR_MIGRATE=./internal/system/db/migrate
+MOCK_ARGS_DIR=app/service
+MOCK_ARGS_NAME=
 
 network:
 	docker network create ${APP_PREFIX}-network
@@ -24,11 +27,17 @@ migrate-up:
 migrate-down:
 	migrate -path ${DIR_MIGRATE} -database ${DB_URL} -verbose down
 
-server-generate:
+server-gen:
 	cd ./internal/system && go generate
 
 server:
 	cd ./internal/system && go run main.go
 
+test:
+	cd ./internal/system && go test -v ./...
+
 web:
 	cd ./web && npm start
+
+mock-gen:
+	mockery --case=underscore --name=$(MOCK_ARGS_NAME) --dir=$(MOCK_ARGS_DIR) --output=$(MOCK_ARGS_DIR)/mocks

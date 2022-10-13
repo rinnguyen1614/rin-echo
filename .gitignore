@@ -10,3 +10,4 @@
 .go/
 .go-cache/
 
+internal/core/setting/setting.db
