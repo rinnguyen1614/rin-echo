@@ -1072,6 +1072,8 @@ github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237/go.mod h1:qq
 github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20221007083348-3a408aafe6bf h1:JiBMnXUXy2AXSjrOMzD4xwtrli4ArHQVhJWpoWWRv4k=
 github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20221007083348-3a408aafe6bf/go.mod h1:8fUEAkTqe6rbz5zhhcydiCTA4mkZM17E3X1w0EUXVTw=
+github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20221013102213-427bb0c07a75 h1:xHpdIjIfQlMUMjGQ6yZ5QBKuujzgdc+O7PHTu0w8WIE=
+github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20221013102213-427bb0c07a75/go.mod h1:8fUEAkTqe6rbz5zhhcydiCTA4mkZM17E3X1w0EUXVTw=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=

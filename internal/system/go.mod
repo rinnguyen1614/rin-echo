@@ -15,7 +15,7 @@ require (
 	github.com/labstack/gommon v0.3.1
 	github.com/mssola/user_agent v0.5.3
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
-	github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20221007083348-3a408aafe6bf
+	github.com/rinnguyen1614/rin-echo/internal/core v0.0.0-20221013102213-427bb0c07a75
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
