@@ -69,8 +69,7 @@ func NewApplication(
 		RoleHandler:     handler.NewRoleHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 		UserHandler:     handler.NewUserHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 		AuditLogHandler: handler.NewAuditLogHandler(uow, logger, restQuery, settingProvider, validator),
-
-		FileHandler: handler.NewFileHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
+		FileHandler:     handler.NewFileHandler(uow, permissionManager, logger, restQuery, settingProvider, validator),
 	}
 }
 

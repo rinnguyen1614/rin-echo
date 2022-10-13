@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"database/sql"
 	"errors"
 
 	"gorm.io/driver/mysql"
@@ -22,31 +23,80 @@ var (
 	DriverMssql = "mssql"
 )
 
-func Open(dialect string, dns string, options ...gorm.Option) (*gorm.DB, error) {
-	var err error
-	var db *gorm.DB
-	if dialect == DriverPostgresql {
-		db, err = gorm.Open(postgres.Open(dns), options...)
-	} else if dialect == DriverMysql {
-		db, err = gorm.Open(mysql.Open(dns), options...)
-	} else if dialect == DriverMssql {
-		db, err = gorm.Open(sqlserver.Open(dns), options...)
-	} else if dialect == DriverSqlite {
-		db, err = gorm.Open(sqlite.Open(dns), options...)
-	} else {
-		return nil, errors.New("database dialect is not supported")
-	}
+func Open(driver, dns string, opts ...gorm.Option) (*gorm.DB, error) {
+	dialector, err := GetDialector(driver, dns)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, err
+	db, err := gorm.Open(dialector, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
-func OpenWithConfig(config Database) (*gorm.DB, error) {
-	return Open(config.Driver, config.GetDNS(), &gorm.Config{
-		CreateBatchSize:        config.BatchSize,
-		PrepareStmt:            config.PrepareStmt,
-		SkipDefaultTransaction: true,
-	})
+func OpenWithDb(driver string, dbExisting *sql.DB, opts ...gorm.Option) (*gorm.DB, error) {
+	dialector, err := GetDialectorWithDb(driver, dbExisting)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := gorm.Open(dialector, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func GetDialector(driver, dns string) (gorm.Dialector, error) {
+	var (
+		err       error
+		dialector gorm.Dialector
+	)
+
+	switch driver {
+	case DriverPostgresql:
+		dialector = postgres.Open(dns)
+	case DriverMysql:
+		dialector = mysql.Open(dns)
+	case DriverMssql:
+		dialector = sqlserver.Open(dns)
+	case DriverSqlite:
+		dialector = sqlite.Open(dns)
+	default:
+		err = errors.New("database dialect is not supported")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dialector, err
+}
+
+func GetDialectorWithDb(driver string, db *sql.DB) (gorm.Dialector, error) {
+	var (
+		err       error
+		dialector gorm.Dialector
+	)
+
+	switch driver {
+	case DriverPostgresql:
+		dialector = postgres.New(postgres.Config{Conn: db})
+	case DriverMysql:
+		dialector = mysql.New(mysql.Config{Conn: db})
+	case DriverMssql:
+		dialector = sqlserver.New(sqlserver.Config{Conn: db})
+	default:
+		err = errors.New("database dialect is not supported")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dialector, err
 }

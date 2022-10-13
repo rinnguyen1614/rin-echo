@@ -11,11 +11,10 @@ func GetDB() *gorm.DB {
 	if service.db == nil {
 		cfg := GetConfig()
 		logger := GetLogger()
-		db, err := gormx.OpenWithConfig(gormx.Database{
-			Driver:    cfg.Database.Driver,
-			DNS:       cfg.Database.URL,
-			BatchSize: cfg.Database.BatchSize,
-		})
+		db, err := gormx.Open(cfg.Database.Driver, cfg.Database.URL, &gorm.Config{
+			CreateBatchSize: cfg.Database.BatchSize,
+		},
+		)
 
 		if err != nil {
 			panic(err)

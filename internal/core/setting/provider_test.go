@@ -70,10 +70,7 @@ func init() {
 func initAdapter() {
 	os.Remove("./setting.db")
 
-	db, err := gormx.OpenWithConfig(gormx.Database{
-		Driver: "sqlite",
-		DNS:    "./setting.db?cache=shared&mode=memory",
-	})
+	db, err := gormx.Open("sqlite", "./setting.db?cache=shared&mode=memory")
 
 	if err != nil {
 		panic(err)
